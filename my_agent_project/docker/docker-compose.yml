@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  agent-api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: agent_factory_app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - REDIS_URL=redis://redis:6379/0
+    env_file:
+      - ../.env
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - agent_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: agent_factory_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - agent_network
+
+networks:
+  agent_network:
+    driver: bridge

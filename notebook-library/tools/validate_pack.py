@@ -11,6 +11,12 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 import argparse
 
+# Ensure UTF-8 output on all operating systems
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+
 # Get library root
 LIBRARY_ROOT = Path(__file__).parent.parent
 PACKS_DIR = LIBRARY_ROOT / "packs"

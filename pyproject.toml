@@ -7,7 +7,7 @@ name = "agent-factory"
 version = "0.1.0"
 description = "A composable, extensible platform for building, deploying, and monetizing AI agents"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 license = {text = "GPL-3.0"}
 authors = [
     {name = "Scott Hardie", email = "scottrmhardie@gmail.com"},
@@ -20,8 +20,6 @@ classifiers = [
     "Intended Audience :: Education",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -45,6 +43,7 @@ dependencies = [
     "sqlalchemy>=2.0.0",
     "alembic>=1.12.0",
     "psycopg2-binary>=2.9.0",
+    "psycopg[binary]>=3.1",
     "redis>=5.0.0",
     "prometheus-client>=0.18.0",
     "python-json-logger>=2.0.0",
@@ -99,13 +98,13 @@ include = ["agent_factory*"]
 
 [tool.black]
 line-length = 100
-target-version = ['py38', 'py39', 'py310', 'py311']
+target-version = ['py310', 'py311', 'py312']
 
 [tool.ruff]
 line-length = 100
-target-version = "py38"
+target-version = "py310"
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true

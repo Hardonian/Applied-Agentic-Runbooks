@@ -6,7 +6,7 @@ Agent Factory is the platform that turns your AI prototypes into real products. 
 
 ---
 
-> **🤖 This repo audits itself.** Every night at 03:00 UTC it runs 15 readiness audits and opens its own PR with the receipts — 100 consecutive green nights. How it works: [docs/RUNBOOK.md](docs/RUNBOOK.md)
+> **🤖 This repo audits itself.** Seven readiness audits run unattended every night at 03:00 UTC, and the diff lands as a PR this repo opens itself — 320 consecutive green nights, zero gaps, verified. How it works: [docs/RUNBOOK.md](docs/RUNBOOK.md)
 
 
 ## 🎯 One-Sentence Pitch

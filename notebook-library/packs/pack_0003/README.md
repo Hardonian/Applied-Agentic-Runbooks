@@ -140,5 +140,5 @@ All outputs are written to the `outputs/` directory:
 
 ---
 
-**Version:** 1.0.0  
-**Last Updated:** 2026-01-04
+**Version:** 1.1.0  
+**Last Updated:** 2026-10-11

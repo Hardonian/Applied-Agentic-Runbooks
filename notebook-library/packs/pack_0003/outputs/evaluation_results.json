@@ -1,0 +1,140 @@
+{
+  "timestamp": "2026-10-11T23:00:15Z",
+  "total_evaluated": 6,
+  "metric_weights": {
+    "clarity": 0.2,
+    "specificity": 0.25,
+    "completeness": 0.25,
+    "relevance": 0.15,
+    "safety": 0.15
+  },
+  "drift_summary": {
+    "average_overall_drift": 0.353,
+    "regressions_count": 0,
+    "improvements_count": 3
+  },
+  "evaluations": [
+    {
+      "prompt_id": "prompt_summarization_v1",
+      "name": "Financial Document Summarizer (Baseline)",
+      "category": "summarization",
+      "version": "1.0",
+      "token_count": 9,
+      "scores": {
+        "clarity": 0.533,
+        "specificity": 0.2,
+        "completeness": 0.16,
+        "relevance": 0.486,
+        "safety": 0.75,
+        "overall": 0.382
+      }
+    },
+    {
+      "prompt_id": "prompt_summarization_v2",
+      "name": "Financial Document Summarizer (Optimized)",
+      "category": "summarization",
+      "version": "2.0",
+      "token_count": 47,
+      "scores": {
+        "clarity": 0.614,
+        "specificity": 1.0,
+        "completeness": 0.85,
+        "relevance": 0.914,
+        "safety": 1.0,
+        "overall": 0.872
+      }
+    },
+    {
+      "prompt_id": "prompt_code_gen_v1",
+      "name": "API Endpoint Generator (Baseline)",
+      "category": "code_generation",
+      "version": "1.0",
+      "token_count": 8,
+      "scores": {
+        "clarity": 0.2,
+        "specificity": 0.2,
+        "completeness": 0.36,
+        "relevance": 0.657,
+        "safety": 0.75,
+        "overall": 0.391
+      }
+    },
+    {
+      "prompt_id": "prompt_code_gen_v2",
+      "name": "API Endpoint Generator (Optimized)",
+      "category": "code_generation",
+      "version": "2.0",
+      "token_count": 54,
+      "scores": {
+        "clarity": 0.53,
+        "specificity": 0.4,
+        "completeness": 0.85,
+        "relevance": 0.914,
+        "safety": 1.0,
+        "overall": 0.706
+      }
+    },
+    {
+      "prompt_id": "prompt_support_v1",
+      "name": "SaaS Customer Support Bot (Baseline)",
+      "category": "customer_support",
+      "version": "1.0",
+      "token_count": 9,
+      "scores": {
+        "clarity": 0.2,
+        "specificity": 0.2,
+        "completeness": 0.36,
+        "relevance": 0.5,
+        "safety": 0.75,
+        "overall": 0.367
+      }
+    },
+    {
+      "prompt_id": "prompt_support_v2",
+      "name": "SaaS Customer Support Bot (Optimized)",
+      "category": "customer_support",
+      "version": "2.0",
+      "token_count": 68,
+      "scores": {
+        "clarity": 0.495,
+        "specificity": 0.4,
+        "completeness": 0.7,
+        "relevance": 0.9,
+        "safety": 0.75,
+        "overall": 0.621
+      }
+    }
+  ],
+  "drift_detection": [
+    {
+      "category": "summarization",
+      "baseline_name": "Financial Document Summarizer (Baseline)",
+      "candidate_name": "Financial Document Summarizer (Optimized)",
+      "v1_score": 0.382,
+      "v2_score": 0.872,
+      "score_delta": 0.49,
+      "percent_change": 128.3,
+      "status": "SIGNIFICANT_IMPROVEMENT"
+    },
+    {
+      "category": "code_generation",
+      "baseline_name": "API Endpoint Generator (Baseline)",
+      "candidate_name": "API Endpoint Generator (Optimized)",
+      "v1_score": 0.391,
+      "v2_score": 0.706,
+      "score_delta": 0.315,
+      "percent_change": 80.6,
+      "status": "SIGNIFICANT_IMPROVEMENT"
+    },
+    {
+      "category": "customer_support",
+      "baseline_name": "SaaS Customer Support Bot (Baseline)",
+      "candidate_name": "SaaS Customer Support Bot (Optimized)",
+      "v1_score": 0.367,
+      "v2_score": 0.621,
+      "score_delta": 0.254,
+      "percent_change": 69.2,
+      "status": "SIGNIFICANT_IMPROVEMENT"
+    }
+  ]
+}

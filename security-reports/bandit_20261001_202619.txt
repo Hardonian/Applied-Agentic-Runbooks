@@ -1,0 +1,435 @@
+Run started:2026-10-01 20:26:22.005862+00:00
+
+Test results:
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html
+   Location: agent_factory/agents/agent.py:304:8
+303	            self.prompt_log_storage.save_run(run)
+304	        except Exception:
+305	            # Silently fail if logging fails
+306	            pass
+307	    
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html
+   Location: agent_factory/agents/agent.py:337:8
+336	                return out
+337	        except Exception:
+338	            pass
+339	
+
+--------------------------------------------------
+>> Issue: [B106:hardcoded_password_funcarg] Possible hardcoded password: 'bearer'
+   Severity: Low   Confidence: Medium
+   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b106_hardcoded_password_funcarg.html
+   Location: agent_factory/api/routes/auth.py:132:15
+131	            access_token=access_token,
+132	            token_type="bearer",
+133	            user_id=user_id,
+134	            email=request.email,
+135	            tenant_id=tenant_id
+136	        )
+137	    except HTTPException:
+138	        raise
+139	    except Exception as e:
+
+--------------------------------------------------
+>> Issue: [B106:hardcoded_password_funcarg] Possible hardcoded password: 'bearer'
+   Severity: Low   Confidence: Medium
+   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b106_hardcoded_password_funcarg.html
+   Location: agent_factory/api/routes/auth.py:189:15
+188	            access_token=access_token,
+189	            token_type="bearer",
+190	            user_id=user.id,
+191	            email=user.email,
+192	            tenant_id=user.tenant_id or ""
+193	        )
+194	    except HTTPException:
+195	        raise
+196	    except Exception as e:
+
+--------------------------------------------------
+>> Issue: [B102:exec_used] Use of exec detected.
+   Severity: Medium   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b102_exec_used.html
+   Location: agent_factory/api/routes/tools.py:60:12
+59	            namespace = {}
+60	            exec(code_obj, namespace)
+61	            
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html
+   Location: agent_factory/cache/redis_cache.py:79:8
+78	            self.client.setex(key, ttl, json.dumps(value))
+79	        except Exception:
+80	            pass
+81	    
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html
+   Location: agent_factory/cache/redis_cache.py:94:8
+93	            self.client.delete(key)
+94	        except Exception:
+95	            pass
+96	    
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html
+   Location: agent_factory/cache/redis_cache.py:111:8
+110	                self.client.delete(*keys)
+111	        except Exception:
+112	            pass
+113	
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html
+   Location: agent_factory/cli/commands/doctor.py:182:8
+181	            typer.echo(f"  Agent Factory: {__version__}")
+182	        except:
+183	            pass
+
+--------------------------------------------------
+>> Issue: [B404:blacklist] Consider possible security implications associated with the subprocess module.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess
+   Location: agent_factory/cli/commands/ui.py:6:0
+5	import typer
+6	import subprocess
+7	import sys
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: agent_factory/cli/commands/ui.py:52:8
+51	    try:
+52	        subprocess.run([
+53	            sys.executable, "-m", "streamlit", "run",
+54	            str(demo_path),
+55	            "--server.port", str(port),
+56	            "--server.address", host,
+57	        ])
+58	    except KeyboardInterrupt:
+
+--------------------------------------------------
+>> Issue: [B104:hardcoded_bind_all_interfaces] Possible binding to all interfaces.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-605 (https://cwe.mitre.org/data/definitions/605.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b104_hardcoded_bind_all_interfaces.html
+   Location: agent_factory/config/deployment.py:50:20
+49	    # API
+50	    api_host: str = "0.0.0.0"
+51	    api_port: int = 8000
+
+--------------------------------------------------
+>> Issue: [B104:hardcoded_bind_all_interfaces] Possible binding to all interfaces.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-605 (https://cwe.mitre.org/data/definitions/605.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b104_hardcoded_bind_all_interfaces.html
+   Location: agent_factory/config/deployment.py:96:43
+95	            object_storage_url=os.getenv("OBJECT_STORAGE_URL"),
+96	            api_host=os.getenv("API_HOST", "0.0.0.0"),
+97	            api_port=int(os.getenv("API_PORT", "8000")),
+
+--------------------------------------------------
+>> Issue: [B404:blacklist] Consider possible security implications associated with the subprocess module.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess
+   Location: agent_factory/database/backup.py:6:0
+5	import os
+6	import subprocess
+7	from datetime import datetime
+
+--------------------------------------------------
+>> Issue: [B607:start_process_with_partial_path] Starting a process with a partial executable path
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html
+   Location: agent_factory/database/backup.py:66:16
+65	            try:
+66	                subprocess.run(
+67	                    ["pg_dump", self.database_url],
+68	                    stdout=open(backup_path, "w"),
+69	                    check=True,
+70	                )
+71	            except subprocess.CalledProcessError as e:
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: agent_factory/database/backup.py:66:16
+65	            try:
+66	                subprocess.run(
+67	                    ["pg_dump", self.database_url],
+68	                    stdout=open(backup_path, "w"),
+69	                    check=True,
+70	                )
+71	            except subprocess.CalledProcessError as e:
+
+--------------------------------------------------
+>> Issue: [B607:start_process_with_partial_path] Starting a process with a partial executable path
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b607_start_process_with_partial_path.html
+   Location: agent_factory/database/backup.py:109:20
+108	                with open(backup_file, "r") as f:
+109	                    subprocess.run(
+110	                        ["psql", self.database_url],
+111	                        stdin=f,
+112	                        check=True,
+113	                    )
+114	            except subprocess.CalledProcessError as e:
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: agent_factory/database/backup.py:109:20
+108	                with open(backup_file, "r") as f:
+109	                    subprocess.run(
+110	                        ["psql", self.database_url],
+111	                        stdin=f,
+112	                        check=True,
+113	                    )
+114	            except subprocess.CalledProcessError as e:
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html
+   Location: agent_factory/enterprise/webhooks.py:113:12
+112	                    pass
+113	            except Exception as e:
+114	                # Log webhook failure
+115	                pass
+116	
+
+--------------------------------------------------
+>> Issue: [B105:hardcoded_password_string] Possible hardcoded password: 'token'
+   Severity: Low   Confidence: Medium
+   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b105_hardcoded_password_string.html
+   Location: agent_factory/integrations/streaming.py:20:12
+19	class StreamEventType(str, Enum):
+20	    TOKEN = "token"
+21	    REASONING = "reasoning"
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html
+   Location: agent_factory/monitoring/sentry.py:81:4
+80	            sentry_sdk.capture_exception(error)
+81	    except Exception:
+82	        # Sentry not available or failed, ignore
+83	        pass
+84	
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html
+   Location: agent_factory/monitoring/sentry.py:101:4
+100	            sentry_sdk.capture_message(message, level=level)
+101	    except Exception:
+102	        # Sentry not available or failed, ignore
+103	        pass
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html
+   Location: agent_factory/notebook_converter/writer.py:116:8
+115	                return ast.unparse(func_node)
+116	        except Exception:
+117	            pass
+118	        
+
+--------------------------------------------------
+>> Issue: [B112:try_except_continue] Try, Except, Continue detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b112_try_except_continue.html
+   Location: agent_factory/orchestration/router.py:61:12
+60	                    return edge.to_agent
+61	            except Exception:
+62	                # If evaluation fails, skip this edge
+63	                continue
+64	        
+
+--------------------------------------------------
+>> Issue: [B324:hashlib] Use of weak MD5 hash for security. Consider usedforsecurity=False
+   Severity: High   Confidence: High
+   CWE: CWE-327 (https://cwe.mitre.org/data/definitions/327.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b324_hashlib.html
+   Location: agent_factory/research/experiments.py:181:25
+180	        import hashlib
+181	        hash_value = int(hashlib.md5(f"{experiment_id}:{user_id}".encode()).hexdigest(), 16)
+182	        assignment = (hash_value % 10000) / 100.0
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html
+   Location: agent_factory/runtime/engine.py:236:8
+235	            self.prompt_log_storage.save_run(run)
+236	        except Exception:
+237	            pass
+238	    
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html
+   Location: agent_factory/runtime/engine.py:259:8
+258	            self.prompt_log_storage.save_run(run)
+259	        except Exception:
+260	            pass
+261	    
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html
+   Location: agent_factory/runtime/engine.py:310:8
+309	                self.telemetry_collector.record_event(activation_event)
+310	        except Exception:
+311	            # Don't fail execution if activation tracking fails
+312	            pass
+313	    
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html
+   Location: agent_factory/security/auth.py:234:8
+233	                db.close()
+234	        except Exception:
+235	            pass
+236	    
+
+--------------------------------------------------
+>> Issue: [B107:hardcoded_password_default] Possible hardcoded password: 'agent-factory-capability-secret-key-2026'
+   Severity: Low   Confidence: Medium
+   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b107_hardcoded_password_default.html
+   Location: agent_factory/security/capability_tokens.py:21:4
+20	
+21	    def __init__(self, secret_key: str = "agent-factory-capability-secret-key-2026"):
+22	        self.secret_key = secret_key.encode("utf-8")
+23	
+
+--------------------------------------------------
+>> Issue: [B105:hardcoded_password_string] Possible hardcoded password: 'eyJ[a-zA-Z0-9_\-]+\.eyJ[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+'
+   Severity: Low   Confidence: Medium
+   CWE: CWE-259 (https://cwe.mitre.org/data/definitions/259.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b105_hardcoded_password_string.html
+   Location: agent_factory/security/firewall.py:45:4
+44	    "AWS_KEY": r"AKIA[0-9A-Z]{16}",
+45	    "JWT_TOKEN": r"eyJ[a-zA-Z0-9_\-]+\.eyJ[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+",
+46	    "CREDIT_CARD": r"\b(?:\d{4}[-\s]?){3}\d{4}\b",
+47	    "SSN": r"\b\d{3}-\d{2}-\d{4}\b",
+48	    "EMAIL": r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",
+49	}
+50	
+51	
+52	class LLMSecurityFirewall:
+53	    """
+54	    Real-time security firewall inspecting all agent inputs and outputs.
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b110_try_except_pass.html
+   Location: agent_factory/telemetry/collector.py:57:8
+56	            self.backend.store_event(event)
+57	        except Exception:
+58	            # Silently fail telemetry to avoid breaking main execution
+59	            # In production, log to error tracking system
+60	            pass
+61	    
+
+--------------------------------------------------
+>> Issue: [B102:exec_used] Use of exec detected.
+   Severity: Medium   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b102_exec_used.html
+   Location: agent_factory/tools/interpreter.py:162:16
+161	                last_expr = tree.body.pop()
+162	                exec(compile(tree, "<sandbox>", "exec"), global_scope, local_scope)
+163	                eval_val = eval(compile(ast.Expression(last_expr.value), "<sandbox>", "eval"), global_scope, local_scope)
+
+--------------------------------------------------
+>> Issue: [B307:blacklist] Use of possibly insecure function - consider using safer ast.literal_eval.
+   Severity: Medium   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b307-eval
+   Location: agent_factory/tools/interpreter.py:163:27
+162	                exec(compile(tree, "<sandbox>", "exec"), global_scope, local_scope)
+163	                eval_val = eval(compile(ast.Expression(last_expr.value), "<sandbox>", "eval"), global_scope, local_scope)
+164	                if eval_val is not None:
+
+--------------------------------------------------
+>> Issue: [B102:exec_used] Use of exec detected.
+   Severity: Medium   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.9.4/plugins/b102_exec_used.html
+   Location: agent_factory/tools/interpreter.py:167:16
+166	            else:
+167	                exec(compile(tree, "<sandbox>", "exec"), global_scope, local_scope)
+168	
+
+--------------------------------------------------
+
+Code scanned:
+	Total lines of code: 23543
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 28
+		Medium: 6
+		High: 1
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 0
+		Medium: 7
+		High: 28
+Files skipped (0):

@@ -76,9 +76,11 @@ class SQLiteMemoryStore(MemoryStore):
                 input_text TEXT NOT NULL,
                 output_text TEXT NOT NULL,
                 timestamp TEXT NOT NULL,
-                metadata TEXT,
-                INDEX idx_session_id (session_id)
+                metadata TEXT
             )
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_session_id ON interactions (session_id)
         """)
         
         conn.commit()

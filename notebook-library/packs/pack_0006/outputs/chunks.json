@@ -1,0 +1,58 @@
+{
+  "document": "documents.txt",
+  "total_chunks": 4,
+  "chunks": [
+    {
+      "chunk_id": "chk_a80e7300397e",
+      "title": "Agent Factory Enterprise Platform Architecture",
+      "token_count": 7,
+      "text": "# Agent Factory Enterprise Platform Architecture",
+      "embedding_dim": 16,
+      "embedding_preview": [
+        0.2,
+        0.6,
+        0.8,
+        0.9333
+      ]
+    },
+    {
+      "chunk_id": "chk_65ffe9aa24ab",
+      "title": "Section 1",
+      "token_count": 82,
+      "text": "## Section 1: Overview and Core Principles\nAgent Factory is an enterprise platform designed to operationalize autonomous AI agent systems.\nTraditional prototype-to-production transitions fail due to unmanaged context windows, brittle error recovery, lack of observability, and unverified data handling.\nAgent Factory provides an integrated execution environment featuring modular orchestration, sub-millisecond distributed tracing, SQLite session storage, and Model Context Protocol (MCP) tool hosting.",
+      "embedding_dim": 16,
+      "embedding_preview": [
+        0.6,
+        0.2667,
+        0.6667,
+        0.8667
+      ]
+    },
+    {
+      "chunk_id": "chk_1e3edcb41120",
+      "title": "Section 2",
+      "token_count": 83,
+      "text": "## Section 2: Security and Guardrail Architecture\nSecurity operates on a defense-in-depth model. All ingress prompts are parsed through regular-expression PII scrubbers targeting SSNs, emails, credit cards, and phone numbers.\nSimultaneously, prompt injection heuristics intercept override signatures like \"ignore all previous instructions\".\nAll SQL queries executed by agents pass through static pattern validators preventing SQL injection attacks before reaching the database connection pool.",
+      "embedding_dim": 16,
+      "embedding_preview": [
+        0.8,
+        0.9333,
+        0.4667,
+        0.7333
+      ]
+    },
+    {
+      "chunk_id": "chk_e71d41f1533e",
+      "title": "Section 3",
+      "token_count": 58,
+      "text": "## Section 3: Vector Indexing and Semantic Retrieval\nThe RAG pipeline implements semantic chunking with a rolling token overlap.\nDocuments are segmented on markdown header boundaries to preserve thematic cohesion.\nChunks are enriched with token budgets, document hashes, and vector embeddings for hybrid retrieval.",
+      "embedding_dim": 16,
+      "embedding_preview": [
+        0.0667,
+        0.0,
+        0.0,
+        0.5333
+      ]
+    }
+  ]
+}

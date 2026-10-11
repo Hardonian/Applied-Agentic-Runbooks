@@ -1,0 +1,57 @@
+{
+  "industry": "AI Agent Platforms",
+  "last_updated": "2026-10-11",
+  "competitors": [
+    {
+      "name": "AgentFactory",
+      "tier": "Leader",
+      "pricing_monthly_starting": 29,
+      "multi_agent_support": true,
+      "guardrails_included": true,
+      "local_mcp_support": true,
+      "open_source": true,
+      "deployment_modes": [
+        "Docker",
+        "Kubernetes",
+        "Cloud Composer"
+      ]
+    },
+    {
+      "name": "LegacyAgentBot",
+      "tier": "Challenger",
+      "pricing_monthly_starting": 99,
+      "multi_agent_support": false,
+      "guardrails_included": false,
+      "local_mcp_support": false,
+      "open_source": false,
+      "deployment_modes": [
+        "SaaS Only"
+      ]
+    },
+    {
+      "name": "OpenAgentFlow",
+      "tier": "Open-Source Alternative",
+      "pricing_monthly_starting": 0,
+      "multi_agent_support": true,
+      "guardrails_included": false,
+      "local_mcp_support": true,
+      "open_source": true,
+      "deployment_modes": [
+        "Docker",
+        "Bare Metal"
+      ]
+    },
+    {
+      "name": "CloudAgentPro",
+      "tier": "Enterprise Incumbent",
+      "pricing_monthly_starting": 499,
+      "multi_agent_support": true,
+      "guardrails_included": true,
+      "local_mcp_support": false,
+      "open_source": false,
+      "deployment_modes": [
+        "Proprietary Cloud"
+      ]
+    }
+  ]
+}

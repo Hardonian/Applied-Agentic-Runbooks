@@ -1,0 +1,16 @@
+# Agent Factory Enterprise Platform Architecture
+
+## Section 1: Overview and Core Principles
+Agent Factory is an enterprise platform designed to operationalize autonomous AI agent systems.
+Traditional prototype-to-production transitions fail due to unmanaged context windows, brittle error recovery, lack of observability, and unverified data handling.
+Agent Factory provides an integrated execution environment featuring modular orchestration, sub-millisecond distributed tracing, SQLite session storage, and Model Context Protocol (MCP) tool hosting.
+
+## Section 2: Security and Guardrail Architecture
+Security operates on a defense-in-depth model. All ingress prompts are parsed through regular-expression PII scrubbers targeting SSNs, emails, credit cards, and phone numbers.
+Simultaneously, prompt injection heuristics intercept override signatures like "ignore all previous instructions".
+All SQL queries executed by agents pass through static pattern validators preventing SQL injection attacks before reaching the database connection pool.
+
+## Section 3: Vector Indexing and Semantic Retrieval
+The RAG pipeline implements semantic chunking with a rolling token overlap.
+Documents are segmented on markdown header boundaries to preserve thematic cohesion.
+Chunks are enriched with token budgets, document hashes, and vector embeddings for hybrid retrieval.

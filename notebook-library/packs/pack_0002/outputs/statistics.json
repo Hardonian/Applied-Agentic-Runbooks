@@ -1,0 +1,34 @@
+{
+  "timestamp": "2026-10-11T23:31:06Z",
+  "total_records": 14,
+  "total_mrr": 6445.0,
+  "churn_rate_pct": 21.4,
+  "plan_distribution": {
+    "Pro": 5,
+    "Starter": 5,
+    "Enterprise": 4
+  },
+  "numeric_metrics": {
+    "mrr": {
+      "mean": 460.36,
+      "median": 120.0,
+      "std": 649.21,
+      "min": 29.0,
+      "max": 1800.0
+    },
+    "nps_score": {
+      "mean": 8.21,
+      "median": 8.5,
+      "std": 1.53,
+      "min": 5.0,
+      "max": 10.0
+    },
+    "churned": {
+      "mean": 0.21,
+      "median": 0.0,
+      "std": 0.43,
+      "min": 0.0,
+      "max": 1.0
+    }
+  }
+}

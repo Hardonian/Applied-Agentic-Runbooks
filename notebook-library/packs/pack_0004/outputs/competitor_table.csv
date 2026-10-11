@@ -1,0 +1,5 @@
+name,tier,price_per_month,multi_agent,guardrails,mcp_protocol,open_source,deployments,feature_score
+AgentFactory,Leader,29,Yes,Yes,Yes,Yes,"Docker, Kubernetes, Cloud Composer",4/4
+LegacyAgentBot,Challenger,99,No,No,No,No,SaaS Only,0/4
+OpenAgentFlow,Open-Source Alternative,0,Yes,No,Yes,Yes,"Docker, Bare Metal",3/4
+CloudAgentPro,Enterprise Incumbent,499,Yes,Yes,No,No,Proprietary Cloud,2/4

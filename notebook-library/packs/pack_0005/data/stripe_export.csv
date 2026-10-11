@@ -1,0 +1,8 @@
+id,created_utc,amount_cents,currency,status,customer_email,fee_cents,refunded_cents,description
+ch_3M001,2026-02-01 10:14:22,4900,usd,paid,user1@acme.corp,172,0,Monthly Pro Subscription
+ch_3M002,2026-02-01 11:32:05,12000,usd,paid,admin@startuphub.io,378,0,Annual Starter
+ch_3M003,2026-02-02 09:12:11,4900,usd,failed,billing@devnull.org,0,0,Monthly Pro Subscription
+ch_3M004,2026-02-03 14:05:44,4900,usd,paid,finance@globalscale.co,172,4900,Monthly Pro Subscription (Refunded)
+ch_3M005,2026-02-04 18:22:01,29900,usd,paid,cto@enterprisetech.com,897,0,Enterprise Add-on
+ch_3M006,2026-02-05 12:44:19,4900,usd,paid,scott@hardonia.com,172,0,Monthly Pro Subscription
+ch_3M007,2026-02-06 08:33:55,12000,usd,paid,ops@growthlabs.ai,378,0,Annual Starter

@@ -1,0 +1,15 @@
+date,customer_id,plan,mrr,acquisition_channel,nps_score,churned
+2026-01-01,cust_101,Pro,120,Google_Search,9,0
+2026-01-02,cust_102,Enterprise,1200,Direct_Sales,10,0
+2026-01-03,cust_103,Starter,29,Social_Media,7,0
+2026-01-05,cust_104,Pro,120,Referral,8,0
+2026-01-08,cust_105,Starter,29,Google_Search,6,1
+2026-01-10,cust_106,Enterprise,1500,Direct_Sales,9,0
+2026-01-12,cust_107,Pro,120,Affiliate,8,0
+2026-01-15,cust_108,Starter,29,Social_Media,5,1
+2026-01-18,cust_109,Pro,120,Referral,9,0
+2026-01-20,cust_110,Enterprise,1200,Direct_Sales,10,0
+2026-01-22,cust_111,Starter,29,Google_Search,8,0
+2026-01-25,cust_112,Pro,120,Google_Search,7,1
+2026-01-28,cust_113,Enterprise,1800,Direct_Sales,10,0
+2026-01-30,cust_114,Starter,29,Referral,9,0

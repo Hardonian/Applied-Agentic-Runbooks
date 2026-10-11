@@ -3,8 +3,10 @@
 ### The Self-Auditing Repo Runbook — v2.1
 
 **System:** `Hardonian/JupyterNotebooks` (Agent Factory) · **Operator:** Scott Hardie
-**Track record:** 100 consecutive nightly runs, 100/100 green — unattended
-(Jul 4 → Oct 11, 2026, verified via `gh run list`).
+**Stack:** 2 GitHub Actions workflows · 16 audit generators · 1 Makefile
+**Track record:** 320 consecutive nightly runs — 320/320 green, zero gaps,
+Nov 26 2025 → Oct 11 2026, every one cron-triggered (verified via the
+Actions API run log: `workflow_runs?event=schedule`).
 **Last verified:** 2026-10-11
 
 ---
@@ -15,7 +17,7 @@
 >
 > You don't get to be the person who "keeps docs up to date." That person
 > does not exist. Not on your team, not in your future, not in yours. The
-> loop below replaces that person, and it has run 100 nights in a row without
+> loop below replaces that person, and it has run 320 nights in a row without
 > me touching it.
 >
 > This is not theory. This is the actual system, the actual YAML, the actual
@@ -93,7 +95,7 @@ that asks a question is not automatable; fix the script, not the schedule.
 
 **Invariant 2 — Report, don't gate (`continue-on-error: true` + `|| true`).**
 The nightly workflow exists to *tell you things*, never to *block anything*.
-One throwing audit must not prevent the other nine from committing. Green
+One throwing audit must not silence the rest of them. Green
 gating belongs in your test pipeline; the reporter's only job is to show up
 with the receipts.
 
@@ -146,7 +148,9 @@ jobs:
 
 ## 5. The Audit Catalog (what actually runs nightly here)
 
-15 generators, each with one Makefile target so **local run == CI run**:
+The nightly job runs 7 audits; the per-PR job runs 9 (two extra
+checklists); 16 generators total have `make` targets so **local run ==
+CI run**. Full catalog:
 
 | Nightly audit | Command | Artifact it maintains |
 |---|---|---|
@@ -188,9 +192,10 @@ gh pr view N --json files,title       # what moved overnight?
 gh pr merge N --repo OWNER/REPO --squash --delete-branch
 ```
 
-Field-tested 2026-10-11: swept **81 repos in one morning — 42 PRs
-squash-merged, zero conflicts introduced, every merge verified by reading
-`mergedAt` back from the API.** The two API truths that made it work:
+Field-tested 2026-10-11: swept **81 active repos in one morning — 105 open
+PRs classified, 47 non-conflicting green ones squash-merged, zero conflicts
+introduced — every merge verified by reading `mergedAt` + `mergedBy` back
+from the API.** The two API truths that made it work:
 
 1. `mergeable: null` / `UNKNOWN` means *GitHub is still recomputing*, not
    *conflict*. Poll until it resolves — most "conflicts" evaporate.
@@ -250,7 +255,8 @@ No PR means nothing changed. Missing PRs mean something broke — see
 docs/RUNBOOK.md. The loop is the proof.
 ```
 
-*Changelog: v2.1 (2026-10-11) — added verification doctrine, invariants
-framing, 81-repo/42-PR sweep field data, adoption sequencing. v2.0 —
-original comprehensive runbook. v1 — scripts on a laptop, cron under a lid
-(the dark ages).*
+*Changelog: v2.1 (2026-10-11) — verification doctrine, invariants framing,
+exact verified field data (320-night streak via run log; 81-repo scan /
+105-PR classify / 47-merge sweep via mergedAt+mergedBy), adoption sequencing.
+v2.0 — original comprehensive runbook. v1 — scripts on a laptop, cron under a
+lid (the dark ages).*

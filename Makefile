@@ -1,4 +1,4 @@
-.PHONY: ci lint type-check test test-unit test-integration test-e2e format install clean help migrate migrate-up migrate-down migrate-current seed validate-schema env-check doc-sync
+.PHONY: ci lint type-check test test-unit test-integration test-e2e format install clean help migrate migrate-up migrate-down migrate-current seed validate-schema env-check doc-sync security-audit deploy-help deploy-doctor smoke-tests metrics-collect unit-economics yc-checklist user-acquisition dataroom-placeholders test-coverage weekly-progress readiness-check verify-runbook
 
 help:
 	@echo "Available commands:"
@@ -25,6 +25,7 @@ help:
 	@echo "Utility commands:"
 	@echo "  make env-check       - Check environment variables"
 	@echo "  make doc-sync        - Check documentation synchronization"
+	@echo "  make verify-runbook  - Verify readiness runbook and workflow contract"
 
 ci: lint type-check test-unit
 
@@ -123,6 +124,14 @@ deploy-help:
 	@echo "Production deployment helper..."
 	@bash scripts/deploy-production.sh
 
+deploy-doctor:
+	@echo "Checking deployment configuration..."
+	@bash scripts/deploy-doctor.sh
+
+smoke-tests:
+	@echo "Running smoke tests..."
+	@bash scripts/smoke-tests.sh
+
 metrics-collect:
 	@echo "Collecting metrics..."
 	@bash scripts/collect-metrics.sh
@@ -135,6 +144,14 @@ yc-checklist:
 	@echo "YC application checklist..."
 	@bash scripts/yc-application-checklist.sh
 
+user-acquisition:
+	@echo "User acquisition checklist..."
+	@bash scripts/get-users-checklist.sh
+
+dataroom-placeholders:
+	@echo "Analyzing data-room placeholders..."
+	@python3 scripts/fill-dataroom-placeholders.py
+
 test-coverage:
 	@echo "Test coverage improvement plan..."
 	@bash scripts/test-coverage-improvement.sh
@@ -146,3 +163,6 @@ weekly-progress:
 # Quick readiness check
 readiness-check:
 	@bash scripts/quick-start-readiness.sh
+
+verify-runbook:
+	@python scripts/verify-runbook-contract.py

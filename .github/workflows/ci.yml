@@ -7,6 +7,18 @@ on:
     branches: [ main, develop ]
 
 jobs:
+  runbook-contract:
+    name: Runbook Contract
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: "3.11"
+    - name: Verify readiness runbook contract
+      run: python scripts/verify-runbook-contract.py
+
   test:
     runs-on: ubuntu-latest
     strategy:

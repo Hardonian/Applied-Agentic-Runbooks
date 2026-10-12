@@ -1,13 +1,14 @@
 # Your Repo Should Open Its Own PR Every Night
 
-### The Self-Auditing Repo Runbook — v2.1
+### The Self-Auditing Repo Runbook — v2.2
 
 **System:** `Hardonian/JupyterNotebooks` (Agent Factory) · **Operator:** Scott Hardie
-**Stack:** 2 GitHub Actions workflows · 16 audit generators · 1 Makefile
-**Track record:** 320 consecutive nightly runs — 320/320 green, zero gaps,
-Nov 26 2025 → Oct 11 2026, every one cron-triggered (verified via the
-Actions API run log: `workflow_runs?event=schedule`).
-**Last verified:** 2026-10-11
+**Stack:** 2 readiness workflows · 9 audit/report generators · 1 Makefile
+**Historical track record:** 320 consecutive nightly runs — 320/320 green,
+zero gaps, Nov 26 2025 → Oct 11 2026, every one cron-triggered (recorded
+from the Actions API run log: `workflow_runs?event=schedule`).
+**Configuration verified:** Run `make verify-runbook` locally or in CI. The
+historical streak must be rechecked from GitHub before it is extended.
 
 ---
 
@@ -78,10 +79,11 @@ a diff, and it will not close itself.
         └──────────────────────────────────────┘
 ```
 
-A second workflow (`automated-readiness.yml`) runs the same audits on every
-PR and push to `main`, committing refreshed docs straight onto the branch and
-posting a summary comment. The nightly PR is the heartbeat; the PR workflow
-is the reflex arc.
+A second workflow (`automated-readiness.yml`) runs the overlapping readiness
+generators on every PR and push to `main` or `develop`, then publishes the
+result as a workflow summary and PR comment. It is deliberately **report-only**:
+it never writes to a contributor or protected branch. The nightly PR is the
+heartbeat; the PR workflow is the reflex arc.
 
 ## 3. The Three Invariants (memorize these)
 
@@ -115,6 +117,10 @@ permissions:
   contents: write               # least privilege — never workflow: write
   pull-requests: write
 
+concurrency:
+  group: nightly-readiness-${{ github.ref }}
+  cancel-in-progress: false   # retries update the same dated PR serially
+
 jobs:
   nightly:
     runs-on: ubuntu-latest
@@ -140,33 +146,33 @@ jobs:
           git add -A
           git diff --staged --quiet || echo "changed=true" >> $GITHUB_OUTPUT
 
-      - name: Commit + dated branch + PR
+      - name: Commit + dated branch + upsert PR
         if: steps.changes.outputs.changed == 'true'
         # branch: automated/nightly-readiness-updates-YYYYMMDD
-        # → idempotent retries; PR via actions/github-script@v7
+        # → idempotent retries; update an existing PR before creating another
 ```
 
 ## 5. The Audit Catalog (what actually runs nightly here)
 
-The nightly job runs 7 audits; the per-PR job runs 9 (two extra
-checklists); 16 generators total have `make` targets so **local run ==
-CI run**. Full catalog:
+The nightly job runs 7 audits. The PR/push job runs those core reports plus
+the YC and user-acquisition checklists (weekly progress runs only on Monday),
+for 9 distinct generators. Each has a `make` target, so **local run == CI
+run**. Full scheduled catalog:
 
 | Nightly audit | Command | Artifact it maintains |
 |---|---|---|
 | Security scan | `make security-audit` | `security-reports/` (bandit + deps) |
 | Coverage gap plan | `make test-coverage` | `docs/TEST_COVERAGE_IMPROVEMENT_PLAN.md` |
-| Doc↔code drift | `make doc-sync` | drift report / synced stubs |
-| Env/secret sanity | `make env-check` | — |
-| Readiness composite | `make readiness-check` | `readiness-report.txt` |
+| Dataroom placeholders | `make dataroom-placeholders` | `docs/DATAROOM_FILL_GUIDE.md` |
 | Metrics snapshot | `make metrics-collect` | `yc/METRICS_SNAPSHOT.md` |
 | Unit economics | `make unit-economics` | `yc/UNIT_ECONOMICS.md` |
-| Dataroom placeholders | `scripts/fill-dataroom-placeholders.py` | `docs/DATAROOM_FILL_GUIDE.md` |
-| Fundraise checklist | `make yc-checklist` | `yc/YC_APPLICATION_CHECKLIST.md` |
 | Weekly progress (Mondays) | `make weekly-progress` | `docs/WEEKLY_PROGRESS.md` |
-| Deploy doctor | `scripts/deploy-doctor.sh` | pre-deploy gate report |
-| Smoke tests | `scripts/smoke-tests.sh` | post-deploy endpoint proof |
-| …plus acquisition + user checklists | | |
+| Readiness composite | `make readiness-check` | `readiness-report.txt` |
+
+The PR/push workflow additionally runs `make yc-checklist` and `make
+user-acquisition`. Deployment checks (`make deploy-doctor`, `make
+smoke-tests`) remain explicit, target-environment operations; they do not run
+in the nightly reporter.
 
 Design rule for the catalog: **a report earns its nightly slot by being read
 at least once a month.** When one stops getting opened, delete it. Catalog
@@ -231,6 +237,9 @@ from the API.** The two API truths that made it work:
 6. After 2 weeks, add audits only when a specific question recurs ("did
    coverage drop again?"). The catalog should grow like scar tissue, not
    like graffiti.
+7. Run `make verify-runbook` whenever the workflows or this runbook change.
+   It checks the scheduled trigger, safety invariants, no-change gate,
+   report-only PR workflow, and local command contract without GitHub access.
 
 ## 9. The Verification Doctrine
 
@@ -255,7 +264,10 @@ No PR means nothing changed. Missing PRs mean something broke — see
 docs/RUNBOOK.md. The loop is the proof.
 ```
 
-*Changelog: v2.1 (2026-10-11) — verification doctrine, invariants framing,
+*Changelog: v2.2 (2026-10-12) — closed workflow/documentation drift: exact
+7-nightly/9-total generator catalog, report-only PR workflow, idempotent
+nightly PR upsert, serial concurrency, and a local `make verify-runbook`
+contract check. v2.1 (2026-10-11) — verification doctrine, invariants framing,
 exact verified field data (320-night streak via run log; 81-repo scan /
 105-PR classify / 47-merge sweep via mergedAt+mergedBy), adoption sequencing.
 v2.0 — original comprehensive runbook. v1 — scripts on a laptop, cron under a

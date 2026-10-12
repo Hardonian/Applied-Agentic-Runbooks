@@ -3,7 +3,7 @@ Scheduler for running agents and workflows on a schedule.
 """
 
 from typing import Callable, Optional, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime
 import schedule
 import threading
 import time
@@ -22,6 +22,10 @@ class Scheduler:
     def __init__(self):
         """Initialize scheduler."""
         self.jobs: Dict[str, Callable] = {}
+        self._scheduled_jobs: Dict[str, schedule.Job] = {}
+        # Do not use schedule's process-global default scheduler: stopping one
+        # tenant/application scheduler must not clear another scheduler's jobs.
+        self._scheduler = schedule.Scheduler()
         self.running = False
         self.thread: Optional[threading.Thread] = None
     
@@ -44,25 +48,13 @@ class Scheduler:
         Returns:
             Job ID
         """
-        job_id = f"{agent_id}-{schedule_str}"
+        job_id = f"agent:{agent_id}:{schedule_str}"
         
         def job():
             if run_func:
                 run_func(agent_id, input_text)
         
-        # Parse schedule string
-        if schedule_str == "daily":
-            schedule.every().day.do(job)
-        elif schedule_str == "hourly":
-            schedule.every().hour.do(job)
-        elif schedule_str == "weekly":
-            schedule.every().week.do(job)
-        else:
-            # Assume cron expression (simplified)
-            schedule.every().day.at(schedule_str).do(job)
-        
-        self.jobs[job_id] = job
-        return job_id
+        return self._register_job(job_id, schedule_str, job)
     
     def schedule_workflow(
         self,
@@ -83,23 +75,46 @@ class Scheduler:
         Returns:
             Job ID
         """
-        job_id = f"{workflow_id}-{schedule_str}"
+        job_id = f"workflow:{workflow_id}:{schedule_str}"
         
         def job():
             if run_func:
                 run_func(workflow_id, context)
         
+        return self._register_job(job_id, schedule_str, job)
+
+    def _register_job(self, job_id: str, schedule_str: str, job: Callable) -> str:
+        """Register a uniquely identified schedule after validating its form."""
+        if job_id in self._scheduled_jobs:
+            self._scheduler.cancel_job(self._scheduled_jobs[job_id])
+
         if schedule_str == "daily":
-            schedule.every().day.do(job)
+            scheduled_job = self._scheduler.every().day.do(job)
         elif schedule_str == "hourly":
-            schedule.every().hour.do(job)
+            scheduled_job = self._scheduler.every().hour.do(job)
         elif schedule_str == "weekly":
-            schedule.every().week.do(job)
+            scheduled_job = self._scheduler.every().week.do(job)
         else:
-            schedule.every().day.at(schedule_str).do(job)
-        
+            try:
+                datetime.strptime(schedule_str, "%H:%M")
+            except ValueError as exc:
+                raise ValueError(
+                    "schedule_str must be daily, hourly, weekly, or HH:MM (24-hour time)"
+                ) from exc
+            scheduled_job = self._scheduler.every().day.at(schedule_str).do(job)
+
         self.jobs[job_id] = job
+        self._scheduled_jobs[job_id] = scheduled_job
         return job_id
+
+    def cancel(self, job_id: str) -> bool:
+        """Cancel one scheduled job without affecting other scheduler instances."""
+        scheduled_job = self._scheduled_jobs.pop(job_id, None)
+        self.jobs.pop(job_id, None)
+        if scheduled_job is None:
+            return False
+        self._scheduler.cancel_job(scheduled_job)
+        return True
     
     def start(self) -> None:
         """Start the scheduler in a background thread."""
@@ -110,7 +125,7 @@ class Scheduler:
         
         def run():
             while self.running:
-                schedule.run_pending()
+                self._scheduler.run_pending()
                 time.sleep(1)
         
         self.thread = threading.Thread(target=run, daemon=True)
@@ -119,6 +134,9 @@ class Scheduler:
     def stop(self) -> None:
         """Stop the scheduler."""
         self.running = False
-        schedule.clear()
+        self._scheduler.clear()
+        self.jobs.clear()
+        self._scheduled_jobs.clear()
         if self.thread:
             self.thread.join(timeout=5)
+            self.thread = None

@@ -86,6 +86,15 @@ def list_scheduled_jobs(user=Depends(get_current_user)):
     return list(scheduler.jobs.keys())
 
 
+@router.delete("/jobs/{job_id}", response_model=Dict[str, Any])
+def cancel_scheduled_job(job_id: str, user=Depends(get_current_user)):
+    """Cancel a scheduled job without stopping the scheduler service."""
+    require_user_permission(user, Permission.ADMIN)
+    if not scheduler.cancel(job_id):
+        raise HTTPException(status_code=404, detail="Scheduled job not found")
+    return {"job_id": job_id, "status": "cancelled"}
+
+
 @router.post("/start")
 async def start_scheduler(user=Depends(get_current_user)):
     """Start the scheduler."""

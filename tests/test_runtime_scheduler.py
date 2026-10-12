@@ -20,7 +20,7 @@ def test_schedule_agent():
         run_func=run_func
     )
     
-    assert job_id == "test-agent-hourly"
+    assert job_id == "agent:test-agent:hourly"
     assert job_id in scheduler.jobs
 
 
@@ -37,7 +37,7 @@ def test_schedule_workflow():
         run_func=run_func
     )
     
-    assert job_id == "test-workflow-daily"
+    assert job_id == "workflow:test-workflow:daily"
     assert job_id in scheduler.jobs
 
 
@@ -52,3 +52,20 @@ def test_start_stop_scheduler():
     
     scheduler.stop()
     assert not scheduler.running
+
+
+@pytest.mark.unit
+def test_scheduler_replaces_and_cancels_only_its_own_job():
+    scheduler = Scheduler()
+    job_id = scheduler.schedule_agent("test-agent", "input", "daily", Mock())
+    scheduler.schedule_agent("test-agent", "input", "daily", Mock())
+
+    assert len(scheduler.jobs) == 1
+    assert scheduler.cancel(job_id) is True
+    assert scheduler.cancel(job_id) is False
+
+
+@pytest.mark.unit
+def test_scheduler_rejects_invalid_schedule():
+    with pytest.raises(ValueError, match="schedule_str must be"):
+        Scheduler().schedule_agent("test-agent", "input", "every minute", Mock())

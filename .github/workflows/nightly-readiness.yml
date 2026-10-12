@@ -60,6 +60,16 @@ jobs:
         SKIP_INTERACTIVE=true bash scripts/security-audit.sh || true
       env:
         SKIP_INTERACTIVE: true
+        READINESS_REPORT_MODE: latest
+
+    - name: Retain security scan details
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-audit-${{ github.run_id }}
+        path: security-reports/
+        retention-days: 30
+        if-no-files-found: warn
     
     - name: Run Test Coverage Analysis
       continue-on-error: true
@@ -113,7 +123,7 @@ jobs:
     - name: Check for changes
       id: changes
       run: |
-        git add -A
+        bash scripts/stage-readiness-artifacts.sh
         if git diff --staged --quiet; then
           echo "changed=false" >> $GITHUB_OUTPUT
           echo "No changes detected"
@@ -127,10 +137,10 @@ jobs:
       if: steps.changes.outputs.changed == 'true'
       run: |
         BRANCH_NAME="automated/nightly-readiness-updates-$(date +%Y%m%d)"
-        git add -A
+        bash scripts/stage-readiness-artifacts.sh
         git commit -m "🤖 Nightly: Automated readiness updates
 
-        - Security audit reports updated
+        - Security audit summary updated
         - Test coverage plan updated
         - Data room placeholder analysis
         - Metrics snapshot template updated
@@ -172,7 +182,7 @@ jobs:
           This PR contains automatically generated updates from the nightly readiness workflow.
 
           **Generated Files:**
-          - Security audit reports (if updated)
+          - Security audit summary (if updated; raw details are a 30-day workflow artifact)
           - Test coverage improvement plan (if updated)
           - Data room placeholder analysis (if updated)
           - Metrics snapshot template (if updated)

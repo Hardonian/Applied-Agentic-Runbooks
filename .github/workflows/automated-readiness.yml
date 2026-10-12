@@ -54,6 +54,7 @@ jobs:
         fi
       env:
         SKIP_INTERACTIVE: true
+        READINESS_REPORT_MODE: latest
     
     - name: Run Test Coverage Analysis
       id: test_coverage
@@ -160,7 +161,7 @@ jobs:
     - name: Check for changes
       id: changes
       run: |
-        git add -A
+        bash scripts/stage-readiness-artifacts.sh
         if git diff --staged --quiet; then
           echo "changed=false" >> $GITHUB_OUTPUT
         else

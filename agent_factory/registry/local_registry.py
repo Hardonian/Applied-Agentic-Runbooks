@@ -3,7 +3,7 @@ Local file-based registry for agents, tools, workflows, and blueprints.
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Callable, Dict, List, Optional, Any
 import json
 import yaml
 import os
@@ -25,12 +25,19 @@ class LocalRegistry:
         >>> agent = registry.get_agent("research-assistant")
     """
     
-    def __init__(self, base_path: str = "~/.agent_factory"):
+    def __init__(
+        self,
+        base_path: str = "~/.agent_factory",
+        tool_implementations: Optional[Dict[str, Callable[..., Any]]] = None,
+    ):
         """
         Initialize local registry.
         
         Args:
             base_path: Base directory for registry storage
+            tool_implementations: Runtime-only implementations keyed by tool
+                ID. Callables are intentionally not serialized; callers must
+                register trusted implementations at process start.
         """
         self.base_path = Path(base_path).expanduser()
         self.base_path.mkdir(parents=True, exist_ok=True)
@@ -44,6 +51,12 @@ class LocalRegistry:
         # Initialize cache
         self.cache = get_cache()
         self.cache_ttl = int(os.getenv("REGISTRY_CACHE_TTL", "3600"))  # 1 hour default
+        self.tool_implementations = dict(tool_implementations or {})
+
+    def register_tool_implementation(self, tool_id: str, implementation: Callable[..., Any]) -> None:
+        """Register a trusted runtime implementation for a persisted tool."""
+        self.tool_implementations[tool_id] = implementation
+        self.cache.delete(f"tool:{tool_id}")
     
     # Agent methods
     def register_agent(self, agent: Agent) -> None:
@@ -115,6 +128,7 @@ class LocalRegistry:
         # Invalidate cache
         self.cache.delete(f"tool:{tool.id}")
         self.cache.delete("tools:list")
+        self.tool_implementations[tool.id] = tool._implementation
     
     def get_tool(self, tool_id: str) -> Optional[Tool]:
         """
@@ -128,18 +142,11 @@ class LocalRegistry:
         """
         cache_key = f"tool:{tool_id}"
         
-        # Try cache first
+        # Try cache first. The serialized definition is cacheable; the callable
+        # is resolved from the trusted in-process catalog every time.
         cached_data = self.cache.get(cache_key)
         if cached_data:
-            # Reconstruct tool from cached data
-            def placeholder_implementation(**kwargs):
-                raise NotImplementedError(f"Tool {tool_id} implementation not available.")
-            return Tool(
-                id=cached_data.get("id", tool_id),
-                name=cached_data.get("name", tool_id),
-                description=cached_data.get("description", ""),
-                implementation=placeholder_implementation,
-            )
+            return self._deserialize_tool(tool_id, cached_data)
         
         tool_file = self.base_path / "tools" / f"{tool_id}.json"
         if not tool_file.exists():
@@ -147,67 +154,64 @@ class LocalRegistry:
         
         try:
             data = json.loads(tool_file.read_text())
-            
-            # Reconstruct tool from saved data
-            # Note: Implementation function cannot be fully reconstructed from JSON
-            # In production, tools would be registered with their implementations
-            # For now, create a placeholder implementation
-            
-            def placeholder_implementation(**kwargs):
-                """Placeholder implementation - tool needs to be re-registered with actual function."""
-                raise NotImplementedError(
-                    f"Tool {tool_id} implementation not available. "
-                    "Please re-register the tool with its implementation function."
-                )
-            
-            # Try to get schema to infer parameter types
-            schema = data.get("schema", {})
-            parameters = schema.get("parameters", {})
-            
-            tool = Tool(
-                id=data.get("id", tool_id),
-                name=data.get("name", tool_id),
-                description=data.get("description", ""),
-                implementation=placeholder_implementation,
-            )
-            
-            # Restore metadata if available
-            if "metadata" in data:
-                from agent_factory.tools.base import ToolMetadata, ParameterSchema
-                metadata_dict = data["metadata"]
-                
-                # Reconstruct parameter schemas
-                param_schemas = {}
-                if "parameters" in schema:
-                    for param_name, param_data in schema["parameters"].get("properties", {}).items():
-                        param_schemas[param_name] = ParameterSchema(
-                            name=param_name,
-                            type=param_data.get("type", "string"),
-                            description=param_data.get("description", ""),
-                            required=param_name in schema["parameters"].get("required", []),
-                            default=param_data.get("default"),
-                        )
-                
-            tool.metadata = ToolMetadata(
-                id=tool.id,
-                name=tool.name,
-                description=tool.description,
-                version=metadata_dict.get("version", "1.0.0"),
-                author=metadata_dict.get("author", "unknown"),
-                category=metadata_dict.get("category", "general"),
-                parameters=param_schemas,
-                tags=metadata_dict.get("tags", []),
-            )
-            
-            # Cache the tool data
+            tool = self._deserialize_tool(tool_id, data)
             self.cache.set(cache_key, data, ttl=self.cache_ttl)
-            
             return tool
         except Exception as e:
             # Log error but don't fail completely
             import logging
             logging.warning(f"Failed to load tool {tool_id}: {e}")
             return None
+
+    def _deserialize_tool(self, tool_id: str, data: Dict[str, Any]) -> Tool:
+        """Rebuild a persisted tool definition and attach a trusted callable."""
+        from agent_factory.tools.base import ParameterSchema, ToolMetadata
+
+        definition_id = data.get("id", tool_id)
+        schema = data.get("schema", {})
+        parameters_schema = schema.get("parameters", {})
+        metadata_dict = data.get("metadata", schema.get("metadata", {}))
+        parameter_schemas = {
+            name: ParameterSchema(
+                name=name,
+                type=value.get("type", "string"),
+                description=value.get("description", ""),
+                required=name in parameters_schema.get("required", []),
+                default=value.get("default"),
+                enum=value.get("enum"),
+            )
+            for name, value in parameters_schema.get("properties", {}).items()
+        }
+
+        implementation = self.tool_implementations.get(definition_id)
+        if implementation is None:
+            def unavailable_implementation(**_: Any) -> Any:
+                raise NotImplementedError(
+                    f"Tool {definition_id} has no registered runtime implementation. "
+                    "Register a trusted implementation before execution."
+                )
+
+            implementation = unavailable_implementation
+
+        metadata = ToolMetadata(
+            id=definition_id,
+            name=data.get("name", definition_id),
+            description=data.get("description", ""),
+            version=metadata_dict.get("version", "1.0.0"),
+            author=metadata_dict.get("author", "unknown"),
+            category=metadata_dict.get("category", "general"),
+            parameters=parameter_schemas,
+            tags=metadata_dict.get("tags", []),
+            pricing=metadata_dict.get("pricing"),
+        )
+        return Tool(
+            id=definition_id,
+            name=data.get("name", definition_id),
+            description=data.get("description", ""),
+            implementation=implementation,
+            metadata=metadata,
+            parameters=parameters_schema,
+        )
     
     def list_tools(self) -> List[str]:
         """List all registered tool IDs with caching."""
@@ -308,14 +312,20 @@ class LocalRegistry:
                         description=cond_data.get("description"),
                     )
             
-            # Create workflow with agents registry (will be populated by runtime)
+            # Resolve the persisted agent references so a registry round-trip is
+            # executable in the same way as the original workflow.
+            agents_registry = {
+                agent_id: agent
+                for agent_id in {step.agent_id for step in steps if step.agent_id}
+                if (agent := self.get_agent(agent_id)) is not None
+            }
             workflow = Workflow(
                 id=data.get("id", workflow_id),
                 name=data.get("name", ""),
                 steps=steps,
                 triggers=triggers if triggers else None,
                 branching=branching if branching else None,
-                agents_registry={},  # Will be populated by runtime engine
+                agents_registry=agents_registry,
             )
             
             # Cache the workflow data

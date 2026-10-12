@@ -22,7 +22,18 @@ NC='\033[0m' # No Color
 # Create reports directory
 REPORTS_DIR="security-reports"
 mkdir -p "$REPORTS_DIR"
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+if [ "${READINESS_REPORT_MODE:-}" = "latest" ]; then
+    # CI needs content-addressable output: a clean scan should not create a
+    # new Git diff merely because the clock advanced. Detailed files are kept
+    # as a short-retention workflow artifact instead of committed to Git.
+    TIMESTAMP="latest"
+    SUMMARY_FILE="$REPORTS_DIR/security_audit_summary_current.md"
+    REPORT_DATE="Current readiness run (see workflow artifact for raw output)"
+else
+    TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+    SUMMARY_FILE="$REPORTS_DIR/security_audit_summary_${TIMESTAMP}.md"
+    REPORT_DATE=$(date)
+fi
 
 echo "📋 Running security scans..."
 echo ""
@@ -84,10 +95,10 @@ fi
 # Generate summary report
 echo ""
 echo "📊 Generating summary report..."
-cat > "$REPORTS_DIR/security_audit_summary_${TIMESTAMP}.md" << EOF
+cat > "$SUMMARY_FILE" << EOF
 # Security Audit Summary
 
-**Date:** $(date)
+**Date:** $REPORT_DATE
 **Founder, CEO & Operator:** Scott Hardie
 **Status:** Automated Scan
 
@@ -120,7 +131,7 @@ cat > "$REPORTS_DIR/security_audit_summary_${TIMESTAMP}.md" << EOF
 - \`$REPORTS_DIR/bandit_${TIMESTAMP}.json\` - Bandit JSON report
 - \`$REPORTS_DIR/safety_${TIMESTAMP}.txt\` - Safety text report
 - \`$REPORTS_DIR/safety_${TIMESTAMP}.json\` - Safety JSON report
-- \`$REPORTS_DIR/security_audit_summary_${TIMESTAMP}.md\` - This summary
+- \`$SUMMARY_FILE\` - This summary
 
 ---
 
@@ -132,7 +143,7 @@ echo ""
 echo -e "${GREEN}✅ Security audit complete!${NC}"
 echo ""
 echo "📄 Reports saved to: $REPORTS_DIR/"
-echo "📋 Summary: $REPORTS_DIR/security_audit_summary_${TIMESTAMP}.md"
+echo "📋 Summary: $SUMMARY_FILE"
 echo ""
 echo "Next steps:"
 echo "  1. Review reports: cat $REPORTS_DIR/bandit_${TIMESTAMP}.txt"

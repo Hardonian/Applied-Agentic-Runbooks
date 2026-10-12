@@ -25,9 +25,11 @@ def main() -> int:
     ci = ROOT / ".github/workflows/ci.yml"
     runbook = ROOT / "docs/RUNBOOK.md"
     makefile = ROOT / "Makefile"
+    artifact_stager = ROOT / "scripts/stage-readiness-artifacts.sh"
+    heartbeat = ROOT / "scripts/check-readiness-heartbeat.py"
 
     failures: list[str] = []
-    for path in (nightly, automated, ci, runbook, makefile):
+    for path in (nightly, automated, ci, runbook, makefile, artifact_stager, heartbeat):
         if not path.is_file():
             failures.append(f"missing required file: {path.relative_to(ROOT)}")
 
@@ -46,6 +48,7 @@ def main() -> int:
                 "continue-on-error: true",
                 "SKIP_INTERACTIVE=true",
                 "git diff --staged --quiet",
+                "stage-readiness-artifacts.sh",
                 "pulls.list",
                 "pulls.create",
             ),
@@ -57,11 +60,14 @@ def main() -> int:
             (
                 "contents: read",
                 "This workflow intentionally does not write",
+                "stage-readiness-artifacts.sh",
                 "issues.createComment",
             ),
         )
     )
     failures.extend(require_text(ci, ("verify-runbook-contract.py",)))
+    failures.extend(require_text(artifact_stager, ("git add -A --", "security_audit_summary_current.md", "readiness-report.txt")))
+    failures.extend(require_text(heartbeat, ("actions/workflows", "event=schedule", "max-age-hours")))
     failures.extend(
         require_text(
             runbook,
@@ -70,6 +76,8 @@ def main() -> int:
                 "Failure-Mode Matrix",
                 "Verification Doctrine",
                 "make verify-runbook",
+                "Trust Boundary",
+                "check-readiness-heartbeat",
             ),
         )
     )
@@ -80,9 +88,14 @@ def main() -> int:
                 "verify-runbook:",
                 "dataroom-placeholders:",
                 "user-acquisition:",
+                "check-readiness-heartbeat:",
             ),
         )
     )
+
+    for workflow in (nightly, automated):
+        if "git add -A\n" in workflow.read_text(encoding="utf-8"):
+            failures.append(f"{workflow.relative_to(ROOT)}: stages the entire worktree instead of the artifact allowlist")
 
     if failures:
         print("Runbook contract failed:", *failures, sep="\n- ")

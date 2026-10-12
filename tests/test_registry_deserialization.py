@@ -54,6 +54,33 @@ def test_get_tool_deserialization():
 
 
 @pytest.mark.unit
+def test_registered_tool_round_trip_is_executable(tmp_path):
+    """Persisted definitions use a trusted runtime implementation, never code from JSON."""
+    registry = LocalRegistry(str(tmp_path))
+    tool = Tool("echo", "Echo", "Returns its input", implementation=lambda value: value)
+    registry.register_tool(tool)
+
+    loaded = registry.get_tool("echo")
+
+    assert loaded is not None
+    assert loaded.execute(value="verified") == "verified"
+
+
+@pytest.mark.unit
+def test_persisted_tool_without_runtime_implementation_is_not_executable(tmp_path):
+    registry = LocalRegistry(str(tmp_path))
+    tool = Tool("echo", "Echo", "Returns its input", implementation=lambda value: value)
+    registry.register_tool(tool)
+
+    reloaded_registry = LocalRegistry(str(tmp_path))
+    loaded = reloaded_registry.get_tool("echo")
+
+    assert loaded is not None
+    with pytest.raises(Exception, match="no registered runtime implementation"):
+        loaded.execute(value="verified")
+
+
+@pytest.mark.unit
 def test_get_workflow_deserialization():
     """Test workflow deserialization from registry."""
     registry = LocalRegistry()

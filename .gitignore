@@ -33,6 +33,16 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Security scans: detailed output is retained as a short-lived CI artifact.
+# The deterministic current summary is the only security scan artifact reviewed
+# and versioned through the readiness PR.
+security-reports/bandit_*.json
+security-reports/bandit_*.txt
+security-reports/safety_*.json
+security-reports/safety_*.txt
+security-reports/security_audit_summary_*.md
+!security-reports/security_audit_summary_current.md
 # --- Hardonian bootstrap kit ---
 # Hardonian standard ignores
 !.env.template

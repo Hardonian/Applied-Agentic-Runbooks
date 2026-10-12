@@ -11,10 +11,12 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
-from agent_factory.telemetry import TelemetryCollector, get_collector, ReferralEvent
-from agent_factory.telemetry.model import EventType
+from agent_factory.telemetry import get_collector, ReferralEvent
+from agent_factory.security.auth import get_current_user, User
+from agent_factory.security.rbac import Permission, require_user_permission
 
 router = APIRouter(prefix="/api/v1/referrals", tags=["referrals"])
+_referral_owners = {}
 
 
 class ReferralCodeResponse(BaseModel):
@@ -42,8 +44,7 @@ class SendReferralRequest(BaseModel):
 
 @router.post("/generate", response_model=ReferralCodeResponse)
 async def generate_referral_code(
-    user_id: str,  # TODO: Get from auth
-    tenant_id: str,  # TODO: Get from auth
+    user: User = Depends(get_current_user),
 ):
     """
     Generate a referral code for a user.
@@ -57,8 +58,10 @@ async def generate_referral_code(
     # Create share URL
     share_url = f"https://agentfactory.io/signup?ref={referral_code}"
     
-    # Track referral code generation (optional event)
-    collector = get_collector()
+    require_user_permission(user, Permission.EXECUTE_AGENTS)
+    if not user.tenant_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Tenant is required for referrals")
+    _referral_owners[referral_code] = {"user_id": user.id, "tenant_id": user.tenant_id}
     
     return ReferralCodeResponse(
         referral_code=referral_code,
@@ -70,8 +73,7 @@ async def generate_referral_code(
 @router.post("/send")
 async def send_referral(
     request: SendReferralRequest,
-    user_id: str,  # TODO: Get from auth
-    tenant_id: str,  # TODO: Get from auth
+    user: User = Depends(get_current_user),
 ):
     """
     Send a referral to someone.
@@ -79,6 +81,10 @@ async def send_referral(
     This tracks that a referral was sent (for metrics).
     Actual email sending would be handled by email service.
     """
+    require_user_permission(user, Permission.EXECUTE_AGENTS)
+    owner = _referral_owners.get(request.referral_code)
+    if not owner or owner["user_id"] != user.id or owner["tenant_id"] != user.tenant_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Referral code not found")
     collector = get_collector()
     
     # Track referral sent event
@@ -86,8 +92,8 @@ async def send_referral(
         event_id=str(uuid.uuid4()),
         referral_code=request.referral_code,
         referral_type="sent",
-        tenant_id=tenant_id,
-        user_id=user_id,
+        tenant_id=user.tenant_id,
+        user_id=user.id,
     )
     
     collector.record_event(event)
@@ -105,8 +111,7 @@ async def send_referral(
 @router.get("/stats/{referral_code}", response_model=ReferralStatsResponse)
 async def get_referral_stats(
     referral_code: str,
-    user_id: str,  # TODO: Get from auth
-    tenant_id: str,  # TODO: Get from auth
+    user: User = Depends(get_current_user),
 ):
     """
     Get statistics for a referral code.
@@ -114,6 +119,10 @@ async def get_referral_stats(
     Returns:
         Total sent, converted, conversion rate, rewards granted
     """
+    require_user_permission(user, Permission.READ_ANALYTICS)
+    owner = _referral_owners.get(referral_code)
+    if not owner or owner["user_id"] != user.id or owner["tenant_id"] != user.tenant_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Referral code not found")
     collector = get_collector()
     
     # Query referral events for this code
@@ -149,14 +158,18 @@ async def get_referral_stats(
 @router.post("/convert/{referral_code}")
 async def convert_referral(
     referral_code: str,
-    new_user_id: str,  # TODO: Get from auth (new user)
-    new_tenant_id: str,  # TODO: Get from auth (new tenant)
+    user: User = Depends(get_current_user),
 ):
     """
     Mark a referral as converted (when new user signs up).
     
     This should be called when a new user signs up with a referral code.
     """
+    require_user_permission(user, Permission.EXECUTE_AGENTS)
+    if not user.tenant_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Tenant is required for referrals")
+    if referral_code not in _referral_owners:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Referral code not found")
     collector = get_collector()
     
     # Find the referrer (user who sent this code)
@@ -168,8 +181,8 @@ async def convert_referral(
         event_id=str(uuid.uuid4()),
         referral_code=referral_code,
         referral_type="converted",
-        referred_user_id=new_user_id,
-        tenant_id=new_tenant_id,
+        referred_user_id=user.id,
+        tenant_id=user.tenant_id,
         reward_granted=False,  # Will be granted by reward service
     )
     
@@ -185,5 +198,5 @@ async def convert_referral(
     return {
         "status": "converted",
         "referral_code": referral_code,
-        "referred_user_id": new_user_id,
+        "referred_user_id": user.id,
     }

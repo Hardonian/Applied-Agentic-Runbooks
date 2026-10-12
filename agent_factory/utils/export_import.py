@@ -1,136 +1,112 @@
-"""
-Export/Import utilities for agents, blueprints, and workflows.
+"""Portable registry export/import utilities.
 
-Increases switching costs by making it easy to export/import data.
+Definitions are serialized as data only. Tool callables remain trusted runtime
+registrations and are never imported from an export artifact.
 """
 
 import json
-import yaml
-from typing import Dict, List, Any, Optional
+from datetime import datetime, timezone
 from pathlib import Path
-from datetime import datetime
+from typing import Any, Dict, List, Optional
 
+import yaml
+
+from agent_factory.agents.agent import Agent
 from agent_factory.blueprints.model import Blueprint
-from agent_factory.blueprints.loader import load_blueprint
+from agent_factory.registry.local_registry import LocalRegistry
+from agent_factory.workflows.model import Workflow
+
+
+def _registry(registry: Optional[LocalRegistry]) -> LocalRegistry:
+    return registry or LocalRegistry()
+
+
+def _validate_format(format: str) -> str:
+    if format not in {"yaml", "json"}:
+        raise ValueError("format must be 'yaml' or 'json'")
+    return format
+
+
+def _write_export(output_path: Path, data: Dict[str, Any], format: str) -> Path:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    if format == "yaml":
+        output_path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+    else:
+        output_path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+    return output_path
+
+
+def _read_export(import_path: Path) -> Dict[str, Any]:
+    if not import_path.exists() or not import_path.is_file():
+        raise FileNotFoundError(f"Import file not found: {import_path}")
+    data = (
+        yaml.safe_load(import_path.read_text(encoding="utf-8"))
+        if import_path.suffix.lower() in {".yaml", ".yml"}
+        else json.loads(import_path.read_text(encoding="utf-8"))
+    )
+    if not isinstance(data, dict):
+        raise ValueError("Import artifact must contain an object")
+    return data
+
+
+def _envelope(kind: str, definition: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "version": "1.0",
+        "exported_at": datetime.now(timezone.utc).isoformat(),
+        kind: definition,
+    }
 
 
 def export_agent(
     agent_id: str,
     output_path: Optional[Path] = None,
     format: str = "yaml",
+    *,
+    registry: Optional[LocalRegistry] = None,
 ) -> Path:
-    """
-    Export an agent to a file.
-    
-    Args:
-        agent_id: Agent ID to export
-        output_path: Output file path (defaults to agents/{agent_id}.yaml)
-        format: Export format (yaml, json)
-        
-    Returns:
-        Path to exported file
-    """
-    # TODO: Load agent from registry
-    # For now, this is a placeholder structure
-    
-    if not output_path:
-        output_path = Path(f"agents/{agent_id}.{format}")
-    
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    
-    # Placeholder export structure
-    export_data = {
-        "version": "1.0",
-        "exported_at": datetime.utcnow().isoformat(),
-        "agent": {
-            "id": agent_id,
-            # TODO: Add actual agent data
-        },
-    }
-    
-    if format == "yaml":
-        with open(output_path, "w") as f:
-            yaml.dump(export_data, f, default_flow_style=False)
-    else:
-        with open(output_path, "w") as f:
-            json.dump(export_data, f, indent=2)
-    
-    return output_path
+    """Export a registered agent definition."""
+    format = _validate_format(format)
+    agent = _registry(registry).get_agent(agent_id)
+    if not agent:
+        raise ValueError(f"Agent not found: {agent_id}")
+    return _write_export(
+        output_path or Path(f"agents/{agent_id}.{format}"), _envelope("agent", agent.to_dict()), format
+    )
 
 
 def export_blueprint(
     blueprint_id: str,
     output_path: Optional[Path] = None,
+    *,
+    registry: Optional[LocalRegistry] = None,
 ) -> Path:
-    """
-    Export a blueprint to a file.
-    
-    Args:
-        blueprint_id: Blueprint ID to export
-        output_path: Output directory path (defaults to blueprints/{blueprint_id}/)
-        
-    Returns:
-        Path to exported blueprint directory
-    """
-    if not output_path:
-        output_path = Path(f"blueprints/{blueprint_id}/")
-    
-    output_path.mkdir(parents=True, exist_ok=True)
-    
-    # Load blueprint
-    try:
-        blueprint = load_blueprint(blueprint_id)
-        
-        # Export blueprint.yaml
-        blueprint_file = output_path / "blueprint.yaml"
-        with open(blueprint_file, "w") as f:
-            yaml.dump(blueprint.to_dict(), f, default_flow_style=False)
-        
-        return output_path
-    except Exception as e:
-        raise ValueError(f"Failed to export blueprint {blueprint_id}: {e}")
+    """Export a blueprint manifest as ``blueprint.yaml``."""
+    blueprint = _registry(registry).get_blueprint(blueprint_id)
+    if not blueprint:
+        raise ValueError(f"Blueprint not found: {blueprint_id}")
+    destination = output_path or Path(f"blueprints/{blueprint_id}")
+    destination.mkdir(parents=True, exist_ok=True)
+    (destination / "blueprint.yaml").write_text(blueprint.to_yaml(), encoding="utf-8")
+    return destination
 
 
 def export_workflow(
     workflow_id: str,
     output_path: Optional[Path] = None,
     format: str = "yaml",
+    *,
+    registry: Optional[LocalRegistry] = None,
 ) -> Path:
-    """
-    Export a workflow to a file.
-    
-    Args:
-        workflow_id: Workflow ID to export
-        output_path: Output file path (defaults to workflows/{workflow_id}.yaml)
-        format: Export format (yaml, json)
-        
-    Returns:
-        Path to exported file
-    """
-    if not output_path:
-        output_path = Path(f"workflows/{workflow_id}.{format}")
-    
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    
-    # TODO: Load workflow from registry
-    # Placeholder export structure
-    export_data = {
-        "version": "1.0",
-        "exported_at": datetime.utcnow().isoformat(),
-        "workflow": {
-            "id": workflow_id,
-            # TODO: Add actual workflow data
-        },
-    }
-    
-    if format == "yaml":
-        with open(output_path, "w") as f:
-            yaml.dump(export_data, f, default_flow_style=False)
-    else:
-        with open(output_path, "w") as f:
-            json.dump(export_data, f, indent=2)
-    
-    return output_path
+    """Export a registered workflow definition."""
+    format = _validate_format(format)
+    workflow = _registry(registry).get_workflow(workflow_id)
+    if not workflow:
+        raise ValueError(f"Workflow not found: {workflow_id}")
+    return _write_export(
+        output_path or Path(f"workflows/{workflow_id}.{format}"),
+        _envelope("workflow", workflow.to_dict()),
+        format,
+    )
 
 
 def export_all(
@@ -139,91 +115,68 @@ def export_all(
     include_agents: bool = True,
     include_blueprints: bool = True,
     include_workflows: bool = True,
+    *,
+    registry: Optional[LocalRegistry] = None,
 ) -> Dict[str, List[Path]]:
+    """Export all definitions from a caller-selected (tenant-scoped) registry.
+
+    ``LocalRegistry`` itself has no tenant filter, so callers must pass a
+    registry already scoped to ``tenant_id``. This prevents a global registry
+    from being silently represented as tenant-isolated.
     """
-    Export all agents, blueprints, and workflows for a tenant.
-    
-    Args:
-        tenant_id: Tenant ID
-        output_dir: Output directory
-        include_agents: Whether to export agents
-        include_blueprints: Whether to export blueprints
-        include_workflows: Whether to export workflows
-        
-    Returns:
-        Dictionary mapping type to list of exported file paths
-    """
+    active_registry = _registry(registry)
     output_dir.mkdir(parents=True, exist_ok=True)
-    
-    exported = {
-        "agents": [],
-        "blueprints": [],
-        "workflows": [],
-    }
-    
-    # TODO: Get all agents/blueprints/workflows for tenant
-    # For now, this is a placeholder structure
-    
+    exported: Dict[str, List[Path]] = {"agents": [], "blueprints": [], "workflows": []}
     if include_agents:
-        agents_dir = output_dir / "agents"
-        agents_dir.mkdir(exist_ok=True)
-        # TODO: Export agents
-    
+        exported["agents"] = [
+            export_agent(agent_id, output_dir / "agents" / f"{agent_id}.yaml", registry=active_registry)
+            for agent_id in active_registry.list_agents()
+        ]
     if include_blueprints:
-        blueprints_dir = output_dir / "blueprints"
-        blueprints_dir.mkdir(exist_ok=True)
-        # TODO: Export blueprints
-    
+        exported["blueprints"] = [
+            export_blueprint(blueprint_id, output_dir / "blueprints" / blueprint_id, registry=active_registry)
+            for blueprint_id in active_registry.list_blueprints()
+        ]
     if include_workflows:
-        workflows_dir = output_dir / "workflows"
-        workflows_dir.mkdir(exist_ok=True)
-        # TODO: Export workflows
-    
+        exported["workflows"] = [
+            export_workflow(workflow_id, output_dir / "workflows" / f"{workflow_id}.yaml", registry=active_registry)
+            for workflow_id in active_registry.list_workflows()
+        ]
     return exported
 
 
-def import_agent(
-    import_path: Path,
-    agent_id: Optional[str] = None,
-) -> str:
-    """
-    Import an agent from a file.
-    
-    Args:
-        import_path: Path to agent file
-        agent_id: Optional agent ID (if different from file)
-        
-    Returns:
-        Imported agent ID
-    """
-    # TODO: Implement agent import
-    # For now, this is a placeholder
-    raise NotImplementedError("Agent import not yet implemented")
+def import_agent(import_path: Path, agent_id: Optional[str] = None, *, registry: Optional[LocalRegistry] = None) -> str:
+    """Import an agent definition and register it in the selected registry."""
+    data = _read_export(import_path)
+    definition = data.get("agent", data)
+    if not isinstance(definition, dict):
+        raise ValueError("Agent import is missing an agent definition")
+    definition = dict(definition)
+    if agent_id:
+        definition["id"] = agent_id
+    agent = Agent.from_dict(definition)
+    _registry(registry).register_agent(agent)
+    return agent.id
 
 
-def import_blueprint(
-    import_path: Path,
-) -> str:
-    """
-    Import a blueprint from a directory or file.
-    
-    Args:
-        import_path: Path to blueprint directory or file
-        
-    Returns:
-        Imported blueprint ID
-    """
-    if import_path.is_dir():
-        blueprint_file = import_path / "blueprint.yaml"
-    else:
-        blueprint_file = import_path
-    
-    if not blueprint_file.exists():
-        raise FileNotFoundError(f"Blueprint file not found: {blueprint_file}")
-    
-    # Load blueprint
-    blueprint = load_blueprint(str(blueprint_file))
-    
-    # TODO: Register blueprint in registry
-    
+def import_workflow(import_path: Path, workflow_id: Optional[str] = None, *, registry: Optional[LocalRegistry] = None) -> str:
+    """Import a workflow definition and register it in the selected registry."""
+    data = _read_export(import_path)
+    definition = data.get("workflow", data)
+    if not isinstance(definition, dict):
+        raise ValueError("Workflow import is missing a workflow definition")
+    definition = dict(definition)
+    if workflow_id:
+        definition["id"] = workflow_id
+    workflow = Workflow.from_dict(definition)
+    _registry(registry).register_workflow(workflow)
+    return workflow.id
+
+
+def import_blueprint(import_path: Path, *, registry: Optional[LocalRegistry] = None) -> str:
+    """Import a blueprint manifest and register it in the selected registry."""
+    blueprint_file = import_path / "blueprint.yaml" if import_path.is_dir() else import_path
+    data = _read_export(blueprint_file)
+    blueprint = Blueprint.from_dict(data.get("blueprint", data))
+    _registry(registry).register_blueprint(blueprint)
     return blueprint.id

@@ -3,6 +3,7 @@ OpenAI Agents SDK integration for Agent Factory Platform.
 """
 
 import os
+import json
 from typing import List, Dict, Any, Optional
 from openai import OpenAI
 from agent_factory.tools.base import Tool
@@ -15,7 +16,12 @@ class OpenAIAgentClient:
     This wraps the OpenAI SDK to provide agent execution capabilities.
     """
     
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        client: Optional[Any] = None,
+        timeout_seconds: float = 30.0,
+    ):
         """
         Initialize OpenAI client.
         
@@ -26,7 +32,13 @@ class OpenAIAgentClient:
         if not self.api_key:
             raise ValueError("OpenAI API key required. Set OPENAI_API_KEY environment variable.")
         
-        self.client = OpenAI(api_key=self.api_key)
+        self.client = client or OpenAI(
+            api_key=self.api_key,
+            timeout=timeout_seconds,
+            # The SDK retries transient connection/rate-limit failures. The
+            # circuit breaker below protects the platform after repeated ones.
+            max_retries=2,
+        )
     
     def run_agent(
         self,
@@ -121,14 +133,44 @@ class OpenAIAgentClient:
         return {
             "output": output,
             "tool_calls": tool_calls,
-            "tokens_used": response.usage.total_tokens if response.usage else 0,
+            "tokens_used": getattr(response.usage, "total_tokens", 0) if response.usage else 0,
             "model": model,
         }
+
+    def stream_agent(
+        self,
+        instructions: str,
+        input_text: str,
+        model: str = "gpt-4o",
+        temperature: float = 0.7,
+        max_tokens: int = 2000,
+        context: Optional[Dict[str, Any]] = None,
+    ):
+        """Yield text deltas from a streamed OpenAI completion."""
+        messages = [{"role": "system", "content": instructions}]
+        if context and "messages" in context:
+            messages.extend(context["messages"][-10:])
+        messages.append({"role": "user", "content": input_text})
+
+        stream = self.client.chat.completions.create(
+            model=model,
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            stream=True,
+        )
+        for chunk in stream:
+            choices = getattr(chunk, "choices", [])
+            if not choices:
+                continue
+            content = getattr(getattr(choices[0], "delta", None), "content", None)
+            if content:
+                yield content
     
     def execute_tool_call(
         self,
         tool: Tool,
-        arguments: Dict[str, Any],
+        arguments: Any,
     ) -> Any:
         """
         Execute a tool call.
@@ -140,4 +182,11 @@ class OpenAIAgentClient:
         Returns:
             Tool execution result
         """
+        if isinstance(arguments, str):
+            try:
+                arguments = json.loads(arguments)
+            except json.JSONDecodeError as exc:
+                raise ValueError("Tool call arguments must be valid JSON") from exc
+        if not isinstance(arguments, dict):
+            raise ValueError("Tool call arguments must be a JSON object")
         return tool.execute(**arguments)

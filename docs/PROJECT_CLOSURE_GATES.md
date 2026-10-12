@@ -8,7 +8,7 @@ until every applicable gate is recorded by its named owner.
 
 Evidence recorded on 2026-10-12:
 
-- `uv run --extra dev pytest -q` — **286 passed, 3 skipped**.
+- `uv run --extra dev pytest -q` — **301 passed, 3 skipped**.
 - `git diff --check` — no whitespace errors.
 - Health and readiness probes execute a SQLAlchemy 2-compatible `SELECT 1`.
 - Production startup rejects an unsafe JWT secret, wildcard CORS, missing
@@ -27,6 +27,9 @@ providers; they must be exercised during the pilot gate below.
   scopes.
 - [ ] Configure Stripe, webhook, error-tracking, and object-storage credentials
   only if those features are enabled.
+- [ ] For SSO, validate provider metadata and complete an authenticated
+  SAML/OIDC/LDAP login round trip; configuration helpers intentionally remain
+  `pending_provider_validation` until this evidence exists.
 - [ ] Record the secret-manager version identifiers, rotation owner, and next
   rotation date in the deployment change record. Never record secret values.
 
@@ -78,4 +81,5 @@ metrics against targets, outstanding risks, and the sponsor decision.
 Release requires signed completion of Gates 2–5. A failed gate means hold or
 roll back; it must not be reclassified as complete merely because local tests
 pass. Attach the completed evidence to the release/change record and link it
-from the deployment ticket.
+from the deployment ticket. Use [RELEASE_EVIDENCE_RECORD.md](RELEASE_EVIDENCE_RECORD.md)
+as the standard evidence template.

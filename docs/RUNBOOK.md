@@ -320,6 +320,82 @@ This system exists because of one unforgivable pattern in engineering:
 The repo doesn't need you to believe it's production-ready. It files the
 evidence every night at 03:00 UTC and waits for you to merge it.
 
+## 10. Release Closure: Prove the Artifact, Not the Checkout
+
+Nightly readiness reports answer, “is the repository being watched?” A
+release answers a different question: **“is this exact distributable safe to
+ship?”** Do not treat a green branch or a source-tree test run as release
+evidence. The release candidate is the version tag and the built wheel/source
+archive attached to it.
+
+### Release gate sequence
+
+```
+version + changelog
+        │
+        ▼
+metadata verification ──► non-integration tests
+        │                         │
+        └──────────┬──────────────┘
+                   ▼
+          build wheel + sdist
+                   │
+          ┌────────┴────────┐
+          ▼                 ▼
+ isolated wheel install   dependency audit + SBOM
+          │                 │
+          └────────┬────────┘
+                   ▼
+          live API product-path E2E
+                   │
+                   ▼
+         GitHub Release (tagged only)
+```
+
+The `.github/workflows/release.yml` workflow enforces this sequence for every
+`v*` tag. It must not publish a release if any dependency audit, artifact
+check, or E2E job fails.
+
+### What the live product-path E2E proves
+
+The release E2E job starts the API from the **built wheel**, not an editable
+checkout, on a disposable SQLite database. It verifies all of the following
+over HTTP:
+
+- An unauthenticated request is denied.
+- A new user can sign up and retrieve their profile with the issued JWT.
+- That user can create and list an agent.
+- That user can create, list, and inspect a workflow referencing that agent.
+- `/live`, `/ready`, `/health`, docs, OpenAPI, metrics, and concurrency
+  behavior remain available.
+
+The test deliberately does not call an external LLM. Provider-backed agent
+execution, SSO, payment, webhook, and production-storage checks still require
+the credentials and environment evidence in `PROJECT_CLOSURE_GATES.md`; they
+are release holds when those capabilities are enabled.
+
+### Operator procedure
+
+1. Update `pyproject.toml`, `agent_factory.__version__`, and `CHANGELOG.md`.
+2. Run `make verify-release`, the full test suite, and `make package-check`.
+3. Review the dependency audit and `release-sbom` workflow artifact; resolve
+   or formally accept any finding before tagging.
+4. Commit the candidate, create an annotated `vX.Y.Z` tag, and push that tag.
+5. Attach workflow run links and the SBOM to `RELEASE_EVIDENCE_RECORD.md`.
+6. Complete the credential, security, operational, and pilot gates. Automation
+   is evidence, never a substitute for the named human approvals.
+
+### Release failure matrix
+
+| Failure | Meaning | Required response |
+|---|---|---|
+| Metadata/tag mismatch | Candidate is ambiguous | Correct version or tag; rebuild from a clean commit |
+| Wheel install fails | Artifact is not consumable | Hold release; fix package metadata or dependencies |
+| Authenticated E2E fails | Core product path regressed | Hold release; fix and re-run against a new artifact |
+| Dependency audit fails | Known vulnerable dependency | Upgrade, mitigate, or record time-bounded security exception |
+| SBOM missing | Supply-chain evidence incomplete | Re-run the release workflow; do not manually publish |
+| External-provider gate missing | Production capability unproven | Keep decision as HOLD until owner attaches evidence |
+
 ---
 
 ### TL;DR for the README of your repo
@@ -331,7 +407,10 @@ No PR normally means no approved artifact changed. A separate Actions API
 heartbeat proves the nightly loop is alive — see docs/RUNBOOK.md.
 ```
 
-*Changelog: v2.3 (2026-10-12) — best-in-class operational closure: explicit
+*Changelog: v2.4 (2026-10-12) — release closure added: tag-gated metadata,
+built-artifact install, authenticated product-path E2E, dependency audit, SBOM,
+and an explicit boundary between automated evidence and human approval. v2.3
+(2026-10-12) — best-in-class operational closure: explicit
 artifact allowlist, external API heartbeat checker, trust/data-retention
 boundary, SLOs and ownership, game-day procedure, and corrected PR-versus-
 liveness semantics. v2.2 (2026-10-12) — closed workflow/documentation drift: exact

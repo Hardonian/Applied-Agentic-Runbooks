@@ -15,6 +15,7 @@ agent_factory/agents/config.py
 agent_factory/api/__init__.py
 agent_factory/api/main.py
 agent_factory/api/middleware.py
+agent_factory/api/runtime.py
 agent_factory/api/routes/__init__.py
 agent_factory/api/routes/agents.py
 agent_factory/api/routes/auth.py
@@ -213,6 +214,7 @@ tests/test_agents_with_knowledge.py
 tests/test_analytics.py
 tests/test_api_agents.py
 tests/test_api_executions.py
+tests/test_api_referrals.py
 tests/test_api_tools.py
 tests/test_api_workflows.py
 tests/test_audit.py
@@ -222,11 +224,16 @@ tests/test_blueprint.py
 tests/test_blueprint_loader.py
 tests/test_cli_agent.py
 tests/test_database_models.py
+tests/test_deployment_config.py
 tests/test_elevation_suite.py
 tests/test_enterprise_compliance.py
+tests/test_enterprise_sso.py
+tests/test_enterprise_webhooks.py
 tests/test_env_validator.py
 tests/test_eval.py
+tests/test_export_import.py
 tests/test_integrations_anthropic.py
+tests/test_integrations_openai.py
 tests/test_job_queue.py
 tests/test_job_queue_implementation.py
 tests/test_knowledge_pack_loader.py
@@ -239,8 +246,10 @@ tests/test_path_validation.py
 tests/test_payments.py
 tests/test_promptlog.py
 tests/test_rbac.py
+tests/test_readiness_heartbeat.py
 tests/test_registry.py
 tests/test_registry_deserialization.py
+tests/test_release_metadata.py
 tests/test_runtime.py
 tests/test_runtime_integration.py
 tests/test_runtime_scheduler.py

@@ -1,4 +1,4 @@
-.PHONY: ci lint type-check test test-unit test-integration test-e2e format install clean help migrate migrate-up migrate-down migrate-current seed validate-schema env-check doc-sync security-audit deploy-help deploy-doctor smoke-tests metrics-collect unit-economics yc-checklist user-acquisition dataroom-placeholders test-coverage weekly-progress readiness-check verify-runbook check-readiness-heartbeat
+.PHONY: ci lint type-check test test-unit test-integration test-e2e format install clean help migrate migrate-up migrate-down migrate-current seed validate-schema env-check doc-sync security-audit deploy-help deploy-doctor smoke-tests metrics-collect unit-economics yc-checklist user-acquisition dataroom-placeholders test-coverage weekly-progress readiness-check verify-runbook check-readiness-heartbeat verify-release package-check
 
 help:
 	@echo "Available commands:"
@@ -26,6 +26,8 @@ help:
 	@echo "  make env-check       - Check environment variables"
 	@echo "  make doc-sync        - Check documentation synchronization"
 	@echo "  make verify-runbook  - Verify readiness runbook and workflow contract"
+	@echo "  make verify-release  - Verify release metadata and changelog alignment"
+	@echo "  make package-check   - Build and validate distributable package"
 	@echo "  make check-readiness-heartbeat - Verify latest scheduled run via GitHub API"
 
 ci: lint type-check test-unit
@@ -167,6 +169,13 @@ readiness-check:
 
 verify-runbook:
 	@python scripts/verify-runbook-contract.py
+
+verify-release:
+	@python scripts/verify-release.py
+
+package-check: verify-release
+	@python -m build
+	@twine check dist/*
 
 check-readiness-heartbeat:
 	@python scripts/check-readiness-heartbeat.py

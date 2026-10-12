@@ -8,7 +8,12 @@ This document outlines the process for releasing new versions of Agent Factory.
 
 ### Pre-Release
 
-- [ ] All tests passing
+- [ ] `make verify-release` passes
+- [ ] Full non-integration test suite passes
+- [ ] Live API E2E suite passes
+- [ ] Package build and `twine check` pass
+- [ ] Authenticated signup, agent, and workflow product path passes
+- [ ] Dependency audit passes and a CycloneDX SBOM is attached
 - [ ] Documentation updated
 - [ ] CHANGELOG.md updated
 - [ ] Version bumped in pyproject.toml
@@ -55,13 +60,15 @@ This document outlines the process for releasing new versions of Agent Factory.
    git push origin v0.2.0
    ```
 
-6. **Create GitHub Release**
-   - Go to GitHub Releases
-   - Click "Draft a new release"
-   - Select tag: v0.2.0
-   - Title: Release 0.2.0
-   - Use release notes template
-   - Publish release
+6. **Let the Release workflow close the release**
+   - The `Release` workflow is triggered by the pushed `v*` tag.
+   - It verifies the tag, package metadata, and changelog alignment.
+   - It runs the non-integration suite, builds both distributions, installs the
+     wheel in an isolated environment, and runs the live API E2E suite against
+     that built artifact, including signup and protected agent/workflow flows.
+   - It audits installed release dependencies and attaches a CycloneDX SBOM.
+   - Only after all gates pass does it create the GitHub release and attach the
+     source and wheel distributions with generated release notes.
 
 7. **Publish to PyPI** (if applicable)
    ```bash

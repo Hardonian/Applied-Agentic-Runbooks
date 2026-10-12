@@ -1,0 +1,154 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Version tag to validate, for example v0.2.0"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  validate:
+    name: Validate release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - name: Install validation dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]" build twine
+      - name: Verify release metadata
+        run: |
+          TAG="${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}"
+          python scripts/verify-release.py --tag "$TAG"
+      - name: Run quality gates
+        run: |
+          ruff check agent_factory/api/main.py scripts/verify-release.py tests/test_release_metadata.py
+          black --check agent_factory/api/main.py scripts/verify-release.py tests/test_release_metadata.py
+          pytest tests/ -m "not integration and not slow" -v
+
+  package:
+    name: Build and verify package
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Build distribution
+        run: |
+          python -m pip install --upgrade pip build twine
+          python -m build
+          twine check dist/*
+      - name: Install wheel and verify CLI
+        run: |
+          python -m venv /tmp/release-venv
+          /tmp/release-venv/bin/python -m pip install --upgrade pip
+          /tmp/release-venv/bin/python -m pip install dist/*.whl
+          /tmp/release-venv/bin/agent-factory version
+      - uses: actions/upload-artifact@v4
+        with:
+          name: distribution
+          path: dist/
+
+  e2e:
+    name: End-to-end API verification
+    needs: package
+    runs-on: ubuntu-latest
+    env:
+      API_BASE_URL: http://127.0.0.1:8000
+      DATABASE_URL: sqlite:////tmp/agent_factory_release.db
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - uses: actions/download-artifact@v4
+        with:
+          name: distribution
+          path: dist
+      - name: Install release artifact and test tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install dist/*.whl pytest pytest-timeout
+      - name: Start API and wait for readiness
+        run: |
+          uvicorn agent_factory.api.main:app --host 127.0.0.1 --port 8000 > /tmp/agent-factory-api.log 2>&1 &
+          for attempt in {1..30}; do
+            curl --fail --silent http://127.0.0.1:8000/health > /dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/agent-factory-api.log
+          exit 1
+      - name: Run end-to-end test suite
+        run: pytest tests/e2e/ -m e2e -v
+      - name: Upload API log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-api-log
+          path: /tmp/agent-factory-api.log
+          if-no-files-found: ignore
+
+  security:
+    name: Dependency audit and SBOM
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: distribution
+          path: dist
+      - name: Install the release artifact and security tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install dist/*.whl pip-audit cyclonedx-bom
+      - name: Audit installed dependencies
+        run: pip-audit --strict
+      - name: Generate CycloneDX SBOM
+        run: cyclonedx-py environment --output-file sbom.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-sbom
+          path: sbom.json
+
+  publish-release:
+    name: Publish GitHub release
+    needs: [package, e2e, security]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: distribution
+          path: dist
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${{ github.ref_name }}" dist/* --generate-notes --verify-tag

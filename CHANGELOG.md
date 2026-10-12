@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-12
+
 ### Added
 - Comprehensive documentation rewrite for human-friendly onboarding
 - USE_CASES.md with 10 concrete real-world examples
@@ -20,6 +22,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MAINTENANCE.md for long-term maintenance
 - API_REFERENCE.md improvements
 - Developer experience enhancements
+- Enterprise SSO, webhooks, compliance controls, and referral APIs
+- Runtime scheduling and orchestration execution
+- Release verification and tag-driven release automation
 
 ### Changed
 - README.md completely rewritten for better onboarding
@@ -31,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Import consistency across codebase
 - Documentation links and references
 - Example code snippets
+- Consistent package, API, health, and CLI version reporting
 
 ## [0.1.0] - 2024-01-XX
 

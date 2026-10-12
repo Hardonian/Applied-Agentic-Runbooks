@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enterprise SSO, webhooks, compliance controls, and referral APIs
 - Runtime scheduling and orchestration execution
 - Release verification and tag-driven release automation
+- Authenticated signup, agent, and workflow product-path E2E coverage
+- Dependency audit and CycloneDX SBOM release artifacts
 
 ### Changed
 - README.md completely rewritten for better onboarding
@@ -37,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation links and references
 - Example code snippets
 - Consistent package, API, health, and CLI version reporting
+- Pinned bcrypt below 5.0 until passlib has a compatible password-hashing integration
 
 ## [0.1.0] - 2024-01-XX
 

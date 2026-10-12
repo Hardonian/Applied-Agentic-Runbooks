@@ -51,7 +51,8 @@ dependencies = [
     "pyjwt>=2.8.0",
     "stripe>=7.0.0",
     "passlib>=1.7.4",
-    "bcrypt>=4.0.0",
+    # passlib 1.7.x is not compatible with bcrypt 5's password-length API.
+    "bcrypt>=4.0.0,<5.0.0",
     "packaging>=23.0",
     "supabase>=2.0.0",
     "email-validator>=2.0.0",

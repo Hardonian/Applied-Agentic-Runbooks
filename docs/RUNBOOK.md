@@ -369,6 +369,12 @@ over HTTP:
 - `/live`, `/ready`, `/health`, docs, OpenAPI, metrics, and concurrency
   behavior remain available.
 
+The E2E client only connects to a live server when `API_BASE_URL` is explicitly
+set, and it verifies that the endpoint identifies as Agent Factory before
+running mutations. With no explicit URL, local tests use an in-process ASGI
+client. This prevents a stray service on port 8000 from producing false green
+or misleading red results.
+
 The test deliberately does not call an external LLM. Provider-backed agent
 execution, SSO, payment, webhook, and production-storage checks still require
 the credentials and environment evidence in `PROJECT_CLOSURE_GATES.md`; they

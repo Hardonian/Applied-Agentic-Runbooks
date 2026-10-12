@@ -1,12 +1,14 @@
 """Agent API routes."""
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from typing import List, Optional
 from pydantic import BaseModel
 
 from agent_factory.agents.agent import Agent
 from agent_factory.registry.local_registry import LocalRegistry
 from agent_factory.api.runtime import runtime
+from agent_factory.security.auth import get_current_user
+from agent_factory.security.rbac import Permission, require_user_permission
 
 router = APIRouter()
 registry = LocalRegistry()
@@ -26,8 +28,9 @@ class AgentRun(BaseModel):
 
 
 @router.post("/", response_model=dict)
-def create_agent(agent_data: AgentCreate):
+def create_agent(agent_data: AgentCreate, user=Depends(get_current_user)):
     """Create a new agent."""
+    require_user_permission(user, Permission.WRITE_AGENTS)
     agent = Agent(
         id=agent_data.id,
         name=agent_data.name,
@@ -42,8 +45,9 @@ def create_agent(agent_data: AgentCreate):
 
 
 @router.get("/", response_model=List[dict])
-def list_agents():
+def list_agents(user=Depends(get_current_user)):
     """List all agents."""
+    require_user_permission(user, Permission.READ_AGENTS)
     agent_ids = registry.list_agents()
     agents = []
     
@@ -56,8 +60,9 @@ def list_agents():
 
 
 @router.get("/{agent_id}", response_model=dict)
-def get_agent(agent_id: str):
+def get_agent(agent_id: str, user=Depends(get_current_user)):
     """Get agent by ID."""
+    require_user_permission(user, Permission.READ_AGENTS)
     agent = registry.get_agent(agent_id)
     
     if not agent:
@@ -67,8 +72,9 @@ def get_agent(agent_id: str):
 
 
 @router.post("/{agent_id}/run", response_model=dict)
-def run_agent(agent_id: str, run_data: AgentRun):
+def run_agent(agent_id: str, run_data: AgentRun, user=Depends(get_current_user)):
     """Run an agent."""
+    require_user_permission(user, Permission.EXECUTE_AGENTS)
     agent = registry.get_agent(agent_id)
     
     if not agent:
@@ -94,8 +100,9 @@ def run_agent(agent_id: str, run_data: AgentRun):
 
 
 @router.delete("/{agent_id}")
-def delete_agent(agent_id: str):
+def delete_agent(agent_id: str, user=Depends(get_current_user)):
     """Delete an agent."""
+    require_user_permission(user, Permission.DELETE_AGENTS)
     if not registry.delete_agent(agent_id):
         raise HTTPException(status_code=404, detail="Agent not found")
     

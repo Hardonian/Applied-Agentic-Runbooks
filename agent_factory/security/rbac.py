@@ -119,8 +119,10 @@ def check_permission(user: Union[Dict[str, Any], Any], permission: Union[Permiss
     """
     if isinstance(user, dict):
         user_roles = user.get("roles", [Role.USER])
+        explicit_permissions = user.get("permissions", [])
     else:
         user_roles = getattr(user, "roles", [Role.USER])
+        explicit_permissions = getattr(user, "permissions", [])
         
     user_perms: List[Permission] = []
     for role in user_roles:
@@ -131,6 +133,15 @@ def check_permission(user: Union[Dict[str, Any], Any], permission: Union[Permiss
                 continue
         if role in ROLE_PERMISSIONS:
             user_perms.extend(ROLE_PERMISSIONS[role])
+
+    # API keys and service accounts can carry scoped permissions independent
+    # of a broad interactive role.  Treat valid explicit permissions as
+    # additive; silently ignore malformed values rather than granting access.
+    for explicit_permission in explicit_permissions:
+        try:
+            user_perms.append(Permission(explicit_permission))
+        except ValueError:
+            continue
             
     if Permission.ADMIN in user_perms:
         return True

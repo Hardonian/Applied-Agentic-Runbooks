@@ -7,8 +7,18 @@ from datetime import datetime
 
 from agent_factory.api.main import app
 from agent_factory.runtime.engine import Execution
+from agent_factory.security.auth import User, get_current_user
 
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def authenticated_user():
+    app.dependency_overrides[get_current_user] = lambda: User(
+        id="user-1", email="user@example.com", roles=["user"]
+    )
+    yield
+    app.dependency_overrides.pop(get_current_user, None)
 
 
 @pytest.mark.unit

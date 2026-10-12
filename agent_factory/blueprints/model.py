@@ -64,13 +64,21 @@ class Blueprint:
     author: str
     category: str = "general"
     tags: List[str] = field(default_factory=list)
-    agents: List[str] = field(default_factory=list)  # Agent IDs or paths
-    tools: List[str] = field(default_factory=list)  # Tool IDs or paths
-    workflows: List[str] = field(default_factory=list)  # Workflow IDs or paths
+    agents: List[Any] = field(default_factory=list)  # Definitions or IDs
+    tools: List[Any] = field(default_factory=list)  # Definitions or IDs
+    workflows: List[Any] = field(default_factory=list)  # Definitions or IDs
     knowledge_packs: List[str] = field(default_factory=list)  # Knowledge pack IDs
     config: BlueprintConfig = field(default_factory=BlueprintConfig)
     metadata: BlueprintMetadata = field(default_factory=BlueprintMetadata)
     pricing: PricingInfo = field(default_factory=lambda: PricingInfo(model=PricingModel.FREE))
+
+    def __post_init__(self) -> None:
+        """Normalize API-provided metadata into the portable model."""
+        if isinstance(self.metadata, dict):
+            self.metadata = BlueprintMetadata(
+                demo_url=self.metadata.get("demo_url", ""),
+                documentation=self.metadata.get("documentation", ""),
+            )
     
     def to_dict(self) -> Dict[str, Any]:
         """Serialize blueprint to dictionary."""
@@ -103,6 +111,8 @@ class Blueprint:
                 "model": self.pricing.model.value,
                 "price": self.pricing.price,
                 "currency": self.pricing.currency,
+                "period": self.pricing.period,
+                "usage_unit": self.pricing.usage_unit,
             },
         }
     
@@ -158,18 +168,83 @@ class Blueprint:
     def package(self, output_path: str) -> str:
         """Create a portable blueprint package directory."""
         package_dir = Path(output_path) / f"{self.id}-{self.version}"
-        package_dir.mkdir(parents=True, exist_ok=True)
-        (package_dir / "blueprint.yaml").write_text(self.to_yaml(), encoding="utf-8")
+        self._write_installation(package_dir, include_readme=True)
         return str(package_dir)
 
     def install(self, target_path: str) -> bool:
         """Install the manifest into a controlled target directory."""
         try:
             target = Path(target_path)
-            target.mkdir(parents=True, exist_ok=True)
-            (target / "blueprint.yaml").write_text(self.to_yaml(), encoding="utf-8")
-            for component_dir in ("agents", "tools", "workflows"):
-                (target / component_dir).mkdir(exist_ok=True)
+            self._write_installation(target, include_readme=True)
             return True
-        except OSError:
+        except (OSError, TypeError, ValueError):
             return False
+
+    def _write_installation(self, target: Path, *, include_readme: bool) -> None:
+        """Write a complete, code-free portable blueprint installation."""
+        target.mkdir(parents=True, exist_ok=True)
+        (target / "blueprint.yaml").write_text(self.to_yaml(), encoding="utf-8")
+
+        component_groups = {
+            "agents": self.agents,
+            "tools": self.tools,
+            "workflows": self.workflows,
+        }
+        for directory_name, components in component_groups.items():
+            component_dir = target / directory_name
+            component_dir.mkdir(exist_ok=True)
+            for index, component in enumerate(components):
+                component_data = self._serialize_component(component)
+                component_id = str(component_data.get("id") or f"{directory_name}-{index + 1}")
+                self._validate_component_id(component_id)
+                component_data.setdefault("id", component_id)
+                (component_dir / f"{component_id}.json").write_text(
+                    json.dumps(component_data, indent=2, ensure_ascii=False),
+                    encoding="utf-8",
+                )
+
+        (target / ".env.example").write_text(self._env_example(), encoding="utf-8")
+        if include_readme:
+            (target / "README.md").write_text(self._readme(), encoding="utf-8")
+
+    @staticmethod
+    def _serialize_component(component: Any) -> Dict[str, Any]:
+        """Convert a component definition to safe JSON-package data."""
+        if isinstance(component, str):
+            return {"id": component}
+        if isinstance(component, dict):
+            return dict(component)
+        if hasattr(component, "to_dict"):
+            component_data = component.to_dict()
+            if isinstance(component_data, dict):
+                return component_data
+        raise TypeError("Blueprint components must be IDs, dictionaries, or serializable objects")
+
+    @staticmethod
+    def _validate_component_id(component_id: str) -> None:
+        """Prevent a component ID from escaping its package directory."""
+        if not component_id or any(character not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-" for character in component_id):
+            raise ValueError(f"Unsafe blueprint component ID: {component_id!r}")
+
+    def _env_example(self) -> str:
+        """Create an env template without copying any supplied secret values."""
+        if not self.config.environment_variables:
+            return "# No environment variables are required.\n"
+        lines = ["# Populate these values in your deployment environment."]
+        for name, description in self.config.environment_variables.items():
+            lines.append(f"# {description}")
+            lines.append(f"{name}=")
+        return "\n".join(lines) + "\n"
+
+    def _readme(self) -> str:
+        """Provide basic operational instructions with every package."""
+        dependencies = "\n".join(f"- `{dependency}`" for dependency in self.config.dependencies) or "- None"
+        return (
+            f"# {self.name}\n\n{self.description}\n\n"
+            f"Version: `{self.version}`\n\n"
+            "## Contents\n\n"
+            "- `blueprint.yaml`: portable manifest\n"
+            "- `agents/`, `tools/`, `workflows/`: JSON component definitions\n"
+            "- `.env.example`: required configuration keys (without values)\n\n"
+            f"## Dependencies\n\n{dependencies}\n"
+        )

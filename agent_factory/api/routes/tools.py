@@ -87,14 +87,16 @@ async def create_tool(
 
 
 @router.get("/", response_model=List[str])
-def list_tools():
+def list_tools(user=Depends(get_current_user)):
     """List all tools."""
+    require_user_permission(user, Permission.READ_AGENTS)
     return registry.list_tools()
 
 
 @router.get("/{tool_id}", response_model=Dict[str, Any])
-def get_tool(tool_id: str):
+def get_tool(tool_id: str, user=Depends(get_current_user)):
     """Get tool by ID."""
+    require_user_permission(user, Permission.READ_AGENTS)
     tool = registry.get_tool(tool_id)
     
     if not tool:
@@ -150,8 +152,9 @@ async def delete_tool(
 
 
 @router.get("/{tool_id}/schema", response_model=Dict[str, Any])
-def get_tool_schema(tool_id: str):
+def get_tool_schema(tool_id: str, user=Depends(get_current_user)):
     """Get tool schema."""
+    require_user_permission(user, Permission.READ_AGENTS)
     tool = registry.get_tool(tool_id)
     
     if not tool:

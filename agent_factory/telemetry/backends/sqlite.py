@@ -230,8 +230,8 @@ class SQLiteTelemetryBackend(TelemetryBackend):
         if "timestamp" in event_dict and isinstance(event_dict["timestamp"], str):
             event_dict["timestamp"] = datetime.fromisoformat(event_dict["timestamp"])
         
-        # Remove event_type from dict (it's set in __post_init__)
-        event_dict.pop("event_type", None)
+        # Keep ``event_type`` for the base dataclass constructor.  Concrete
+        # events validate/set their canonical type again in ``__post_init__``.
         
         try:
             return event_class(**event_dict)

@@ -11,7 +11,7 @@ from agent_factory.payments.stripe_client import create_checkout_session, handle
 from agent_factory.payments.subscriptions import create_subscription, cancel_subscription, get_subscription
 from agent_factory.payments.revenue_sharing import calculate_revenue_share, distribute_payment
 from agent_factory.security.auth import get_current_user
-from agent_factory.security.rbac import require_permission, Permission
+from agent_factory.security.rbac import require_user_permission, Permission
 
 router = APIRouter()
 
@@ -36,7 +36,7 @@ async def create_checkout(
     user=Depends(get_current_user)
 ):
     """Create checkout session for blueprint purchase."""
-    require_permission(Permission.READ_BLUEPRINTS)(lambda: None)()
+    require_user_permission(user, Permission.READ_BLUEPRINTS)
     
     from agent_factory.marketplace.search import get_blueprint_details
     blueprint = get_blueprint_details(request.blueprint_id)
@@ -74,7 +74,7 @@ async def create_subscription_endpoint(
     user=Depends(get_current_user)
 ):
     """Create subscription for blueprint."""
-    require_permission(Permission.READ_BLUEPRINTS)(lambda: None)()
+    require_user_permission(user, Permission.MANAGE_BILLING)
     
     subscription = create_subscription(
         customer_id=request.customer_id,
@@ -91,7 +91,7 @@ async def cancel_subscription_endpoint(
     user=Depends(get_current_user)
 ):
     """Cancel subscription."""
-    require_permission(Permission.READ_BLUEPRINTS)(lambda: None)()
+    require_user_permission(user, Permission.MANAGE_BILLING)
     
     result = cancel_subscription(subscription_id)
     return result
@@ -103,7 +103,7 @@ async def get_subscription_endpoint(
     user=Depends(get_current_user)
 ):
     """Get subscription details."""
-    require_permission(Permission.READ_BLUEPRINTS)(lambda: None)()
+    require_user_permission(user, Permission.MANAGE_BILLING)
     
     subscription = get_subscription(subscription_id)
     if not subscription:
@@ -119,7 +119,7 @@ async def get_revenue_share(
     user=Depends(get_current_user)
 ):
     """Calculate revenue share for blueprint."""
-    require_permission(Permission.READ_BLUEPRINTS)(lambda: None)()
+    require_user_permission(user, Permission.READ_BLUEPRINTS)
     
     revenue_share = calculate_revenue_share(amount)
     return revenue_share

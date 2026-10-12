@@ -193,8 +193,8 @@ class PostgresTelemetryBackend(TelemetryBackend):
         if "timestamp" in event_dict and isinstance(event_dict["timestamp"], str):
             event_dict["timestamp"] = datetime.fromisoformat(event_dict["timestamp"])
         
-        # Remove event_type from dict (it's set in __post_init__)
-        event_dict.pop("event_type", None)
+        # Keep ``event_type`` because the base telemetry dataclass requires
+        # it; the concrete class also normalizes it in ``__post_init__``.
         
         try:
             return event_class(**event_dict)

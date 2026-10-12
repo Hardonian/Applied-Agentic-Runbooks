@@ -113,14 +113,16 @@ async def create_workflow(
 
 
 @router.get("/", response_model=List[str])
-def list_workflows():
+def list_workflows(user=Depends(get_current_user)):
     """List all workflows."""
+    require_user_permission(user, Permission.READ_WORKFLOWS)
     return registry.list_workflows()
 
 
 @router.get("/{workflow_id}", response_model=Dict[str, Any])
-def get_workflow(workflow_id: str):
+def get_workflow(workflow_id: str, user=Depends(get_current_user)):
     """Get workflow by ID."""
+    require_user_permission(user, Permission.READ_WORKFLOWS)
     workflow = registry.get_workflow(workflow_id)
     
     if not workflow:
@@ -244,8 +246,9 @@ async def trigger_workflow(
 
 
 @router.get("/{workflow_id}/status", response_model=Dict[str, Any])
-def get_workflow_status(workflow_id: str):
+def get_workflow_status(workflow_id: str, user=Depends(get_current_user)):
     """Get workflow execution status."""
+    require_user_permission(user, Permission.READ_WORKFLOWS)
     workflow = registry.get_workflow(workflow_id)
     if not workflow:
         raise HTTPException(status_code=404, detail="Workflow not found")

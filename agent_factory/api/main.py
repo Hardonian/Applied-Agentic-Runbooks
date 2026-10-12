@@ -29,11 +29,19 @@ app = FastAPI(
     version="0.1.0",
 )
 
-# CORS middleware
+# CORS middleware.  A wildcard origin cannot be safely combined with browser
+# credentials, so development defaults are explicit local origins.
+cors_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ORIGINS", "http://localhost:3000,http://localhost:8080"
+    ).split(",")
+    if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.getenv("CORS_ORIGINS", "*").split(","),
-    allow_credentials=True,
+    allow_origins=cors_origins,
+    allow_credentials="*" not in cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -66,7 +74,7 @@ async def startup_event():
     try:
         # Validate environment variables
         from agent_factory.utils.env_validator import validate_agent_factory_env
-        validated_env = validate_agent_factory_env()
+        validated_env = validate_agent_factory_env(raise_on_error=True)
         logger.info("Environment variables validated", validated_count=len(validated_env))
         
         # Initialize database

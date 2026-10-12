@@ -5,6 +5,7 @@ from pathlib import Path
 import tempfile
 from agent_factory.blueprints.model import Blueprint, BlueprintConfig, PricingInfo, PricingModel
 from agent_factory.agents.agent import Agent
+from agent_factory.workflows.model import Workflow, WorkflowStep
 
 
 @pytest.mark.unit
@@ -100,3 +101,27 @@ def test_blueprint_serializes_component_objects_without_python_yaml_tags():
     assert "!!python" not in document
     assert "agent-1" in document
     assert Blueprint.from_dict(__import__("yaml").safe_load(document)["blueprint"]).agents[0]["id"] == "agent-1"
+
+
+@pytest.mark.unit
+def test_blueprint_package_writes_portable_component_manifests():
+    blueprint = Blueprint(
+        id="component-blueprint",
+        name="Component Blueprint",
+        version="1.0.0",
+        description="Test",
+        author="Test",
+        agents=[Agent(id="agent-1", name="Agent", instructions="Test")],
+        tools=[{"id": "tool-1", "name": "Tool", "description": "Test"}],
+        workflows=[Workflow(id="flow-1", name="Flow", steps=[WorkflowStep(id="step-1", agent_id="agent-1")])],
+        config=BlueprintConfig(environment_variables={"API_TOKEN": "Token for the provider"}),
+    )
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        package_path = Path(blueprint.package(tmpdir))
+
+        assert (package_path / "agents" / "agent-1.json").exists()
+        assert (package_path / "tools" / "tool-1.json").exists()
+        assert (package_path / "workflows" / "flow-1.json").exists()
+        assert "API_TOKEN=" in (package_path / ".env.example").read_text()
+        assert "Token for the provider=" not in (package_path / ".env.example").read_text()

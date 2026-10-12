@@ -6,10 +6,13 @@ from pydantic import BaseModel
 
 from agent_factory.runtime.scheduler import Scheduler
 from agent_factory.security.auth import get_current_user
-from agent_factory.security.rbac import require_permission, Permission
+from agent_factory.security.rbac import require_user_permission, Permission
+from agent_factory.api.runtime import runtime
+from agent_factory.registry.local_registry import LocalRegistry
 
 router = APIRouter()
 scheduler = Scheduler()
+registry = LocalRegistry()
 
 
 class ScheduleAgentRequest(BaseModel):
@@ -32,10 +35,11 @@ async def schedule_agent(
     user=Depends(get_current_user)
 ):
     """Schedule an agent to run on a schedule."""
-    require_permission(Permission.WRITE_AGENTS)(lambda: None)()
-    
-    from agent_factory.runtime.engine import RuntimeEngine
-    runtime = RuntimeEngine()
+    require_user_permission(user, Permission.WRITE_AGENTS)
+    agent = registry.get_agent(request.agent_id)
+    if not agent:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    runtime.register_agent(agent)
     
     def run_func(agent_id: str, input_text: str):
         runtime.run_agent(agent_id, input_text)
@@ -56,10 +60,11 @@ async def schedule_workflow(
     user=Depends(get_current_user)
 ):
     """Schedule a workflow to run on a schedule."""
-    require_permission(Permission.WRITE_WORKFLOWS)(lambda: None)()
-    
-    from agent_factory.runtime.engine import RuntimeEngine
-    runtime = RuntimeEngine()
+    require_user_permission(user, Permission.WRITE_WORKFLOWS)
+    workflow = registry.get_workflow(request.workflow_id)
+    if not workflow:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    runtime.register_workflow(workflow)
     
     def run_func(workflow_id: str, context: Dict[str, Any]):
         runtime.run_workflow(workflow_id, context)
@@ -75,15 +80,16 @@ async def schedule_workflow(
 
 
 @router.get("/jobs", response_model=List[str])
-def list_scheduled_jobs():
+def list_scheduled_jobs(user=Depends(get_current_user)):
     """List all scheduled jobs."""
+    require_user_permission(user, Permission.READ_WORKFLOWS)
     return list(scheduler.jobs.keys())
 
 
 @router.post("/start")
 async def start_scheduler(user=Depends(get_current_user)):
     """Start the scheduler."""
-    require_permission(Permission.ADMIN)(lambda: None)()
+    require_user_permission(user, Permission.ADMIN)
     
     scheduler.start()
     return {"status": "started"}
@@ -92,7 +98,7 @@ async def start_scheduler(user=Depends(get_current_user)):
 @router.post("/stop")
 async def stop_scheduler(user=Depends(get_current_user)):
     """Stop the scheduler."""
-    require_permission(Permission.ADMIN)(lambda: None)()
+    require_user_permission(user, Permission.ADMIN)
     
     scheduler.stop()
     return {"status": "stopped"}

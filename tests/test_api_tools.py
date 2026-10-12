@@ -11,6 +11,15 @@ from agent_factory.tools.base import Tool
 client = TestClient(app)
 
 
+@pytest.fixture(autouse=True)
+def authenticated_user():
+    app.dependency_overrides[get_current_user] = lambda: User(
+        id="user-1", email="user@example.com", roles=["user"]
+    )
+    yield
+    app.dependency_overrides.pop(get_current_user, None)
+
+
 @pytest.mark.unit
 def test_list_tools_empty():
     """Test listing tools when none exist."""
@@ -103,5 +112,6 @@ def test_test_tool():
 
 @pytest.mark.unit
 def test_tool_test_requires_authentication():
+    app.dependency_overrides.pop(get_current_user, None)
     response = client.post("/api/v1/tools/test-tool/test", json={"params": {}})
     assert response.status_code in {401, 403}

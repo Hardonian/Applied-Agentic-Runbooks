@@ -10,6 +10,7 @@ from agent_factory.security.rbac import (
     get_user_permissions,
     require_permission,
     require_role,
+    check_permission,
 )
 
 
@@ -98,3 +99,11 @@ def test_require_role_decorator():
     
     # Decorator should exist and be callable
     assert callable(test_func)
+
+
+@pytest.mark.unit
+def test_explicit_permissions_are_honored_for_service_accounts():
+    assert check_permission(
+        {"roles": [], "permissions": [Permission.EXECUTE_WORKFLOWS.value]},
+        Permission.EXECUTE_WORKFLOWS,
+    )

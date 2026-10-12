@@ -5,6 +5,7 @@ Validates required and optional environment variables on startup.
 """
 
 import os
+from urllib.parse import urlparse
 from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass
 from agent_factory.core.exceptions import ConfigurationError
@@ -95,13 +96,36 @@ def validate_agent_factory_env(raise_on_error: bool = False) -> EnvironmentValid
     validator.add_optional("ENVIRONMENT", "development", "App runtime environment (development, staging, production)")
     validator.add_optional("DATABASE_URL", "sqlite:///agent_factory.db", "Database connection URL")
     validator.add_optional("LOG_LEVEL", "INFO", "Application logging level")
-    validator.add_optional("JWT_SECRET", "agent-factory-secret-key-change-in-production", "JWT signing secret")
+    validator.add_optional(
+        "CORS_ORIGINS",
+        "http://localhost:3000,http://localhost:8080",
+        "Comma-separated browser origins allowed to call the API",
+    )
 
-    # In production, check API keys or database URLs if needed
+    is_valid, errors = validator.validate(raise_on_error=False)
     env = os.getenv("ENVIRONMENT", "development").lower()
-    if env == "production":
-        # In strict production mode, enforce credentials if needed
-        pass
+    if env not in {"development", "staging", "production", "test"}:
+        errors.append("ENVIRONMENT must be development, staging, production, or test")
 
-    validator.validate(raise_on_error=raise_on_error)
+    if env == "production":
+        secret = os.getenv("JWT_SECRET_KEY", "")
+        insecure_secrets = {
+            "",
+            "your-secret-key-change-in-production",
+            "agent-factory-secret-key-change-in-production",
+        }
+        if secret in insecure_secrets or len(secret) < 32:
+            errors.append("JWT_SECRET_KEY must be a unique secret of at least 32 characters in production")
+        if not os.getenv("DATABASE_URL"):
+            errors.append("Missing required environment variable: DATABASE_URL (production database connection)")
+        cors_origins = [origin.strip() for origin in os.getenv("CORS_ORIGINS", "").split(",") if origin.strip()]
+        if not cors_origins or "*" in cors_origins:
+            errors.append("CORS_ORIGINS must list explicit origins in production")
+        elif any(urlparse(origin).scheme not in {"http", "https"} or not urlparse(origin).netloc for origin in cors_origins):
+            errors.append("CORS_ORIGINS contains an invalid origin")
+        if os.getenv("DEBUG", "false").lower() == "true":
+            errors.append("DEBUG must be false in production")
+
+    if errors and raise_on_error:
+        raise ConfigurationError(f"Environment validation failed: {', '.join(errors)}")
     return validator

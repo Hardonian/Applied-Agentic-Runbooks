@@ -110,7 +110,10 @@ def test_validate_agent_factory_env():
     
     try:
         # Clear test variables
-        test_vars = ["OPENAI_API_KEY", "ANTHROPIC_API_KEY", "ENVIRONMENT"]
+        test_vars = [
+            "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "ENVIRONMENT",
+            "JWT_SECRET_KEY", "DATABASE_URL", "CORS_ORIGINS", "DEBUG",
+        ]
         for var in test_vars:
             if var in os.environ:
                 del os.environ[var]
@@ -120,14 +123,16 @@ def test_validate_agent_factory_env():
         validator = validate_agent_factory_env()
         assert validator is not None
         
-        # Should warn in production without API keys
+        # Production refuses unsafe or incomplete deployment settings.
         os.environ["ENVIRONMENT"] = "production"
-        import warnings
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            validator = validate_agent_factory_env()
-            if w:
-                assert any("Critical environment variables" in str(warning.message) for warning in w)
+        with pytest.raises(ConfigurationError, match="JWT_SECRET_KEY"):
+            validate_agent_factory_env(raise_on_error=True)
+
+        os.environ["JWT_SECRET_KEY"] = "a" * 32
+        os.environ["DATABASE_URL"] = "postgresql://example/agent_factory"
+        os.environ["CORS_ORIGINS"] = "https://app.example.com"
+        os.environ["DEBUG"] = "false"
+        assert validate_agent_factory_env(raise_on_error=True) is not None
     
     finally:
         # Restore original environment

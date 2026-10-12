@@ -56,7 +56,12 @@ async def create_blueprint(
         raise HTTPException(status_code=400, detail=f"Blueprint {blueprint_data.id} already exists")
     
     # Create blueprint from data
-    from agent_factory.blueprints.model import BlueprintConfig, PricingInfo, PricingModel
+    from agent_factory.blueprints.model import (
+        BlueprintConfig,
+        BlueprintMetadata,
+        PricingInfo,
+        PricingModel,
+    )
     
     config = BlueprintConfig()
     if blueprint_data.config:
@@ -100,7 +105,10 @@ async def create_blueprint(
         workflows=workflows,
         config=config,
         pricing=pricing,
-        metadata=blueprint_data.metadata or {},
+        metadata=BlueprintMetadata(
+            demo_url=(blueprint_data.metadata or {}).get("demo_url", ""),
+            documentation=(blueprint_data.metadata or {}).get("documentation", ""),
+        ),
     )
     
     registry.register_blueprint(blueprint)
@@ -109,14 +117,16 @@ async def create_blueprint(
 
 
 @router.get("/", response_model=List[str])
-def list_blueprints():
+def list_blueprints(user=Depends(get_current_user)):
     """List all blueprints."""
+    require_user_permission(user, Permission.READ_BLUEPRINTS)
     return registry.list_blueprints()
 
 
 @router.get("/{blueprint_id}", response_model=Dict[str, Any])
-def get_blueprint(blueprint_id: str):
+def get_blueprint(blueprint_id: str, user=Depends(get_current_user)):
     """Get blueprint by ID."""
+    require_user_permission(user, Permission.READ_BLUEPRINTS)
     blueprint = registry.get_blueprint(blueprint_id)
     
     if not blueprint:
@@ -183,8 +193,14 @@ async def publish_blueprint_endpoint(
 
 
 @router.get("/{blueprint_id}/reviews", response_model=Dict[str, Any])
-def get_blueprint_reviews(blueprint_id: str, limit: int = 10, offset: int = 0):
+def get_blueprint_reviews(
+    blueprint_id: str,
+    limit: int = 10,
+    offset: int = 0,
+    user=Depends(get_current_user),
+):
     """Get reviews for a blueprint."""
+    require_user_permission(user, Permission.READ_BLUEPRINTS)
     blueprint = registry.get_blueprint(blueprint_id)
     if not blueprint:
         raise HTTPException(status_code=404, detail="Blueprint not found")

@@ -362,3 +362,57 @@ class Workflow:
                 for k, v in self.branching.items()
             },
         }
+
+    @classmethod
+    def from_dict(
+        cls,
+        data: Dict[str, Any],
+        agents_registry: Optional[Dict[str, Any]] = None,
+    ) -> "Workflow":
+        """Recreate a workflow from the registry/API representation."""
+        steps = []
+        for step_data in data.get("steps", []):
+            condition_data = step_data.get("condition")
+            condition = (
+                Condition(
+                    expression=condition_data.get("expression", ""),
+                    description=condition_data.get("description"),
+                )
+                if condition_data
+                else None
+            )
+            steps.append(
+                WorkflowStep(
+                    id=step_data["id"],
+                    agent_id=step_data["agent_id"],
+                    input_mapping=step_data.get("input_mapping", {}),
+                    output_mapping=step_data.get("output_mapping", {}),
+                    condition=condition,
+                    timeout=step_data.get("timeout", 30),
+                    retry_attempts=step_data.get("retry_attempts", 3),
+                )
+            )
+
+        triggers = [
+            Trigger(
+                type=TriggerType(trigger_data.get("type", TriggerType.MANUAL.value)),
+                config=trigger_data.get("config", {}),
+                enabled=trigger_data.get("enabled", True),
+            )
+            for trigger_data in data.get("triggers", [])
+        ]
+        branching = {
+            step_id: Condition(
+                expression=condition_data.get("expression", ""),
+                description=condition_data.get("description"),
+            )
+            for step_id, condition_data in data.get("branching", {}).items()
+        }
+        return cls(
+            id=data["id"],
+            name=data["name"],
+            steps=steps,
+            triggers=triggers,
+            branching=branching,
+            agents_registry=agents_registry,
+        )

@@ -124,7 +124,7 @@ def test_list_plans(mock_get_db):
     mock_db = Mock()
     mock_plan = Mock()
     mock_plan.id = "free"
-    mock_db.query.return_value.all.return_value = [mock_plan]
+    mock_db.query.return_value.filter.return_value.all.return_value = [mock_plan]
     mock_get_db.return_value = iter([mock_db])
     
     plans = list_plans()

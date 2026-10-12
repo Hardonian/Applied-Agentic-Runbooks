@@ -12,7 +12,10 @@ class Plan:
     """Billing plan."""
     id: str
     name: str
-    plan_type: str  # free, pro, enterprise
+    plan_type: str = "free"  # free, pro, enterprise
+    # ``price`` remains a convenience alias for one-time/simple plan callers;
+    # recurring plans should use the explicit monthly/yearly fields.
+    price: Optional[float] = None
     price_monthly: float = 0.0
     price_yearly: float = 0.0
     currency: str = "USD"
@@ -20,6 +23,10 @@ class Plan:
     limits: Dict[str, Any] = None
     
     def __post_init__(self):
+        if self.price is not None and self.price_monthly == 0.0:
+            self.price_monthly = self.price
+        if self.price is None:
+            self.price = self.price_monthly
         if self.features is None:
             self.features = {}
         if self.limits is None:

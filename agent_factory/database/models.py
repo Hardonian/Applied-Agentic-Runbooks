@@ -23,6 +23,13 @@ class User(Base):
     
     tenant = relationship("Tenant", back_populates="users")
 
+    def __init__(self, **kwargs):
+        kwargs.setdefault("is_active", True)
+        kwargs.setdefault("is_superuser", False)
+        kwargs.setdefault("roles", [])
+        kwargs.setdefault("permissions", [])
+        super().__init__(**kwargs)
+
 
 class Tenant(Base):
     """Tenant model for multi-tenancy."""
@@ -40,6 +47,13 @@ class Tenant(Base):
     
     users = relationship("User", back_populates="tenant")
 
+    def __init__(self, **kwargs):
+        kwargs.setdefault("is_active", True)
+        kwargs.setdefault("plan", "free")
+        kwargs.setdefault("resource_quota", {})
+        kwargs.setdefault("usage", {})
+        super().__init__(**kwargs)
+
 
 class Agent(Base):
     """Agent model."""
@@ -56,6 +70,10 @@ class Agent(Base):
     
     tenant = relationship("Tenant")
     creator = relationship("User")
+
+    def __init__(self, **kwargs):
+        kwargs.setdefault("model", "gpt-4o")
+        super().__init__(**kwargs)
 
 
 class Workflow(Base):
@@ -94,6 +112,15 @@ class Blueprint(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     publisher = relationship("User")
+
+    def __init__(self, **kwargs):
+        kwargs.setdefault("pricing_model", "free")
+        kwargs.setdefault("price", 0.0)
+        kwargs.setdefault("is_public", False)
+        kwargs.setdefault("downloads", 0)
+        kwargs.setdefault("rating", 0.0)
+        kwargs.setdefault("reviews_count", 0)
+        super().__init__(**kwargs)
 
 
 class Execution(Base):

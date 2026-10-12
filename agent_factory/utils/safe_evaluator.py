@@ -196,6 +196,15 @@ class SafeEvaluator:
                 # Handle math.sqrt, etc.
                 if isinstance(node.func.value, ast.Name) and node.func.value.id == "math":
                     func_name = node.func.attr
+                elif (
+                    isinstance(node.func.value, ast.Call)
+                    and isinstance(node.func.value.func, ast.Name)
+                ):
+                    # Report the attempted inner callable without traversing
+                    # or evaluating its arguments.  This keeps chained calls
+                    # such as ``__import__(...).system(...)`` safely denied
+                    # with the same allow-list contract as direct calls.
+                    func_name = node.func.value.func.id
                 else:
                     raise ValueError("Only math module functions are supported")
             else:

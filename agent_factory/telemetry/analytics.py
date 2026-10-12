@@ -232,6 +232,9 @@ class AnalyticsEngine:
                 },
             },
         }
+        # Preserve the original flat product-funnel contract for SDK callers
+        # while exposing the richer grouped funnels above.
+        funnel.update(funnel["product_funnel"])
         
         return funnel
     

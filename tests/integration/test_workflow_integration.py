@@ -7,7 +7,7 @@ from agent_factory.agents.agent import Agent, AgentStatus
 
 
 @pytest.mark.integration
-@patch('agent_factory.core.agent.OpenAIAgentClient')
+@patch('agent_factory.integrations.openai_client.OpenAIAgentClient')
 def test_workflow_execution_with_agents(mock_client_class):
     """Test workflow execution with real agent instances."""
     # Setup mock OpenAI client

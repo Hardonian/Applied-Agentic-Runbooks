@@ -44,7 +44,17 @@ class UsageTracker:
             cost_estimate: Cost estimate
             project_id: Optional project ID
         """
-        # Record billing event
+        # Meter tokens separately but do not charge the same estimated cost
+        # twice.  The run event is the billable execution record.
+        if tokens_used > 0:
+            self.collector.record_billing_usage(
+                billing_unit="token",
+                quantity=float(tokens_used),
+                tenant_id=tenant_id,
+                project_id=project_id,
+                unit_price=0.0,  # Will be calculated based on plan
+                total_cost=0.0,
+            )
         self.collector.record_billing_usage(
             billing_unit="agent_run",
             quantity=1.0,
@@ -53,17 +63,6 @@ class UsageTracker:
             unit_price=0.0,  # Will be calculated based on plan
             total_cost=cost_estimate,
         )
-        
-        # Also record token usage if applicable
-        if tokens_used > 0:
-            self.collector.record_billing_usage(
-                billing_unit="token",
-                quantity=float(tokens_used),
-                tenant_id=tenant_id,
-                project_id=project_id,
-                unit_price=0.0,  # Will be calculated based on plan
-                total_cost=cost_estimate,
-            )
     
     def record_workflow_run(
         self,
@@ -81,6 +80,15 @@ class UsageTracker:
             cost_estimate: Cost estimate
             project_id: Optional project ID
         """
+        if tokens_used > 0:
+            self.collector.record_billing_usage(
+                billing_unit="token",
+                quantity=float(tokens_used),
+                tenant_id=tenant_id,
+                project_id=project_id,
+                unit_price=0.0,
+                total_cost=0.0,
+            )
         self.collector.record_billing_usage(
             billing_unit="workflow_run",
             quantity=1.0,
@@ -89,16 +97,6 @@ class UsageTracker:
             unit_price=0.0,
             total_cost=cost_estimate,
         )
-        
-        if tokens_used > 0:
-            self.collector.record_billing_usage(
-                billing_unit="token",
-                quantity=float(tokens_used),
-                tenant_id=tenant_id,
-                project_id=project_id,
-                unit_price=0.0,
-                total_cost=cost_estimate,
-            )
     
     def get_usage_summary(
         self,

@@ -26,6 +26,7 @@ class User(BaseModel):
     email: str
     roles: list[str] = []
     permissions: list[str] = []
+    tenant_id: Optional[str] = None
 
 
 class TokenData(BaseModel):
@@ -125,7 +126,10 @@ class JWTBearer(HTTPBearer):
         return token_data
 
 
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Security(security)) -> User:
+async def get_current_user(
+    request: Request,
+    credentials: HTTPAuthorizationCredentials = Security(security),
+) -> User:
     """
     Get current authenticated user.
     
@@ -152,13 +156,24 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Security(
                 detail="User account is unavailable",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        
-        return User(
+        if not user_model.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User account is inactive",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        user = User(
             id=user_model.id,
             email=user_model.email,
             roles=user_model.roles or [],
-            permissions=user_model.permissions or []
+            permissions=user_model.permissions or [],
+            tenant_id=user_model.tenant_id,
         )
+        request.state.user_id = user.id
+        request.state.tenant_id = user.tenant_id
+        
+        return user
     finally:
         db.close()
 

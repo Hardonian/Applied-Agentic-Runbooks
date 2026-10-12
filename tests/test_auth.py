@@ -2,7 +2,7 @@
 
 import pytest
 from datetime import datetime, timedelta, timezone
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 import jwt
 from fastapi import HTTPException
 
@@ -41,7 +41,46 @@ def test_current_user_rejects_token_for_missing_database_user(monkeypatch):
     import asyncio
 
     with pytest.raises(HTTPException, match="User account is unavailable"):
-        asyncio.run(auth.get_current_user(credentials))
+        asyncio.run(auth.get_current_user(credentials=credentials, request=Mock()))
+
+
+@pytest.mark.unit
+def test_current_user_rejects_inactive_database_user(monkeypatch):
+    from agent_factory.security import auth
+
+    class Query:
+        def filter(self, *_args):
+            return self
+
+        def first(self):
+            return type(
+                "InactiveUser",
+                (),
+                {
+                    "id": "inactive",
+                    "email": "inactive@example.com",
+                    "is_active": False,
+                    "roles": [],
+                    "permissions": [],
+                    "tenant_id": None,
+                },
+            )()
+
+    class Session:
+        def query(self, *_args):
+            return Query()
+
+        def close(self):
+            return None
+
+    monkeypatch.setattr(auth, "verify_token", lambda _token: TokenData(user_id="inactive"))
+    monkeypatch.setattr("agent_factory.database.session.get_db", lambda: iter([Session()]))
+    credentials = type("Credentials", (), {"credentials": "token"})()
+
+    import asyncio
+
+    with pytest.raises(HTTPException, match="User account is inactive"):
+        asyncio.run(auth.get_current_user(credentials=credentials, request=Mock()))
 
 
 @pytest.mark.unit

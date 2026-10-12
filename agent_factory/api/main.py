@@ -14,6 +14,7 @@ from agent_factory.database import init_db
 from agent_factory.cache import get_cache
 from agent_factory.api.routes import agents, tools, workflows, blueprints, executions, telemetry
 from agent_factory.api.middleware import SecurityHeadersMiddleware, RequestIDMiddleware, TimingMiddleware
+from agent_factory.security.audit import audit_log
 
 # Setup structured logging first
 logger = setup_structured_logging(os.getenv("LOG_LEVEL", "INFO"))
@@ -136,6 +137,24 @@ async def logging_middleware(request: Request, call_next):
         status_code=response.status_code
     )
     
+    return response
+
+
+@app.middleware("http")
+async def audit_mutating_requests(request: Request, call_next):
+    """Record successful state-changing API requests without logging payloads."""
+    response = await call_next(request)
+    if request.method in {"POST", "PUT", "PATCH", "DELETE"} and response.status_code < 400:
+        audit_log(
+            event_type="api_mutation",
+            user_id=getattr(request.state, "user_id", None),
+            resource_type="api",
+            resource_id=request.url.path,
+            action=request.method.lower(),
+            success=True,
+            details={"status_code": response.status_code},
+            ip_address=request.client.host if request.client else None,
+        )
     return response
 
 

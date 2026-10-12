@@ -60,13 +60,11 @@ def test_audit_logger_log_event_with_details(mock_logger_class):
 
 
 @pytest.mark.unit
-@patch('agent_factory.security.audit.AuditLogger')
-def test_audit_log_function(mock_logger_class):
+@patch('agent_factory.security.audit._audit_logger')
+def test_audit_log_function(mock_audit_logger):
     """Test audit_log convenience function."""
     mock_logger = Mock()
-    mock_logger_instance = Mock()
-    mock_logger_instance.log_event = Mock()
-    mock_logger_class.return_value = mock_logger_instance
+    mock_audit_logger.log_event = Mock()
     
     audit_log(
         event_type="test_event",
@@ -74,18 +72,17 @@ def test_audit_log_function(mock_logger_class):
         success=True,
     )
     
-    assert mock_logger_instance.log_event.called
-    call_args = mock_logger_instance.log_event.call_args[1]
+    assert mock_audit_logger.log_event.called
+    call_args = mock_audit_logger.log_event.call_args[1]
     assert call_args["event_type"] == "test_event"
     assert call_args["user_id"] == "user-123"
 
 
 @pytest.mark.unit
-@patch('agent_factory.security.audit.AuditLogger')
-def test_audit_log_failure(mock_logger_class):
+@patch('agent_factory.security.audit._audit_logger')
+def test_audit_log_failure(mock_audit_logger):
     """Test logging a failed action."""
-    mock_logger_instance = Mock()
-    mock_logger_class.return_value = mock_logger_instance
+    mock_audit_logger.log_event = Mock()
     
     audit_log(
         event_type="agent_delete",
@@ -96,6 +93,6 @@ def test_audit_log_failure(mock_logger_class):
         details={"error": "Permission denied"},
     )
     
-    call_args = mock_logger_instance.log_event.call_args[1]
+    call_args = mock_audit_logger.log_event.call_args[1]
     assert call_args["success"] is False
     assert call_args["details"]["error"] == "Permission denied"

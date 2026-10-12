@@ -279,9 +279,10 @@ async def health():
     db_check = {"status": "unknown", "response_time_ms": 0}
     try:
         from agent_factory.database.session import engine
+        from sqlalchemy import text
         db_start = time.time()
         with engine.connect() as conn:
-            conn.execute("SELECT 1")
+            conn.execute(text("SELECT 1"))
         db_check["status"] = "healthy"
         db_check["response_time_ms"] = round((time.time() - db_start) * 1000, 2)
     except Exception as e:
@@ -347,8 +348,9 @@ async def readiness():
     """Readiness probe endpoint."""
     try:
         from agent_factory.database.session import engine
+        from sqlalchemy import text
         with engine.connect() as conn:
-            conn.execute("SELECT 1")
+            conn.execute(text("SELECT 1"))
         return {"status": "ready"}
     except Exception:
         return JSONResponse(

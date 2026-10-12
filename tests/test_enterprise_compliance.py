@@ -12,7 +12,7 @@ def test_export_user_data():
     """Test exporting user data for GDPR."""
     with patch('agent_factory.enterprise.compliance.get_db') as mock_get_db:
         mock_db = Mock()
-        mock_get_db.return_value = mock_db
+        mock_get_db.return_value = iter([mock_db])
         
         mock_user = Mock()
         mock_user.id = "user1"
@@ -34,7 +34,7 @@ def test_enforce_data_retention():
     """Test enforcing data retention policy."""
     with patch('agent_factory.enterprise.compliance.get_db') as mock_get_db:
         mock_db = Mock()
-        mock_get_db.return_value = mock_db
+        mock_get_db.return_value = iter([mock_db])
         
         mock_query = Mock()
         mock_query.filter.return_value = mock_query

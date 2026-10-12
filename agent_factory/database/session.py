@@ -7,10 +7,12 @@ from sqlalchemy.orm import sessionmaker, Session
 from typing import Generator
 
 # Database URL from environment
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    f"postgresql://{os.getenv('POSTGRES_USER', 'agent_factory')}:{os.getenv('POSTGRES_PASSWORD', '')}@{os.getenv('POSTGRES_HOST', 'localhost')}:{os.getenv('POSTGRES_PORT', '5432')}/{os.getenv('POSTGRES_DB', 'agent_factory')}"
-)
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    # A local checkout must be runnable without an accidental network call to
+    # localhost Postgres. Production validation requires DATABASE_URL, while
+    # development defaults to a durable local SQLite database.
+    DATABASE_URL = "sqlite:///./agent_factory.db"
 
 # Optimize connection pooling for Supabase
 # Supabase recommends connection pooling with pgbouncer

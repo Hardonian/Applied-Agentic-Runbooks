@@ -17,11 +17,13 @@ tokens, customer content, or other secrets into this file or the ticket.
 ## Repository evidence
 
 - [ ] Full test result: `uv run --extra dev pytest -q`
-- [ ] Result and timestamp: 301 passed, 3 skipped on 2026-10-12 (replace for
-  a later candidate)
+- [ ] Result, workflow run URL, and timestamp:
 - [ ] `git diff --check` result:
 - [ ] Dependency/security scan reference:
 - [ ] Build artifact/provenance reference:
+- [ ] Wheel and source-distribution checksum/reference:
+- [ ] Built-artifact E2E result (including authenticated signup, agent, and workflow path):
+- [ ] CycloneDX SBOM artifact reference:
 
 ## Credential and deployment gate
 
@@ -45,6 +47,7 @@ tokens, customer content, or other secrets into this file or the ticket.
 ## Operational readiness gate
 
 - [ ] Staging deployment and `/live`, `/ready`, `/health` evidence:
+- [ ] Release workflow used an explicit `API_BASE_URL` that identified as Agent Factory:
 - [ ] Database and blueprint backup/restore drill:
 - [ ] Rollback drill and measured rollback time:
 - [ ] Alerts, on-call, rate limits, and error tracking configured:

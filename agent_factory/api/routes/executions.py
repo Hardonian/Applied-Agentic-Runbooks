@@ -5,7 +5,7 @@ from typing import List, Optional, Dict, Any
 
 from agent_factory.runtime.engine import RuntimeEngine
 from agent_factory.security.auth import get_current_user
-from agent_factory.security.rbac import require_permission, Permission
+from agent_factory.security.rbac import require_user_permission, Permission
 
 router = APIRouter()
 runtime = RuntimeEngine()
@@ -19,7 +19,7 @@ def list_executions(
     user=Depends(get_current_user)
 ):
     """List executions with optional filters."""
-    require_permission(Permission.READ_AGENTS)(lambda: None)()
+    require_user_permission(user, Permission.READ_AGENTS)
     
     executions = runtime.list_executions(
         entity_id=entity_id,
@@ -91,7 +91,7 @@ async def retry_execution(
     user=Depends(get_current_user)
 ):
     """Retry a failed execution."""
-    require_permission(Permission.WRITE_AGENTS)(lambda: None)()
+    require_user_permission(user, Permission.EXECUTE_AGENTS)
     
     execution = runtime.get_execution(execution_id)
     if not execution:
@@ -145,7 +145,7 @@ async def cancel_execution(
     user=Depends(get_current_user)
 ):
     """Cancel a running execution."""
-    require_permission(Permission.WRITE_AGENTS)(lambda: None)()
+    require_user_permission(user, Permission.EXECUTE_AGENTS)
     
     execution = runtime.get_execution(execution_id)
     if not execution:

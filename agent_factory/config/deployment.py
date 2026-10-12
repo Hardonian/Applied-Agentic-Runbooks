@@ -148,12 +148,15 @@ class DeploymentConfig:
             Job queue class
         """
         if self.job_queue_backend == "redis":
-            # TODO: Implement RedisJobQueue
+            from agent_factory.jobs.queue import RedisJobQueue
+            return RedisJobQueue
+        if self.job_queue_backend == "sqlite":
             from agent_factory.runtime.jobs import SQLiteJobQueue
             return SQLiteJobQueue
-        else:
-            from agent_factory.runtime.jobs import SQLiteJobQueue
-            return SQLiteJobQueue
+        raise ValueError(
+            f"Unsupported job queue backend {self.job_queue_backend!r}. "
+            "Supported backends are 'sqlite' and 'redis'."
+        )
 
 
 # Global deployment config

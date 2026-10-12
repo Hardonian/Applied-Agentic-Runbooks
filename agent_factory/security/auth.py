@@ -1,7 +1,7 @@
 """JWT authentication."""
 
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 import jwt
 from fastapi import HTTPException, Security, status, Request
@@ -51,9 +51,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     to_encode = data.copy()
     
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
@@ -147,12 +147,10 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Security(
         user_model = db.query(UserModel).filter(UserModel.id == token_data.user_id).first()
         
         if not user_model:
-            # Return anonymous user if not found
-            return User(
-                id=token_data.user_id or "anonymous",
-                email=token_data.email or "anonymous@example.com",
-                roles=["user"],
-                permissions=["read", "write"]
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User account is unavailable",
+                headers={"WWW-Authenticate": "Bearer"},
             )
         
         return User(

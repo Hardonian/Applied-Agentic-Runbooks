@@ -139,6 +139,20 @@ def check_permission(user: Union[Dict[str, Any], Any], permission: Union[Permiss
     return target_perm in user_perms
 
 
+def require_user_permission(user: Union[Dict[str, Any], Any], permission: Permission) -> None:
+    """Raise a 403 unless an authenticated user holds ``permission``.
+
+    Route handlers use this helper after resolving the authenticated user. The
+    decorator below is retained for handlers that receive a ``Request``;
+    invoking that decorator manually does not enforce anything.
+    """
+    if not check_permission(user, permission):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Permission required: {permission.value}",
+        )
+
+
 def require_permission(permission: Permission):
     """
     Decorator for FastAPI endpoint handlers to enforce required permissions.

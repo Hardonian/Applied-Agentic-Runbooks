@@ -3,6 +3,7 @@ Job queue implementation for background task processing.
 """
 
 import json
+import os
 import uuid
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, asdict

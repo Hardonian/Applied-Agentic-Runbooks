@@ -1,9 +1,10 @@
 """Tests for authentication."""
 
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 import jwt
+from fastapi import HTTPException
 
 from agent_factory.security.auth import (
     create_access_token,
@@ -12,6 +13,35 @@ from agent_factory.security.auth import (
     SECRET_KEY,
     ALGORITHM,
 )
+
+
+@pytest.mark.unit
+def test_current_user_rejects_token_for_missing_database_user(monkeypatch):
+    """A stale token must not become a default writable user."""
+    from agent_factory.security import auth
+
+    class EmptyQuery:
+        def filter(self, *_args):
+            return self
+
+        def first(self):
+            return None
+
+    class Session:
+        def query(self, *_args):
+            return EmptyQuery()
+
+        def close(self):
+            return None
+
+    monkeypatch.setattr(auth, "verify_token", lambda _token: TokenData(user_id="gone", email="gone@example.com"))
+    monkeypatch.setattr("agent_factory.database.session.get_db", lambda: iter([Session()]))
+
+    credentials = type("Credentials", (), {"credentials": "token"})()
+    import asyncio
+
+    with pytest.raises(HTTPException, match="User account is unavailable"):
+        asyncio.run(auth.get_current_user(credentials))
 
 
 @pytest.mark.unit
@@ -37,8 +67,8 @@ def test_create_access_token_with_expiry():
     token = create_access_token(data, expires_delta=expires_delta)
     
     payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    exp_time = datetime.fromtimestamp(payload["exp"])
-    assert exp_time > datetime.utcnow() + timedelta(minutes=59)
+    exp_time = datetime.fromtimestamp(payload["exp"], tz=timezone.utc)
+    assert exp_time > datetime.now(timezone.utc) + timedelta(minutes=59)
 
 
 @pytest.mark.unit

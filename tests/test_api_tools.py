@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 from unittest.mock import Mock, patch
 
 from agent_factory.api.main import app
+from agent_factory.security.auth import User, get_current_user
 from agent_factory.tools.base import Tool
 
 client = TestClient(app)
@@ -83,12 +84,24 @@ def test_test_tool():
     mock_tool = Mock(spec=Tool)
     mock_tool.execute.return_value = "result"
     
-    with patch('agent_factory.api.routes.tools.registry') as mock_registry:
-        mock_registry.get_tool.return_value = mock_tool
-        response = client.post(
-            "/api/v1/tools/test-tool/test",
-            json={"params": {"x": "test"}}
-        )
-        assert response.status_code == 200
-        assert response.json()["success"] is True
-        assert response.json()["result"] == "result"
+    app.dependency_overrides[get_current_user] = lambda: User(
+        id="user-1", email="test@example.com", roles=["user"]
+    )
+    try:
+        with patch('agent_factory.api.routes.tools.registry') as mock_registry:
+            mock_registry.get_tool.return_value = mock_tool
+            response = client.post(
+                "/api/v1/tools/test-tool/test",
+                json={"params": {"x": "test"}}
+            )
+            assert response.status_code == 200
+            assert response.json()["success"] is True
+            assert response.json()["result"] == "result"
+    finally:
+        app.dependency_overrides.pop(get_current_user, None)
+
+
+@pytest.mark.unit
+def test_tool_test_requires_authentication():
+    response = client.post("/api/v1/tools/test-tool/test", json={"params": {}})
+    assert response.status_code in {401, 403}

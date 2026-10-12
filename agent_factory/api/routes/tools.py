@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from agent_factory.registry.local_registry import LocalRegistry
 from agent_factory.tools.base import Tool
 from agent_factory.security.auth import get_current_user
-from agent_factory.security.rbac import require_permission, Permission
+from agent_factory.security.rbac import require_user_permission, Permission
 
 router = APIRouter()
 registry = LocalRegistry()
@@ -41,60 +41,32 @@ async def create_tool(
 ):
     """Create a new tool."""
     # Check permission
-    require_permission(Permission.WRITE_AGENTS)(lambda: None)()
+    require_user_permission(user, Permission.WRITE_AGENTS)
     
     # Check if tool already exists
     existing = registry.get_tool(tool_data.id)
     if existing:
         raise HTTPException(status_code=400, detail=f"Tool {tool_data.id} already exists")
     
-    # Create implementation from code or use placeholder
+    # Persisted tools are definitions, not an arbitrary code-execution API.
+    # Trusted server-side integrations must register their callable during
+    # application startup through LocalRegistry.register_tool_implementation.
     if tool_data.implementation_code:
-        # Compile and load implementation code
-        try:
-            # Compile the code
-            code_obj = compile(tool_data.implementation_code, f"<tool_{tool_data.id}>", "exec")
-            
-            # Create a namespace for execution
-            namespace = {}
-            exec(code_obj, namespace)
-            
-            # Find the function (assume it's named after the tool_id or 'tool_function')
-            implementation = None
-            if tool_data.id in namespace:
-                implementation = namespace[tool_data.id]
-            elif "tool_function" in namespace:
-                implementation = namespace["tool_function"]
-            elif "implementation" in namespace:
-                implementation = namespace["implementation"]
-            else:
-                # Try to find any callable
-                for name, obj in namespace.items():
-                    if callable(obj) and not name.startswith("_"):
-                        implementation = obj
-                        break
-            
-            if not implementation or not callable(implementation):
-                raise ValueError("No callable function found in implementation_code")
-        except Exception as e:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Failed to compile implementation code: {str(e)}"
-            )
-    else:
-        # Create placeholder implementation
-        def placeholder_implementation(**kwargs):
-            raise NotImplementedError(
-                f"Tool {tool_data.id} implementation not available. "
-                "Please provide implementation_code or implementation function."
-            )
-        implementation = placeholder_implementation
+        raise HTTPException(
+            status_code=422,
+            detail="implementation_code is not accepted. Register a trusted server-side tool implementation instead.",
+        )
+
+    def unavailable_implementation(**kwargs):
+        raise NotImplementedError(
+            f"Tool {tool_data.id} has no registered runtime implementation."
+        )
     
     tool = Tool(
         id=tool_data.id,
         name=tool_data.name,
         description=tool_data.description,
-        implementation=implementation,
+        implementation=unavailable_implementation,
     )
     
     if tool_data.metadata:
@@ -138,7 +110,7 @@ async def update_tool(
     user=Depends(get_current_user)
 ):
     """Update a tool."""
-    require_permission(Permission.WRITE_AGENTS)(lambda: None)()
+    require_user_permission(user, Permission.WRITE_AGENTS)
     
     tool = registry.get_tool(tool_id)
     if not tool:
@@ -167,7 +139,7 @@ async def delete_tool(
     user=Depends(get_current_user)
 ):
     """Delete a tool."""
-    require_permission(Permission.DELETE_AGENTS)(lambda: None)()
+    require_user_permission(user, Permission.DELETE_AGENTS)
     
     tool_file = registry.base_path / "tools" / f"{tool_id}.json"
     if not tool_file.exists():
@@ -189,8 +161,9 @@ def get_tool_schema(tool_id: str):
 
 
 @router.post("/{tool_id}/test", response_model=Dict[str, Any])
-def test_tool(tool_id: str, test_params: ToolTestParams):
+def test_tool(tool_id: str, test_params: ToolTestParams, user=Depends(get_current_user)):
     """Test a tool with given parameters."""
+    require_user_permission(user, Permission.EXECUTE_AGENTS)
     tool = registry.get_tool(tool_id)
     
     if not tool:

@@ -8,7 +8,7 @@ from agent_factory.workflows.model import Workflow, WorkflowStep, Trigger, Trigg
 from agent_factory.registry.local_registry import LocalRegistry
 from agent_factory.runtime.engine import RuntimeEngine
 from agent_factory.security.auth import get_current_user
-from agent_factory.security.rbac import require_permission, Permission
+from agent_factory.security.rbac import require_user_permission, Permission
 
 router = APIRouter()
 registry = LocalRegistry()
@@ -50,7 +50,7 @@ async def create_workflow(
     user=Depends(get_current_user)
 ):
     """Create a new workflow."""
-    require_permission(Permission.WRITE_WORKFLOWS)(lambda: None)()
+    require_user_permission(user, Permission.WRITE_WORKFLOWS)
     
     # Check if workflow already exists
     existing = registry.get_workflow(workflow_data.id)
@@ -137,7 +137,7 @@ async def update_workflow(
     user=Depends(get_current_user)
 ):
     """Update a workflow."""
-    require_permission(Permission.WRITE_WORKFLOWS)(lambda: None)()
+    require_user_permission(user, Permission.WRITE_WORKFLOWS)
     
     workflow = registry.get_workflow(workflow_id)
     if not workflow:
@@ -197,8 +197,13 @@ async def update_workflow(
 
 
 @router.post("/{workflow_id}/run", response_model=Dict[str, Any])
-def run_workflow(workflow_id: str, run_data: WorkflowRun):
+def run_workflow(
+    workflow_id: str,
+    run_data: WorkflowRun,
+    user=Depends(get_current_user),
+):
     """Run a workflow."""
+    require_user_permission(user, Permission.EXECUTE_WORKFLOWS)
     workflow = registry.get_workflow(workflow_id)
     
     if not workflow:
@@ -216,7 +221,7 @@ async def trigger_workflow(
     user=Depends(get_current_user)
 ):
     """Trigger a workflow manually."""
-    require_permission(Permission.WRITE_WORKFLOWS)(lambda: None)()
+    require_user_permission(user, Permission.EXECUTE_WORKFLOWS)
     
     workflow = registry.get_workflow(workflow_id)
     if not workflow:
@@ -260,7 +265,7 @@ async def delete_workflow(
     user=Depends(get_current_user)
 ):
     """Delete a workflow."""
-    require_permission(Permission.DELETE_WORKFLOWS)(lambda: None)()
+    require_user_permission(user, Permission.DELETE_WORKFLOWS)
     
     workflow_file = registry.base_path / "workflows" / f"{workflow_id}.json"
     if not workflow_file.exists():

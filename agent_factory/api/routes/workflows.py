@@ -6,13 +6,12 @@ from pydantic import BaseModel
 
 from agent_factory.workflows.model import Workflow, WorkflowStep, Trigger, TriggerType, Condition
 from agent_factory.registry.local_registry import LocalRegistry
-from agent_factory.runtime.engine import RuntimeEngine
+from agent_factory.api.runtime import runtime
 from agent_factory.security.auth import get_current_user
 from agent_factory.security.rbac import require_user_permission, Permission
 
 router = APIRouter()
 registry = LocalRegistry()
-runtime = RuntimeEngine()
 
 
 class WorkflowCreate(BaseModel):
@@ -209,7 +208,15 @@ def run_workflow(
     if not workflow:
         raise HTTPException(status_code=404, detail="Workflow not found")
     
-    execution_id = runtime.run_workflow(workflow_id, run_data.context)
+    runtime.register_workflow(workflow)
+    try:
+        execution_id = runtime.run_workflow(
+            workflow_id,
+            run_data.context,
+            start_step=run_data.start_step,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     
     return {"execution_id": execution_id, "status": "running"}
 
@@ -230,6 +237,7 @@ async def trigger_workflow(
     # Create context from trigger config
     context = trigger_data.config.copy()
     
+    runtime.register_workflow(workflow)
     execution_id = runtime.run_workflow(workflow_id, context)
     
     return {"execution_id": execution_id, "status": "triggered"}

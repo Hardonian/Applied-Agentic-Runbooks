@@ -73,8 +73,13 @@ class RuntimeEngine:
     
     def register_workflow(self, workflow: Workflow) -> None:
         """Register a workflow in the runtime."""
+        # Workflows loaded from the persistent registry already carry the
+        # agents they reference.  Preserve those bindings when adding the
+        # workflow to a fresh runtime (for example after an API restart).
+        self.agents_registry.update(workflow.agents_registry)
         self.workflows_registry[workflow.id] = workflow
-        # Update workflow's agents registry
+        # Keep a shared registry so agents registered after the workflow are
+        # immediately available to it as well.
         workflow.agents_registry = self.agents_registry
     
     def run_agent(
@@ -136,7 +141,7 @@ class RuntimeEngine:
                 status="completed" if execution.status == "completed" else "failed",
                 execution_time=result.execution_time if result else 0.0,
                 tokens_used=result.tokens_used if result else 0,
-                cost_estimate=result.cost_estimate if result else 0.0,
+                cost_estimate=getattr(result, "cost_estimate", 0.0) if result else 0.0,
                 input_length=len(input_text),
                 output_length=len(result.output) if result and result.output else 0,
             )
@@ -153,6 +158,7 @@ class RuntimeEngine:
         self,
         workflow_id: str,
         context: Dict[str, Any],
+        start_step: Optional[str] = None,
     ) -> str:
         """
         Run a workflow and return execution ID.
@@ -160,6 +166,7 @@ class RuntimeEngine:
         Args:
             workflow_id: Workflow ID to run
             context: Initial context
+            start_step: Optional step ID from which execution should begin
             
         Returns:
             Execution ID
@@ -167,6 +174,8 @@ class RuntimeEngine:
         workflow = self.workflows_registry.get(workflow_id)
         if not workflow:
             raise ValueError(f"Workflow not found: {workflow_id}")
+        if start_step and start_step not in {step.id for step in workflow.steps}:
+            raise ValueError(f"Workflow step not found: {start_step}")
         
         execution_id = str(uuid.uuid4())
         execution = Execution(
@@ -175,12 +184,12 @@ class RuntimeEngine:
             entity_id=workflow_id,
             status="running",
             created_at=datetime.now(),
-            metadata={"context": context},
+            metadata={"context": context, "start_step": start_step},
         )
         self.executions[execution_id] = execution
         
         try:
-            result = workflow.execute(context)
+            result = workflow.execute(context, start_step=start_step)
             
             execution.status = "completed"
             execution.completed_at = datetime.now()

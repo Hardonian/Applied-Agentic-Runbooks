@@ -9,7 +9,7 @@ from agent_factory.blueprints.model import Blueprint
 from agent_factory.marketplace import publish_blueprint, get_blueprint_details
 from agent_factory.marketplace.reviews import get_reviews
 from agent_factory.security.auth import get_current_user
-from agent_factory.security.rbac import require_permission, Permission
+from agent_factory.security.rbac import require_user_permission, Permission
 
 router = APIRouter()
 registry = LocalRegistry()
@@ -48,7 +48,7 @@ async def create_blueprint(
     user=Depends(get_current_user)
 ):
     """Create a new blueprint."""
-    require_permission(Permission.WRITE_AGENTS)(lambda: None)()
+    require_user_permission(user, Permission.WRITE_AGENTS)
     
     # Check if blueprint already exists
     existing = registry.get_blueprint(blueprint_data.id)
@@ -84,8 +84,10 @@ async def create_blueprint(
             except Exception as e:
                 raise HTTPException(status_code=400, detail=f"Invalid agent data: {e}")
     
-    tools = []
-    workflows = []
+    # Keep component definitions in the portable package manifest. Tool
+    # implementations are resolved only from the trusted server-side catalog.
+    tools = blueprint_data.tools or []
+    workflows = blueprint_data.workflows or []
     
     blueprint = Blueprint(
         id=blueprint_data.id,
@@ -130,13 +132,20 @@ async def install_blueprint(
     user=Depends(get_current_user)
 ):
     """Install a blueprint."""
-    require_permission(Permission.READ_BLUEPRINTS)(lambda: None)()
+    require_user_permission(user, Permission.READ_BLUEPRINTS)
     
     blueprint = registry.get_blueprint(blueprint_id)
     if not blueprint:
         raise HTTPException(status_code=404, detail="Blueprint not found")
     
-    target_path = install_data.target_path or "."
+    # API callers may not choose arbitrary server filesystem destinations.
+    # Installations live under the registry's controlled storage root.
+    if install_data.target_path:
+        raise HTTPException(
+            status_code=422,
+            detail="target_path is server-managed; omit it to install into the registry workspace.",
+        )
+    target_path = str(registry.base_path / "installed_blueprints" / blueprint_id)
     
     success = blueprint.install(target_path)
     if not success:
@@ -152,7 +161,7 @@ async def publish_blueprint_endpoint(
     user=Depends(get_current_user)
 ):
     """Publish a blueprint to marketplace."""
-    require_permission(Permission.PUBLISH_BLUEPRINTS)(lambda: None)()
+    require_user_permission(user, Permission.PUBLISH_BLUEPRINTS)
     
     blueprint = registry.get_blueprint(blueprint_id)
     if not blueprint:

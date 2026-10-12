@@ -133,6 +133,11 @@ class Workflow:
                     if step.id == start_step:
                         start_index = i
                         break
+                else:
+                    return WorkflowResult(
+                        success=False,
+                        error=f"Workflow step not found: {start_step}",
+                    )
             
             # Execute steps sequentially
             for i, step in enumerate(self.steps[start_index:], start=start_index):

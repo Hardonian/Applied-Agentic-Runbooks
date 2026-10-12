@@ -3,12 +3,11 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import List, Optional, Dict, Any
 
-from agent_factory.runtime.engine import RuntimeEngine
+from agent_factory.api.runtime import runtime
 from agent_factory.security.auth import get_current_user
 from agent_factory.security.rbac import require_user_permission, Permission
 
 router = APIRouter()
-runtime = RuntimeEngine()
 
 
 @router.get("/", response_model=List[Dict[str, Any]])
@@ -108,6 +107,7 @@ async def retry_execution(
         agent = reg.get_agent(execution.entity_id)
         if not agent:
             raise HTTPException(status_code=404, detail="Agent not found")
+        runtime.register_agent(agent)
         
         # Get original input from metadata
         original_input = execution.metadata.get("input_text", "") if execution.metadata else ""
@@ -125,6 +125,7 @@ async def retry_execution(
         workflow = reg.get_workflow(execution.entity_id)
         if not workflow:
             raise HTTPException(status_code=404, detail="Workflow not found")
+        runtime.register_workflow(workflow)
         
         # Get original context from metadata
         original_context = execution.metadata.get("context", {}) if execution.metadata else {}
@@ -132,6 +133,7 @@ async def retry_execution(
         new_execution_id = runtime.run_workflow(
             execution.entity_id,
             original_context,
+            start_step=execution.metadata.get("start_step") if execution.metadata else None,
         )
     else:
         raise HTTPException(status_code=400, detail="Unknown execution type")

@@ -3,7 +3,8 @@
 import pytest
 from pathlib import Path
 import tempfile
-from agent_factory.blueprints.model import Blueprint, BlueprintConfig
+from agent_factory.blueprints.model import Blueprint, BlueprintConfig, PricingInfo, PricingModel
+from agent_factory.agents.agent import Agent
 
 
 @pytest.mark.unit
@@ -80,3 +81,22 @@ def test_blueprint_install():
         assert result is True
         assert (Path(tmpdir) / "agents").exists()
         assert (Path(tmpdir) / "tools").exists()
+
+
+@pytest.mark.unit
+def test_blueprint_serializes_component_objects_without_python_yaml_tags():
+    blueprint = Blueprint(
+        id="component-blueprint",
+        name="Component Blueprint",
+        version="1.0.0",
+        description="Test",
+        author="Test",
+        agents=[Agent(id="agent-1", name="Agent", instructions="Test")],
+        tools=[{"id": "tool-1", "name": "Tool"}],
+    )
+
+    document = blueprint.to_yaml()
+
+    assert "!!python" not in document
+    assert "agent-1" in document
+    assert Blueprint.from_dict(__import__("yaml").safe_load(document)["blueprint"]).agents[0]["id"] == "agent-1"

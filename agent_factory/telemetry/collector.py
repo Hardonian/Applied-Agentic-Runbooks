@@ -6,7 +6,7 @@ import uuid
 from typing import Optional, List
 from datetime import datetime
 
-from agent_factory.telemetry.model import TelemetryEvent
+from agent_factory.telemetry.model import EventType, TelemetryEvent
 from agent_factory.telemetry.backends.base import TelemetryBackend
 from agent_factory.telemetry.backends.sqlite import SQLiteTelemetryBackend
 
@@ -97,6 +97,7 @@ class TelemetryCollector:
         
         event = AgentRunEvent(
             event_id=str(uuid.uuid4()),
+            event_type=EventType.AGENT_RUN,
             agent_id=agent_id,
             tenant_id=tenant_id,
             user_id=user_id,
@@ -150,6 +151,7 @@ class TelemetryCollector:
         
         event = WorkflowRunEvent(
             event_id=str(uuid.uuid4()),
+            event_type=EventType.WORKFLOW_RUN,
             workflow_id=workflow_id,
             tenant_id=tenant_id,
             user_id=user_id,
@@ -194,6 +196,11 @@ class TelemetryCollector:
         
         event = BlueprintInstallEvent(
             event_id=str(uuid.uuid4()),
+            event_type=(
+                EventType.BLUEPRINT_INSTALL
+                if install_type == "install"
+                else EventType.BLUEPRINT_UNINSTALL
+            ),
             blueprint_id=blueprint_id,
             tenant_id=tenant_id,
             user_id=user_id,
@@ -236,6 +243,7 @@ class TelemetryCollector:
         
         event = ErrorEvent(
             event_id=str(uuid.uuid4()),
+            event_type=EventType.ERROR,
             error_type=error_type,
             error_message=error_message,
             tenant_id=tenant_id,
@@ -283,6 +291,7 @@ class TelemetryCollector:
         
         event = BillingUsageEvent(
             event_id=str(uuid.uuid4()),
+            event_type=EventType.BILLING_USAGE,
             billing_unit=billing_unit,
             quantity=quantity,
             tenant_id=tenant_id,

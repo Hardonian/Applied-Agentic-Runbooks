@@ -47,6 +47,45 @@ def test_register_workflow():
 
 
 @pytest.mark.unit
+def test_run_workflow_preserves_hydrated_agents_and_start_step():
+    """A persisted workflow can run after its agent bindings are rehydrated."""
+    engine = RuntimeEngine()
+    workflow = Mock(spec=Workflow)
+    workflow.id = "test-workflow"
+    workflow.steps = [Mock(id="first"), Mock(id="second")]
+    workflow.agents_registry = {"persisted-agent": Mock()}
+    workflow.execute.return_value = Mock(
+        execution_time=0.1,
+        steps_completed=1,
+        steps_total=1,
+        tokens_used=0,
+        cost_estimate=0.0,
+    )
+
+    engine.register_workflow(workflow)
+    execution_id = engine.run_workflow(
+        "test-workflow", {"input": "test"}, start_step="second"
+    )
+
+    assert "persisted-agent" in engine.agents_registry
+    workflow.execute.assert_called_once_with({"input": "test"}, start_step="second")
+    assert engine.get_execution(execution_id).metadata["start_step"] == "second"
+
+
+@pytest.mark.unit
+def test_run_workflow_rejects_unknown_start_step():
+    engine = RuntimeEngine()
+    workflow = Mock(spec=Workflow)
+    workflow.id = "test-workflow"
+    workflow.steps = [Mock(id="first")]
+    workflow.agents_registry = {}
+    engine.register_workflow(workflow)
+
+    with pytest.raises(ValueError, match="Workflow step not found"):
+        engine.run_workflow("test-workflow", {}, start_step="missing")
+
+
+@pytest.mark.unit
 @patch('agent_factory.integrations.openai_client.OpenAIAgentClient')
 def test_run_agent(mock_client_class):
     """Test running an agent via runtime engine."""

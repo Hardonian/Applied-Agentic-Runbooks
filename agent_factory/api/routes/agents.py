@@ -6,11 +6,10 @@ from pydantic import BaseModel
 
 from agent_factory.agents.agent import Agent
 from agent_factory.registry.local_registry import LocalRegistry
-from agent_factory.runtime.engine import RuntimeEngine
+from agent_factory.api.runtime import runtime
 
 router = APIRouter()
 registry = LocalRegistry()
-runtime = RuntimeEngine()
 
 
 class AgentCreate(BaseModel):
@@ -75,17 +74,22 @@ def run_agent(agent_id: str, run_data: AgentRun):
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
     
-    result = agent.run(
+    runtime.register_agent(agent)
+    execution_id = runtime.run_agent(
+        agent_id,
         run_data.input_text,
         session_id=run_data.session_id,
         context=run_data.context,
     )
+    execution = runtime.get_execution(execution_id)
+    result = execution.result
     
     return {
         "output": result.output,
         "status": result.status.value,
         "execution_time": result.execution_time,
         "error": result.error,
+        "execution_id": execution_id,
     }
 
 

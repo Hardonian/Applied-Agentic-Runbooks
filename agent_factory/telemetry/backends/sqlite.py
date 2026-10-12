@@ -27,12 +27,27 @@ class SQLiteTelemetryBackend(TelemetryBackend):
             db_path: Path to SQLite database file
         """
         self.db_path = Path(db_path)
+        # SQLite creates a separate in-memory database per connection.  Keep
+        # one connection alive for the documented ``:memory:`` test/local use
+        # case so initialization, writes, and queries address the same store.
+        self._memory_connection = (
+            sqlite3.connect(":memory:") if str(db_path) == ":memory:" else None
+        )
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._init_db()
+
+    def _connect(self) -> sqlite3.Connection:
+        """Return the backing connection without splitting in-memory state."""
+        return self._memory_connection or sqlite3.connect(self.db_path)
+
+    def _close(self, conn: sqlite3.Connection) -> None:
+        """Close file-backed connections while retaining an in-memory store."""
+        if conn is not self._memory_connection:
+            conn.close()
     
     def _init_db(self) -> None:
         """Initialize database tables."""
-        conn = sqlite3.connect(self.db_path)
+        conn = self._connect()
         cursor = conn.cursor()
         
         # Main events table
@@ -71,11 +86,11 @@ class SQLiteTelemetryBackend(TelemetryBackend):
         """)
         
         conn.commit()
-        conn.close()
+        self._close(conn)
     
     def store_event(self, event: TelemetryEvent) -> None:
         """Store a telemetry event."""
-        conn = sqlite3.connect(self.db_path)
+        conn = self._connect()
         cursor = conn.cursor()
         
         try:
@@ -97,7 +112,7 @@ class SQLiteTelemetryBackend(TelemetryBackend):
             
             conn.commit()
         finally:
-            conn.close()
+            self._close(conn)
     
     def query_events(
         self,
@@ -110,7 +125,7 @@ class SQLiteTelemetryBackend(TelemetryBackend):
         limit: int = 100,
     ) -> List[TelemetryEvent]:
         """Query telemetry events."""
-        conn = sqlite3.connect(self.db_path)
+        conn = self._connect()
         cursor = conn.cursor()
         
         try:
@@ -157,7 +172,7 @@ class SQLiteTelemetryBackend(TelemetryBackend):
             
             return events
         finally:
-            conn.close()
+            self._close(conn)
     
     def _deserialize_event(self, event_dict: dict) -> Optional[TelemetryEvent]:
         """Deserialize event from dictionary."""

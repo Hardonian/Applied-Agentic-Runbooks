@@ -14,8 +14,9 @@ import hashlib
 import json
 import time
 import uuid
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Set
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
@@ -23,7 +24,7 @@ class VeriDAGNodeProof:
     """Cryptographic attestation of a discrete step execution in the workflow."""
     node_id: str
     executor_id: str
-    parent_hashes: List[str]
+    parent_hashes: list[str]
     input_hash: str
     output_hash: str
     state_merkle_hash: str
@@ -37,11 +38,11 @@ class VeriDAGExecutionProof:
     execution_id: str
     workflow_name: str
     final_merkle_root: str
-    node_proofs: Dict[str, VeriDAGNodeProof]
+    node_proofs: dict[str, VeriDAGNodeProof]
     timestamp: float
     is_valid: bool = True
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert proof bundle to JSON-serializable dictionary."""
         return {
             "execution_id": self.execution_id,
@@ -76,7 +77,7 @@ class VeriDAGEngine:
         """Deterministically serialize and hash data."""
         try:
             raw = json.dumps(payload, sort_keys=True, default=str).encode("utf-8")
-        except Exception:
+        except (TypeError, ValueError, AttributeError):
             raw = str(payload).encode("utf-8")
         return hashlib.sha256(raw).hexdigest()
 
@@ -86,7 +87,7 @@ class VeriDAGEngine:
         node_id: str,
         input_hash: str,
         output_hash: str,
-        parent_hashes: List[str],
+        parent_hashes: list[str],
     ) -> str:
         """
         Compute Merkle node hash:
@@ -99,26 +100,26 @@ class VeriDAGEngine:
     def execute_verifiable_dag(
         cls,
         workflow_name: str,
-        nodes: Dict[str, Dict[str, Any]],  # node_id -> {fn, parents}
-        initial_input: Dict[str, Any],
-    ) -> Tuple[Dict[str, Any], VeriDAGExecutionProof]:
+        nodes: dict[str, dict[str, Any]],  # node_id -> {fn, parents}
+        initial_input: dict[str, Any],
+    ) -> tuple[dict[str, Any], VeriDAGExecutionProof]:
         """
         Execute DAG nodes in topological dependency order while calculating
         cryptographic state proofs at every node transition.
         """
         execution_id = f"veridag-{uuid.uuid4().hex[:12]}"
-        results: Dict[str, Any] = {}
-        node_proofs: Dict[str, VeriDAGNodeProof] = {}
+        results: dict[str, Any] = {}
+        node_proofs: dict[str, VeriDAGNodeProof] = {}
 
         # Topological sorting
-        executed: Set[str] = set()
+        executed: set[str] = set()
         pending = set(nodes.keys())
 
         while pending:
             progress = False
-            for node_id in sorted(list(pending)):
+            for node_id in sorted(pending):
                 node_spec = nodes[node_id]
-                parents: List[str] = node_spec.get("parents", [])
+                parents: list[str] = node_spec.get("parents", [])
 
                 if all(p in executed for p in parents):
                     # Gather inputs from parents
@@ -205,5 +206,5 @@ class VeriDAGEngine:
             ).hexdigest()
 
             return proof.final_merkle_root == expected_final_root
-        except Exception:
+        except Exception:  # noqa: BLE001
             return False

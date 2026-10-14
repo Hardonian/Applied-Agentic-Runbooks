@@ -3,6 +3,7 @@ Tests for AgentPCAP packet capture and deterministic pathology debugger.
 """
 
 import pytest
+
 from agent_factory.telemetry.pcap import (
     AgentPCAPTracer,
     FrameType,

@@ -3,13 +3,13 @@ Optimization algorithms for cost, latency, and model cascades.
 """
 
 from agent_factory.optimization.cascade_router import (
-    ModelTier,
     CascadeExecutionResult,
+    ModelTier,
     SpeculativeCascadeRouter,
 )
 
 __all__ = [
-    "ModelTier",
     "CascadeExecutionResult",
+    "ModelTier",
     "SpeculativeCascadeRouter",
 ]

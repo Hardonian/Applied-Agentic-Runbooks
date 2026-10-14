@@ -3,6 +3,7 @@ Tests for Speculative Model Cascading and Pareto Cost Optimizer.
 """
 
 import pytest
+
 from agent_factory.optimization.cascade_router import (
     ModelTier,
     SpeculativeCascadeRouter,

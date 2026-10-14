@@ -4,6 +4,7 @@ Tests for Advanced REST Endpoints (MCTS, Cascade, JIT, and MCPWall).
 
 import pytest
 from fastapi.testclient import TestClient
+
 from agent_factory.api.main import app
 
 

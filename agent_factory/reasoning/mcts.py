@@ -15,7 +15,7 @@ import math
 import time
 import uuid
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from agent_factory.agents.agent import Agent
@@ -27,8 +27,8 @@ class MCTSNode:
     id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
     thought: str = ""
     depth: int = 0
-    parent: Optional[MCTSNode] = None
-    children: List[MCTSNode] = field(default_factory=list)
+    parent: MCTSNode | None = None
+    children: list[MCTSNode] = field(default_factory=list)
     visits: int = 0
     value_sum: float = 0.0
     prior_prob: float = 1.0
@@ -36,7 +36,7 @@ class MCTSNode:
     pruned: bool = False
     is_terminal: bool = False
     cumulative_state: str = ""
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def q_value(self) -> float:
@@ -55,7 +55,7 @@ class MCTSNode:
         exploration = c_puct * self.prior_prob * (math.sqrt(max(1, parent_visits)) / (1 + self.visits))
         return self.q_value + exploration
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert tree node to JSON-serializable dictionary for UI visualization."""
         return {
             "id": self.id,
@@ -73,37 +73,37 @@ class MCTSNode:
 @dataclass
 class MCTSSearchResult:
     """Encapsulates the Pareto-optimal solution path and search telemetry."""
-    best_trajectory: List[str]
+    best_trajectory: list[str]
     final_solution: str
     confidence_score: float
     total_nodes_explored: int
     branches_pruned: int
     depth_reached: int
     execution_time_seconds: float
-    tree_visualization: Dict[str, Any]
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    tree_visualization: dict[str, Any]
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_markdown(self) -> str:
         """Render trajectory as human-readable decision log."""
         lines = [
-            f"# 🧠 Speculative MCTS Reasoning Trajectory",
-            f"",
+            "# 🧠 Speculative MCTS Reasoning Trajectory",
+            "",
             f"- **Confidence Score**: **{self.confidence_score * 100:.1f}%**",
             f"- **Nodes Explored**: `{self.total_nodes_explored}`",
             f"- **Branches Pruned**: `{self.branches_pruned}`",
             f"- **Search Depth**: `{self.depth_reached}`",
             f"- **Computation Latency**: `{self.execution_time_seconds:.3f}s`",
-            f"",
-            f"---",
-            f"",
-            f"## 🏆 Pareto-Optimal Reasoning Path",
+            "",
+            "---",
+            "",
+            "## 🏆 Pareto-Optimal Reasoning Path",
         ]
         for idx, step in enumerate(self.best_trajectory, 1):
             lines.append(f"{idx}. {step}")
         lines.extend([
-            f"",
-            f"## 🏁 Final Synthesized Solution",
-            f"",
+            "",
+            "## 🏁 Final Synthesized Solution",
+            "",
             self.final_solution,
         ])
         return "\n".join(lines)
@@ -117,7 +117,7 @@ class SpeculativeMCTSEngine:
 
     def __init__(
         self,
-        agent: Optional[Agent] = None,
+        agent: Agent | None = None,
         max_depth: int = 4,
         branching_factor: int = 3,
         num_simulations: int = 10,
@@ -134,7 +134,7 @@ class SpeculativeMCTSEngine:
     def search(
         self,
         problem_statement: str,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
     ) -> MCTSSearchResult:
         """
         Execute Speculative MCTS to uncover the globally optimal reasoning path.
@@ -223,14 +223,14 @@ class SpeculativeMCTSEngine:
         self,
         parent: MCTSNode,
         problem: str,
-        context: Dict[str, Any],
-    ) -> List[MCTSNode]:
+        context: dict[str, Any],
+    ) -> list[MCTSNode]:
         """Generate diverse candidate next thoughts or tool actions."""
         if parent.depth >= self.max_depth:
             parent.is_terminal = True
             return []
 
-        candidates: List[str] = []
+        candidates: list[str] = []
 
         if self.agent and hasattr(self.agent, "run"):
             # Prompt agent for diverse speculative actions
@@ -255,7 +255,7 @@ class SpeculativeMCTSEngine:
             ]
             candidates.extend(heuristics[: self.branching_factor - len(candidates)])
 
-        children: List[MCTSNode] = []
+        children: list[MCTSNode] = []
         prior = 1.0 / len(candidates)
 
         for thought in candidates:
@@ -297,15 +297,15 @@ class SpeculativeMCTSEngine:
 
     def _backpropagate(self, node: MCTSNode, value: float) -> None:
         """Propagate updated value estimate from leaf back up to the root."""
-        curr: Optional[MCTSNode] = node
+        curr: MCTSNode | None = node
         while curr is not None:
             curr.visits += 1
             curr.value_sum += value
             curr = curr.parent
 
-    def _extract_best_path(self, root: MCTSNode) -> List[MCTSNode]:
+    def _extract_best_path(self, root: MCTSNode) -> list[MCTSNode]:
         """Extract the highest-value non-pruned reasoning trajectory."""
-        path: List[MCTSNode] = [root]
+        path: list[MCTSNode] = [root]
         curr = root
         while curr.children:
             active = [c for c in curr.children if not c.pruned and c.visits > 0]
@@ -317,7 +317,7 @@ class SpeculativeMCTSEngine:
             curr = best_child
         return path
 
-    def _synthesize_solution(self, problem: str, trajectory: List[str]) -> str:
+    def _synthesize_solution(self, problem: str, trajectory: list[str]) -> str:
         """Synthesize verified trajectory into an actionable resolution."""
         if not trajectory:
             return f"Direct resolution achieved for: {problem}"

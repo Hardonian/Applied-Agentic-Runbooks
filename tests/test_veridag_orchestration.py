@@ -3,9 +3,9 @@ Tests for VeriDAG cryptographic state DAG engine.
 """
 
 import pytest
+
 from agent_factory.orchestration.veridag import (
     VeriDAGEngine,
-    VeriDAGExecutionProof,
 )
 
 

@@ -14,9 +14,9 @@ import hashlib
 import json
 import time
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 
 class FrameType(str, Enum):
@@ -41,7 +41,7 @@ class PCAPFrame:
     frame_type: FrameType
     source: str
     destination: str
-    payload: Dict[str, Any]
+    payload: dict[str, Any]
     tokens_used: int = 0
     duration_ms: float = 0.0
     payload_hash: str = ""
@@ -61,7 +61,7 @@ class PathologyDiagnostic:
     pathology_type: PathologyType
     severity: str  # LOW, MEDIUM, CRITICAL
     description: str
-    offending_frames: List[str]
+    offending_frames: list[str]
     suggested_mitigation: str
 
 
@@ -71,9 +71,9 @@ class AgentPCAPTracer:
     deterministic root-cause pathology analysis.
     """
 
-    def __init__(self, session_id: Optional[str] = None):
+    def __init__(self, session_id: str | None = None):
         self.session_id = session_id or f"pcap-{uuid.uuid4().hex[:10]}"
-        self.frames: List[PCAPFrame] = []
+        self.frames: list[PCAPFrame] = []
         self.start_time = time.time()
 
     def record_frame(
@@ -81,7 +81,7 @@ class AgentPCAPTracer:
         frame_type: FrameType,
         source: str,
         destination: str,
-        payload: Dict[str, Any],
+        payload: dict[str, Any],
         tokens_used: int = 0,
         duration_ms: float = 0.0,
     ) -> PCAPFrame:
@@ -99,11 +99,11 @@ class AgentPCAPTracer:
         self.frames.append(frame)
         return frame
 
-    def diagnose_pathologies(self) -> List[PathologyDiagnostic]:
+    def diagnose_pathologies(self) -> list[PathologyDiagnostic]:
         """
         Perform deterministic, zero-LLM heuristic detection of execution pathologies.
         """
-        diagnostics: List[PathologyDiagnostic] = []
+        diagnostics: list[PathologyDiagnostic] = []
 
         if len(self.frames) < 3:
             return diagnostics
@@ -173,7 +173,7 @@ class AgentPCAPTracer:
 
         return diagnostics
 
-    def export_apcap(self) -> Dict[str, Any]:
+    def export_apcap(self) -> dict[str, Any]:
         """Export session as .apcap bundle."""
         diagnostics = self.diagnose_pathologies()
         return {

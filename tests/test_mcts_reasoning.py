@@ -3,6 +3,7 @@ Tests for Speculative Monte Carlo Tree Search (MCTS) Engine.
 """
 
 import pytest
+
 from agent_factory.reasoning.mcts import (
     MCTSNode,
     SpeculativeMCTSEngine,

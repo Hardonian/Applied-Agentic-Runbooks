@@ -3,10 +3,11 @@ Tests for MCPWall zero-trust security and human approval gates.
 """
 
 import os
+
 import pytest
+
 from agent_factory.security.mcpwall import (
     MCPWall,
-    MCPWallVerdict,
 )
 
 

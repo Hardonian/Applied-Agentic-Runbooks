@@ -3,10 +3,10 @@ Tests for TokenGoblin velocity governor and Settler dual-entry ledger.
 """
 
 import pytest
+
 from agent_factory.financial.token_goblin import (
-    TokenGoblinGovernor,
     DualEntryLedgerAccount,
-    SettlementReconciliationError,
+    TokenGoblinGovernor,
     TokenVelocityOverheatError,
 )
 

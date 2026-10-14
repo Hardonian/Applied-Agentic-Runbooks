@@ -13,7 +13,7 @@ import re
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, Optional, Tuple
+from typing import Any
 
 from agent_factory.integrations.universal_client import UniversalLLMClient
 
@@ -25,21 +25,21 @@ class ModelTier(str, Enum):
 
 
 # Pricing per 1,000 output tokens (USD estimates)
-TIER_COST_PER_1K: Dict[ModelTier, float] = {
+TIER_COST_PER_1K: dict[ModelTier, float] = {
     ModelTier.FAST: 0.0006,
     ModelTier.STANDARD: 0.010,
     ModelTier.DEEP: 0.060,
 }
 
 # Baseline latency expectation in seconds
-TIER_BASELINE_LATENCY: Dict[ModelTier, float] = {
+TIER_BASELINE_LATENCY: dict[ModelTier, float] = {
     ModelTier.FAST: 0.25,
     ModelTier.STANDARD: 1.40,
     ModelTier.DEEP: 6.50,
 }
 
 # Default models per tier
-DEFAULT_TIER_MODELS: Dict[ModelTier, str] = {
+DEFAULT_TIER_MODELS: dict[ModelTier, str] = {
     ModelTier.FAST: "gpt-4o-mini",
     ModelTier.STANDARD: "gpt-4o",
     ModelTier.DEEP: "o1",
@@ -59,23 +59,23 @@ class CascadeExecutionResult:
     frontier_baseline_cost_usd: float
     cost_savings_percentage: float
     speedup_factor: float
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_markdown(self) -> str:
         """Render Pareto efficiency report."""
         lines = [
-            f"# ⚡ Speculative Cascade Efficiency Report",
-            f"",
+            "# ⚡ Speculative Cascade Efficiency Report",
+            "",
             f"- **Resolved Tier**: `{self.tier_used.value.upper()}` ({self.model_used})",
             f"- **Speculative Draft Accepted**: `{'YES ✅' if self.speculative_draft_accepted else 'NO (Escalated ⚠️)'}`",
             f"- **Verification Confidence**: **{self.verification_score * 100:.1f}%**",
             f"- **Execution Latency**: `{self.latency_seconds:.3f}s` (**{self.speedup_factor:.1f}x speedup** vs frontier baseline)",
             f"- **Cost**: `${self.cost_usd:.6f}` vs `${self.frontier_baseline_cost_usd:.6f}` (**{self.cost_savings_percentage:.1f}% cost reduction**)",
-            f"",
-            f"---",
-            f"",
-            f"## 📝 Response Output",
-            f"",
+            "",
+            "---",
+            "",
+            "## 📝 Response Output",
+            "",
             self.output,
         ]
         return "\n".join(lines)
@@ -89,13 +89,13 @@ class SpeculativeCascadeRouter:
 
     def __init__(
         self,
-        llm_client: Optional[UniversalLLMClient] = None,
+        llm_client: UniversalLLMClient | None = None,
         verification_threshold: float = 0.70,
     ):
         self.client = llm_client or UniversalLLMClient()
         self.verification_threshold = verification_threshold
 
-    def assess_complexity(self, prompt: str) -> Tuple[ModelTier, float]:
+    def assess_complexity(self, prompt: str) -> tuple[ModelTier, float]:
         """
         Estimate task complexity score in [0.0, 1.0] and initial target tier.
         Analyzes prompt length, symbolic math, logic qualifiers, and multi-step indicators.
@@ -164,8 +164,8 @@ class SpeculativeCascadeRouter:
     def execute(
         self,
         prompt: str,
-        context: Optional[Dict[str, Any]] = None,
-        force_tier: Optional[ModelTier] = None,
+        context: dict[str, Any] | None = None,
+        force_tier: ModelTier | None = None,
     ) -> CascadeExecutionResult:
         """
         Execute prompt via speculative cascade:

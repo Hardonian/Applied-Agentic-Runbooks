@@ -15,14 +15,13 @@ import json
 import os
 import time
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 
 class MCPWallSecurityError(Exception):
     """Raised when an MCP or tool invocation violates policy."""
-    pass
 
 
 @dataclass
@@ -34,7 +33,7 @@ class HumanApprovalTicket:
     created_at: float
     expires_at: float
     consumed: bool = False
-    approved_by: Optional[str] = None
+    approved_by: str | None = None
 
 
 @dataclass
@@ -43,8 +42,8 @@ class MCPWallVerdict:
     allowed: bool
     reason: str
     requires_approval: bool = False
-    ticket: Optional[HumanApprovalTicket] = None
-    sanitized_args: Optional[Dict[str, Any]] = None
+    ticket: HumanApprovalTicket | None = None
+    sanitized_args: dict[str, Any] | None = None
 
 
 class MCPWall:
@@ -55,10 +54,10 @@ class MCPWall:
 
     def __init__(
         self,
-        allowed_tools: Optional[Set[str]] = None,
-        denied_tools: Optional[Set[str]] = None,
-        destructive_tools: Optional[Set[str]] = None,
-        path_roots: Optional[List[str]] = None,
+        allowed_tools: set[str] | None = None,
+        denied_tools: set[str] | None = None,
+        destructive_tools: set[str] | None = None,
+        path_roots: list[str] | None = None,
         max_request_bytes: int = 65536,
         approval_ttl_seconds: int = 300,
     ):
@@ -68,9 +67,9 @@ class MCPWall:
         self.path_roots = [Path(p).resolve() for p in (path_roots or [os.getcwd()])]
         self.max_request_bytes = max_request_bytes
         self.approval_ttl_seconds = approval_ttl_seconds
-        self.pending_approvals: Dict[str, HumanApprovalTicket] = {}
+        self.pending_approvals: dict[str, HumanApprovalTicket] = {}
 
-    def compute_request_hash(self, tool_name: str, arguments: Dict[str, Any]) -> str:
+    def compute_request_hash(self, tool_name: str, arguments: dict[str, Any]) -> str:
         """Calculate canonical SHA-256 hash of tool call payload."""
         payload = {
             "tool": tool_name,
@@ -79,7 +78,7 @@ class MCPWall:
         serialized = json.dumps(payload, sort_keys=True).encode("utf-8")
         return hashlib.sha256(serialized).hexdigest()
 
-    def request_approval(self, tool_name: str, arguments: Dict[str, Any]) -> HumanApprovalTicket:
+    def request_approval(self, tool_name: str, arguments: dict[str, Any]) -> HumanApprovalTicket:
         """Create a cryptographic challenge for human gate confirmation."""
         req_hash = self.compute_request_hash(tool_name, arguments)
         ticket_id = f"mcp-gate-{uuid.uuid4().hex[:12]}"
@@ -105,8 +104,8 @@ class MCPWall:
     def validate_tool_call(
         self,
         tool_name: str,
-        arguments: Dict[str, Any],
-        approval_ticket_id: Optional[str] = None,
+        arguments: dict[str, Any],
+        approval_ticket_id: str | None = None,
     ) -> MCPWallVerdict:
         """
         Evaluate tool invocation against security boundary rules.

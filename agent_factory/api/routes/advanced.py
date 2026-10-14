@@ -2,15 +2,15 @@
 Advanced Reasoning, JIT Tooling, Model Cascade, and Substrate Security API Routes.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 
-from agent_factory.reasoning.mcts import SpeculativeMCTSEngine
 from agent_factory.optimization.cascade_router import ModelTier, SpeculativeCascadeRouter
-from agent_factory.tools.jit_synthesizer import JITToolSynthesizer, ToolSynthesisSpec
+from agent_factory.reasoning.mcts import SpeculativeMCTSEngine
 from agent_factory.security.mcpwall import MCPWall
-from agent_factory.telemetry.pcap import AgentPCAPTracer, FrameType
+from agent_factory.tools.jit_synthesizer import JITToolSynthesizer, ToolSynthesisSpec
 
 advanced_router = APIRouter()
 _global_mcpwall = MCPWall()
@@ -25,24 +25,24 @@ class MCTSSearchRequest(BaseModel):
 
 class CascadeExecuteRequest(BaseModel):
     prompt: str = Field(..., description="Task prompt to execute through speculative cascade")
-    force_tier: Optional[str] = Field(None, description="Force tier: fast, standard, deep")
+    force_tier: str | None = Field(None, description="Force tier: fast, standard, deep")
 
 
 class JITSynthesizeRequest(BaseModel):
     name: str = Field(..., description="Function name for synthesized tool")
     description: str = Field(..., description="Purpose and behavior of the tool")
-    code: Optional[str] = Field(None, description="Python code implementation")
-    sample_inputs: Optional[List[Dict[str, Any]]] = None
-    expected_outputs: Optional[List[Any]] = None
+    code: str | None = Field(None, description="Python code implementation")
+    sample_inputs: list[dict[str, Any]] | None = None
+    expected_outputs: list[Any] | None = None
 
 
 class MCPWallValidateRequest(BaseModel):
     tool_name: str = Field(..., description="Target tool name")
-    arguments: Dict[str, Any] = Field(..., description="Invocation arguments")
-    approval_ticket_id: Optional[str] = None
+    arguments: dict[str, Any] = Field(..., description="Invocation arguments")
+    approval_ticket_id: str | None = None
 
 
-@advanced_router.post("/reasoning/mcts/search", response_model=Dict[str, Any])
+@advanced_router.post("/reasoning/mcts/search", response_model=dict[str, Any])
 def search_mcts(request: MCTSSearchRequest):
     """
     Execute Speculative Monte Carlo Tree Search across candidate reasoning hypotheses.
@@ -66,7 +66,7 @@ def search_mcts(request: MCTSSearchRequest):
     }
 
 
-@advanced_router.post("/optimization/cascade/execute", response_model=Dict[str, Any])
+@advanced_router.post("/optimization/cascade/execute", response_model=dict[str, Any])
 def execute_cascade(request: CascadeExecuteRequest):
     """
     Execute prompt via Speculative Model Cascade optimizing for Pareto cost and latency.
@@ -95,7 +95,7 @@ def execute_cascade(request: CascadeExecuteRequest):
     }
 
 
-@advanced_router.post("/tools/jit/synthesize", response_model=Dict[str, Any])
+@advanced_router.post("/tools/jit/synthesize", response_model=dict[str, Any])
 def synthesize_tool(request: JITSynthesizeRequest):
     """
     Synthesize, AST-verify, compile, and sandbox-test a dynamic JIT tool.
@@ -119,11 +119,11 @@ def synthesize_tool(request: JITSynthesizeRequest):
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"JIT Tool synthesis failed: {str(e)}",
+            detail=f"JIT Tool synthesis failed: {e!s}",
         )
 
 
-@advanced_router.post("/security/mcpwall/validate", response_model=Dict[str, Any])
+@advanced_router.post("/security/mcpwall/validate", response_model=dict[str, Any])
 def validate_mcp_call(request: MCPWallValidateRequest):
     """
     Inspect tool call against MCPWall zero-trust security boundaries and human gates.

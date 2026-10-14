@@ -11,18 +11,16 @@ from __future__ import annotations
 
 import time
 from collections import deque
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import Any
 
 
 class SettlementReconciliationError(Exception):
     """Raised when ledger credits fail dual-entry reconciliation invariants."""
-    pass
 
 
 class TokenVelocityOverheatError(Exception):
     """Raised when token burn rate exceeds safety velocity threshold."""
-    pass
 
 
 @dataclass
@@ -68,7 +66,7 @@ class TokenGoblinGovernor:
         self.burnrate_spike_multiplier = burnrate_spike_multiplier
         self.window_seconds = window_seconds
         self.history: deque = deque()  # (timestamp, token_count)
-        self.accounts: Dict[str, DualEntryLedgerAccount] = {}
+        self.accounts: dict[str, DualEntryLedgerAccount] = {}
 
     def open_account(self, account_id: str, tenant_id: str, initial_credits: float) -> DualEntryLedgerAccount:
         """Open a dual-entry ledger account."""
@@ -86,7 +84,7 @@ class TokenGoblinGovernor:
         account_id: str,
         tokens: int,
         cost_usd: float,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Record token consumption, verify burn velocity, and deduct credits.
         """

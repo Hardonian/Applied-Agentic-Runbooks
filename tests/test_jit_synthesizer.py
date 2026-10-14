@@ -3,10 +3,11 @@ Tests for JIT Dynamic Tool Synthesizer and Sandbox Security.
 """
 
 import pytest
+
 from agent_factory.tools.jit_synthesizer import (
     JITToolSynthesizer,
-    ToolSynthesisSpec,
     ToolSecurityViolation,
+    ToolSynthesisSpec,
 )
 
 

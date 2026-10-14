@@ -1,0 +1,2 @@
+Agent Factory is available through service {{ include "agent-factory.fullname" . }}.
+WebSocket endpoints: /api/v1/ws/stream and /api/v1/ws/arena.

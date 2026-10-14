@@ -1,0 +1,6 @@
+apiVersion: 1
+providers:
+  - name: Agent Factory
+    folder: Agent Factory
+    type: file
+    options: {path: /var/lib/grafana/dashboards}

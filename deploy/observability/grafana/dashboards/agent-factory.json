@@ -1,0 +1,14 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "panels": [
+    {"type": "stat", "title": "PCAP Frames", "targets": [{"expr": "agent_factory_pcap_frames_total"}], "gridPos": {"h": 8, "w": 8, "x": 0, "y": 0}},
+    {"type": "stat", "title": "Tokens", "targets": [{"expr": "agent_factory_tokens_total"}], "gridPos": {"h": 8, "w": 8, "x": 8, "y": 0}},
+    {"type": "stat", "title": "VeriDAG Valid", "targets": [{"expr": "agent_factory_veridag_valid"}], "gridPos": {"h": 8, "w": 8, "x": 16, "y": 0}}
+  ],
+  "schemaVersion": 39,
+  "tags": ["agent-factory", "arena"],
+  "title": "Agent Factory Enterprise Runtime",
+  "uid": "agent-factory-enterprise",
+  "version": 1
+}

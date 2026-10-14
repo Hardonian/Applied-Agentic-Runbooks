@@ -20,6 +20,7 @@ if hasattr(sys.stderr, "reconfigure"):
 
 from agent_factory.cli.commands import (
     agent,
+    arena,
     blueprint,
     config,
     docs,
@@ -38,6 +39,7 @@ app = typer.Typer(
 
 # Add command groups
 app.add_typer(agent.app, name="agent")
+app.add_typer(arena.app, name="arena")
 app.add_typer(tool.app, name="tool")
 app.add_typer(workflow.app, name="workflow")
 app.add_typer(blueprint.app, name="blueprint")

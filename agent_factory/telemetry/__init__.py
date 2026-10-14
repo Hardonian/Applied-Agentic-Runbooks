@@ -80,3 +80,6 @@ __all__ = [
     "get_collector",
     "get_revenue_tracker",
 ]
+from agent_factory.telemetry.otel_exporter import OpenTelemetryBridge, OTelExporter
+
+__all__ = ["OpenTelemetryBridge", "OTelExporter"]

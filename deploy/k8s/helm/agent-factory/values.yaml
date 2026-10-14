@@ -1,0 +1,33 @@
+replicaCount: 2
+image:
+  repository: agent-factory
+  tag: latest
+  pullPolicy: IfNotPresent
+service:
+  type: ClusterIP
+  port: 80
+containerPort: 8000
+resources:
+  requests: {cpu: 200m, memory: 256Mi}
+  limits: {cpu: "1", memory: 1Gi}
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+ingress:
+  enabled: false
+  className: nginx
+  host: agent-factory.local
+  tls: []
+env:
+  OTEL_EXPORTER_OTLP_ENDPOINT: ""
+  REDIS_URL: "redis://redis:6379/0"
+existingSecret: agent-factory-secrets
+secretMount:
+  enabled: true
+  path: /var/run/secrets/agent-factory
+podAnnotations: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}

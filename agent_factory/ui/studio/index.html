@@ -14,7 +14,7 @@
         <div class="brand-logo">AF</div>
         <div>
           <div class="brand-title">Agent Factory</div>
-          <div style="font-size: 11px; color: var(--text-muted);">v2.0 Autonomous Suite</div>
+          <div class="brand-subtitle">v2.0 Autonomous Suite</div>
         </div>
       </div>
 
@@ -54,9 +54,9 @@
       </ul>
 
       <div class="sidebar-footer">
-        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">Active Workspace</div>
-        <div style="font-size: 13px; font-weight: 600; color: #fff;">Production Enterprise</div>
-        <div style="font-size: 11px; color: var(--emerald); margin-top: 4px;">● Multi-Provider Connected</div>
+        <div class="sidebar-workspace-label">Active Workspace</div>
+        <div class="sidebar-workspace-name">Production Enterprise</div>
+        <div class="sidebar-workspace-status">● Multi-Provider Connected</div>
       </div>
     </aside>
 
@@ -64,23 +64,23 @@
     <main class="main-stage">
       <!-- Topbar -->
       <header class="topbar">
-        <div style="display: flex; align-items: center; gap: 16px;">
-          <h2 style="font-size: 18px; font-weight: 700; color: #fff;">Studio Command Center</h2>
+        <div class="topbar-left">
+          <h2 class="topbar-title">Studio Command Center</h2>
           <span class="badge cyan">Stack Agnostic</span>
         </div>
 
         <div class="topbar-stats">
           <div class="stat-chip emerald">
             <span class="dot"></span>
-            Latency: <span id="stat-latency" style="color: #fff;">42ms</span>
+            Latency: <span id="stat-latency" class="stat-value">42ms</span>
           </div>
           <div class="stat-chip cyan">
             <span class="dot"></span>
-            Tokens: <span id="stat-tokens" style="color: #fff;">1,420</span>
+            Tokens: <span id="stat-tokens" class="stat-value">1,420</span>
           </div>
           <div class="stat-chip purple">
             <span class="dot"></span>
-            Cost: <span id="stat-cost" style="color: #fff;">$0.0035</span>
+            Cost: <span id="stat-cost" class="stat-value">$0.0035</span>
           </div>
         </div>
       </header>
@@ -99,10 +99,10 @@
                 <span class="badge purple">Universal Gateway</span>
               </div>
 
-              <div style="display: flex; flex-direction: column; gap: 16px;">
+              <div class="form-group-stack">
                 <div>
-                  <label for="model-select" style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">Target LLM Model</label>
-                  <select id="model-select" title="Target LLM Model" aria-label="Target LLM Model" style="width: 100%; background: #1e293b; color: #fff; border: 1px solid var(--border); padding: 10px; border-radius: var(--radius-sm); font-size: 13.5px;">
+                  <label for="model-select" class="form-label">Target LLM Model</label>
+                  <select id="model-select" title="Target LLM Model" aria-label="Target LLM Model" class="form-select">
                     <option value="gpt-4o">OpenAI GPT-4o (Omni Fast)</option>
                     <option value="claude-3-7-sonnet">Anthropic Claude 3.7 Sonnet (Thinking Engine)</option>
                     <option value="deepseek-r1">DeepSeek R1 (Autonomous Reasoning)</option>
@@ -112,13 +112,13 @@
                 </div>
 
                 <div>
-                  <label for="system-instructions" style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">System Instructions</label>
-                  <textarea id="system-instructions" title="System Instructions" aria-label="System Instructions" placeholder="Enter system instructions for agent execution..." rows="6" style="width: 100%; background: #1e293b; color: #fff; border: 1px solid var(--border); padding: 12px; border-radius: var(--radius-sm); font-size: 13px; font-family: var(--font-mono); resize: none;">You are an expert autonomous assistant powered by Agent Factory. Execute user tasks with high precision, utilize zero-trust sandboxed tools, and reason before responding.</textarea>
+                  <label for="system-instructions" class="form-label">System Instructions</label>
+                  <textarea id="system-instructions" title="System Instructions" aria-label="System Instructions" placeholder="Enter system instructions for agent execution..." rows="6" class="form-textarea">You are an expert autonomous assistant powered by Agent Factory. Execute user tasks with high precision, utilize zero-trust sandboxed tools, and reason before responding.</textarea>
                 </div>
 
                 <div>
-                  <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">Active Tool Capabilities</label>
-                  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                  <label class="form-label">Active Tool Capabilities</label>
+                  <div class="badge-row">
                     <span class="badge cyan">Python AST Sandbox</span>
                     <span class="badge purple">Anthropic MCP Client</span>
                     <span class="badge emerald">Hybrid GraphRAG</span>
@@ -145,7 +145,7 @@
 
         <!-- View 2: Multi-Agent DAG Studio -->
         <section id="workflows" class="view-section">
-          <div class="glass-panel" style="margin-bottom: 24px;">
+          <div class="glass-panel mb-24">
             <div class="panel-header">
               <div class="panel-title">Interactive Multi-Agent Swarm DAG Visualizer</div>
               <span class="badge emerald">Topological Executor Active</span>
@@ -161,15 +161,15 @@
           <div class="glass-panel">
             <div class="panel-header">
               <div class="panel-title">1-Click Universal Framework & Container Exporter</div>
-              <div style="display: flex; gap: 12px;">
-                <label for="exporter-select" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;">Export Target Framework</label>
-                <select id="exporter-select" title="Export Target Framework" aria-label="Export Target Framework" style="background: #1e293b; color: #fff; border: 1px solid var(--border); padding: 8px 12px; border-radius: var(--radius-sm);">
+              <div class="exporter-actions">
+                <label for="exporter-select" class="sr-only">Export Target Framework</label>
+                <select id="exporter-select" title="Export Target Framework" aria-label="Export Target Framework" class="exporter-select">
                   <option value="langgraph">LangGraph (StateGraph)</option>
                   <option value="crewai">CrewAI (Agent/Task/Crew)</option>
                   <option value="autogen">AutoGen / AG2 (GroupChat)</option>
                   <option value="docker">Docker Microservice Container</option>
                 </select>
-                <button id="copy-code-btn" class="btn-primary" style="padding: 0 14px;">Copy Code</button>
+                <button id="copy-code-btn" class="btn-primary btn-copy">Copy Code</button>
               </div>
             </div>
             <pre class="code-block" id="export-code-view">from langgraph.graph import StateGraph, START, END
@@ -193,33 +193,33 @@ graph = builder.compile()</pre>
         <section id="blueprints" class="view-section">
           <div class="grid-3">
             <div class="blueprint-card">
-              <div style="display: flex; justify-content: space-between;">
+              <div class="blueprint-header">
                 <span class="badge purple">Autonomous</span>
-                <span style="font-size: 12px; color: var(--emerald); font-weight: bold;">Verified</span>
+                <span class="badge-verified">Verified</span>
               </div>
-              <h3 style="font-size: 15px; font-weight: 700;">Full-Stack Engineer & Auditor</h3>
-              <p style="font-size: 13px; color: var(--text-muted); line-height: 1.4;">Autonomous repo scanner, bug fixer, unit test generator, security patcher.</p>
-              <button class="btn-primary" style="margin-top: auto; padding: 8px 0;">1-Click Install</button>
+              <h3 class="blueprint-title">Full-Stack Engineer & Auditor</h3>
+              <p class="blueprint-desc">Autonomous repo scanner, bug fixer, unit test generator, security patcher.</p>
+              <button class="btn-primary btn-blueprint-install">1-Click Install</button>
             </div>
 
             <div class="blueprint-card">
-              <div style="display: flex; justify-content: space-between;">
+              <div class="blueprint-header">
                 <span class="badge cyan">Enterprise</span>
-                <span style="font-size: 12px; color: var(--emerald); font-weight: bold;">Verified</span>
+                <span class="badge-verified">Verified</span>
               </div>
-              <h3 style="font-size: 15px; font-weight: 700;">Regulatory Compliance Officer</h3>
-              <p style="font-size: 13px; color: var(--text-muted); line-height: 1.4;">Enterprise doc intelligence, GDPR/HIPAA/SOC2 compliance checks & citations.</p>
-              <button class="btn-primary" style="margin-top: auto; padding: 8px 0;">1-Click Install</button>
+              <h3 class="blueprint-title">Regulatory Compliance Officer</h3>
+              <p class="blueprint-desc">Enterprise doc intelligence, GDPR/HIPAA/SOC2 compliance checks & citations.</p>
+              <button class="btn-primary btn-blueprint-install">1-Click Install</button>
             </div>
 
             <div class="blueprint-card">
-              <div style="display: flex; justify-content: space-between;">
+              <div class="blueprint-header">
                 <span class="badge emerald">Swarm</span>
-                <span style="font-size: 12px; color: var(--emerald); font-weight: bold;">Verified</span>
+                <span class="badge-verified">Verified</span>
               </div>
-              <h3 style="font-size: 15px; font-weight: 700;">Research Consensus Swarm</h3>
-              <p style="font-size: 13px; color: var(--text-muted); line-height: 1.4;">Multi-agent debate, literature search, consensus synthesis & fact checking.</p>
-              <button class="btn-primary" style="margin-top: auto; padding: 8px 0;">1-Click Install</button>
+              <h3 class="blueprint-title">Research Consensus Swarm</h3>
+              <p class="blueprint-desc">Multi-agent debate, literature search, consensus synthesis & fact checking.</p>
+              <button class="btn-primary btn-blueprint-install">1-Click Install</button>
             </div>
           </div>
         </section>
@@ -232,18 +232,18 @@ graph = builder.compile()</pre>
                 <div class="panel-title">OWASP Top 10 for LLMs Compliance Scorecard</div>
                 <span class="badge emerald">Score: 95/100</span>
               </div>
-              <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 13px;">
-                <li style="display: flex; justify-content: space-between; padding: 8px 12px; background: rgba(15,23,42,0.5); border-radius: 6px;">
+              <ul class="scorecard-list">
+                <li class="scorecard-item">
                   <span>LLM01: Prompt Injection Defense</span>
-                  <span style="color: var(--emerald); font-weight: bold;">PASS</span>
+                  <span class="scorecard-pass">PASS</span>
                 </li>
-                <li style="display: flex; justify-content: space-between; padding: 8px 12px; background: rgba(15,23,42,0.5); border-radius: 6px;">
+                <li class="scorecard-item">
                   <span>LLM06: Sensitive Data & Secret Redaction</span>
-                  <span style="color: var(--emerald); font-weight: bold;">PASS</span>
+                  <span class="scorecard-pass">PASS</span>
                 </li>
-                <li style="display: flex; justify-content: space-between; padding: 8px 12px; background: rgba(15,23,42,0.5); border-radius: 6px;">
+                <li class="scorecard-item">
                   <span>LLM08: Zero-Trust Tool Authorization</span>
-                  <span style="color: var(--emerald); font-weight: bold;">PASS</span>
+                  <span class="scorecard-pass">PASS</span>
                 </li>
               </ul>
             </div>
@@ -253,10 +253,10 @@ graph = builder.compile()</pre>
                 <div class="panel-title">Real-Time LLM Firewall Event Stream</div>
                 <span class="badge cyan">Active Guard</span>
               </div>
-              <div style="font-size: 12.5px; font-family: var(--font-mono); color: var(--text-muted); display: flex; flex-direction: column; gap: 8px;">
-                <div>[12:30:15] <span style="color: var(--emerald);">OK</span> Prompt sanitized. 0 injection markers detected.</div>
-                <div>[12:30:42] <span style="color: var(--cyan);">INFO</span> HMAC capability token generated for tool `python_interpreter`.</div>
-                <div>[12:31:05] <span style="color: var(--emerald);">OK</span> Canary token verified intact in completion response.</div>
+              <div class="event-stream-container">
+                <div>[12:30:15] <span class="text-emerald">OK</span> Prompt sanitized. 0 injection markers detected.</div>
+                <div>[12:30:42] <span class="text-cyan">INFO</span> HMAC capability token generated for tool `python_interpreter`.</div>
+                <div>[12:31:05] <span class="text-emerald">OK</span> Canary token verified intact in completion response.</div>
               </div>
             </div>
           </div>
@@ -266,40 +266,40 @@ graph = builder.compile()</pre>
         <section id="billing" class="view-section">
           <div class="grid-3">
             <div class="glass-panel">
-              <div style="font-size: 13px; color: var(--text-muted);">Current Plan</div>
-              <h3 style="font-size: 22px; font-weight: 800; color: #fff; margin: 6px 0;">Pro Agent Suite</h3>
-              <div style="font-size: 13px; color: var(--primary); font-weight: 600;">$99 / month</div>
+              <div class="metric-label">Current Plan</div>
+              <h3 class="billing-metric-value">Pro Agent Suite</h3>
+              <div class="billing-sub-primary">$99 / month</div>
             </div>
             <div class="glass-panel">
-              <div style="font-size: 13px; color: var(--text-muted);">Token Usage (Billing Cycle)</div>
-              <h3 style="font-size: 22px; font-weight: 800; color: #fff; margin: 6px 0;">1.42M / 15.0M</h3>
-              <div style="font-size: 13px; color: var(--emerald); font-weight: 600;">9.4% used</div>
+              <div class="metric-label">Token Usage (Billing Cycle)</div>
+              <h3 class="billing-metric-value">1.42M / 15.0M</h3>
+              <div class="billing-sub-emerald">9.4% used</div>
             </div>
             <div class="glass-panel">
-              <div style="font-size: 13px; color: var(--text-muted);">Prepaid Credit Wallet</div>
-              <h3 style="font-size: 22px; font-weight: 800; color: #fff; margin: 6px 0;">$48.50</h3>
-              <div style="font-size: 13px; color: var(--cyan); font-weight: 600;">+ Auto Top-up Enabled</div>
+              <div class="metric-label">Prepaid Credit Wallet</div>
+              <h3 class="billing-metric-value">$48.50</h3>
+              <div class="billing-sub-cyan">+ Auto Top-up Enabled</div>
             </div>
           </div>
         </section>
 
         <!-- View 7: Speculative MCTS & Model Cascade -->
         <section id="mcts" class="view-section">
-          <div class="grid-3" style="margin-bottom: 20px;">
+          <div class="grid-3 mb-20">
             <div class="glass-panel">
-              <div style="font-size: 13px; color: var(--text-muted);">Pareto Cost Reduction</div>
-              <h3 style="font-size: 24px; font-weight: 800; color: var(--emerald); margin: 6px 0;">90.4% Saved</h3>
-              <div style="font-size: 12px; color: var(--text-muted);">vs Frontier o1 Baseline</div>
+              <div class="metric-label">Pareto Cost Reduction</div>
+              <h3 class="kpi-value text-emerald">90.4% Saved</h3>
+              <div class="kpi-subtext">vs Frontier o1 Baseline</div>
             </div>
             <div class="glass-panel">
-              <div style="font-size: 13px; color: var(--text-muted);">Speculative Speedup</div>
-              <h3 style="font-size: 24px; font-weight: 800; color: var(--cyan); margin: 6px 0;">4.8x Faster</h3>
-              <div style="font-size: 12px; color: var(--text-muted);">p50 Latency: 240ms</div>
+              <div class="metric-label">Speculative Speedup</div>
+              <h3 class="kpi-value text-cyan">4.8x Faster</h3>
+              <div class="kpi-subtext">p50 Latency: 240ms</div>
             </div>
             <div class="glass-panel">
-              <div style="font-size: 13px; color: var(--text-muted);">MCTS Exploration Efficiency</div>
-              <h3 style="font-size: 24px; font-weight: 800; color: #fff; margin: 6px 0;">94.2%</h3>
-              <div style="font-size: 12px; color: var(--emerald);">0 Cascading Dead-Ends</div>
+              <div class="metric-label">MCTS Exploration Efficiency</div>
+              <h3 class="kpi-value text-white">94.2%</h3>
+              <div class="kpi-subtext-emerald">0 Cascading Dead-Ends</div>
             </div>
           </div>
 
@@ -309,19 +309,19 @@ graph = builder.compile()</pre>
                 <div class="panel-title">🧠 Speculative Tree-of-Thoughts / MCTS Visualizer</div>
                 <span class="badge cyan">PUCT Search</span>
               </div>
-              <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+              <div class="panel-description">
                 Non-myopic multi-path simulation exploring candidate reasoning hypotheses with dynamic branch pruning.
               </div>
-              <div style="display: flex; gap: 8px; margin-bottom: 10px;">
-                <input id="mcts-input-prompt" type="text" title="MCTS Prompt Input" aria-label="MCTS Prompt Input" placeholder="Enter reasoning problem..." value="Design optimal distributed agent consensus algorithm" style="flex: 1; background: #0f172a; border: 1px solid var(--border); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12.5px;">
-                <button id="run-mcts-btn" class="btn-primary" style="white-space: nowrap; padding: 0 16px;">Run Search</button>
+              <div class="input-action-row mb-10">
+                <input id="mcts-input-prompt" type="text" title="MCTS Prompt Input" aria-label="MCTS Prompt Input" placeholder="Enter reasoning problem..." value="Design optimal distributed agent consensus algorithm" class="lab-input">
+                <button id="run-mcts-btn" class="btn-primary btn-lab-action">Run Search</button>
               </div>
-              <div id="mcts-live-output" style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 14px; font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); line-height: 1.6; max-height: 220px; overflow-y: auto;">
+              <div id="mcts-live-output" class="mcts-console-box">
                 <div>Root: Problem Formulation [Visits: 12 | Q: 0.82]</div>
-                <div style="margin-left: 16px; color: var(--emerald);">├─ [P=0.33] Step 1.A: Atomic Requirement Decomposition [Q: 0.88] (Selected)</div>
-                <div style="margin-left: 32px; color: var(--emerald);">│  └─ [P=0.50] Step 2.C: Verification & Constraint Invariant [Q: 0.94] (Optimal)</div>
-                <div style="margin-left: 16px; color: var(--text-muted);">├─ [P=0.33] Step 1.B: Unconstrained Heuristic Generation [Q: 0.42] (Pruned)</div>
-                <div style="margin-left: 16px; color: var(--text-muted);">└─ [P=0.33] Step 1.C: Greedy Autoregressive Chain [Q: 0.31] (Pruned)</div>
+                <div class="mcts-branch-indent-1 text-emerald">├─ [P=0.33] Step 1.A: Atomic Requirement Decomposition [Q: 0.88] (Selected)</div>
+                <div class="mcts-branch-indent-2 text-emerald">│  └─ [P=0.50] Step 2.C: Verification & Constraint Invariant [Q: 0.94] (Optimal)</div>
+                <div class="mcts-branch-indent-1 text-muted">├─ [P=0.33] Step 1.B: Unconstrained Heuristic Generation [Q: 0.42] (Pruned)</div>
+                <div class="mcts-branch-indent-1 text-muted">└─ [P=0.33] Step 1.C: Greedy Autoregressive Chain [Q: 0.31] (Pruned)</div>
               </div>
             </div>
 
@@ -330,18 +330,18 @@ graph = builder.compile()</pre>
                 <div class="panel-title">⚡ Speculative Cascade & JIT Tooling Lab</div>
                 <span class="badge emerald">Pareto Optimal</span>
               </div>
-              <div style="display: flex; flex-direction: column; gap: 12px;">
-                <div style="font-size: 13px; color: var(--text-muted);">
+              <div class="cascade-lab-stack">
+                <div class="panel-description">
                   <strong>Model Cascade Router:</strong> Auto-probes Fast Tier (4o-mini/Flash), verifies self-confidence, and speculatively escalates to Deep Tier only when required.
                 </div>
-                <div style="display: flex; gap: 8px;">
-                  <input id="cascade-input-prompt" type="text" title="Cascade Prompt Input" aria-label="Cascade Prompt Input" placeholder="Enter prompt to cascade..." value="Extract structured JSON schema and verify strict compliance" style="flex: 1; background: #0f172a; border: 1px solid var(--border); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12.5px;">
-                  <button id="run-cascade-btn" class="btn-primary" style="white-space: nowrap; padding: 0 16px;">Test Cascade</button>
+                <div class="input-action-row">
+                  <input id="cascade-input-prompt" type="text" title="Cascade Prompt Input" aria-label="Cascade Prompt Input" placeholder="Enter prompt to cascade..." value="Extract structured JSON schema and verify strict compliance" class="lab-input">
+                  <button id="run-cascade-btn" class="btn-primary btn-lab-action">Test Cascade</button>
                 </div>
-                <div id="cascade-live-output" style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px; font-family: var(--font-mono); font-size: 12px; max-height: 180px; overflow-y: auto;">
-                  <div style="color: var(--cyan);">[FAST TIER - 240ms] Speculative Draft generated: Confidence 0.89</div>
-                  <div style="color: var(--emerald);">[VERIFIER] Format & constraint check PASSED. Returning immediately.</div>
-                  <div style="color: var(--text-muted); margin-top: 6px;">Cost: $0.000032 (Saved 90.4% vs o1 baseline)</div>
+                <div id="cascade-live-output" class="cascade-console-box">
+                  <div class="text-cyan">[FAST TIER - 240ms] Speculative Draft generated: Confidence 0.89</div>
+                  <div class="text-emerald">[VERIFIER] Format & constraint check PASSED. Returning immediately.</div>
+                  <div class="text-muted mt-6">Cost: $0.000032 (Saved 90.4% vs o1 baseline)</div>
                 </div>
               </div>
             </div>
@@ -350,21 +350,21 @@ graph = builder.compile()</pre>
 
         <!-- View 8: Hardonian Trust, VeriDAG & AgentPCAP -->
         <section id="hardonian" class="view-section">
-          <div class="grid-3" style="margin-bottom: 20px;">
+          <div class="grid-3 mb-20">
             <div class="glass-panel">
-              <div style="font-size: 13px; color: var(--text-muted);">MCPWall Security Policy</div>
-              <h3 style="font-size: 24px; font-weight: 800; color: var(--emerald); margin: 6px 0;">Zero-Trust</h3>
-              <div style="font-size: 12px; color: var(--cyan);">Single-Use TTL Human Gates</div>
+              <div class="metric-label">MCPWall Security Policy</div>
+              <h3 class="kpi-value text-emerald">Zero-Trust</h3>
+              <div class="kpi-subtext-cyan">Single-Use TTL Human Gates</div>
             </div>
             <div class="glass-panel">
-              <div style="font-size: 13px; color: var(--text-muted);">VeriDAG Merkle State</div>
-              <h3 style="font-size: 24px; font-weight: 800; color: #fff; margin: 6px 0;">100% Cryptographic</h3>
-              <div style="font-size: 12px; color: var(--emerald);">Tamper-Proof Proof Bundles</div>
+              <div class="metric-label">VeriDAG Merkle State</div>
+              <h3 class="kpi-value text-white">100% Cryptographic</h3>
+              <div class="kpi-subtext-emerald">Tamper-Proof Proof Bundles</div>
             </div>
             <div class="glass-panel">
-              <div style="font-size: 13px; color: var(--text-muted);">AgentPCAP Pathology Monitor</div>
-              <h3 style="font-size: 24px; font-weight: 800; color: var(--cyan); margin: 6px 0;">0 Pathologies</h3>
-              <div style="font-size: 12px; color: var(--text-muted);">Deterministic Loop Prevention</div>
+              <div class="metric-label">AgentPCAP Pathology Monitor</div>
+              <h3 class="kpi-value text-cyan">0 Pathologies</h3>
+              <div class="kpi-subtext">Deterministic Loop Prevention</div>
             </div>
           </div>
 
@@ -372,36 +372,36 @@ graph = builder.compile()</pre>
             <div class="glass-panel">
               <div class="panel-header">
                 <div class="panel-title">🛡️ MCPWall Zero-Trust Firewall (Hardonian/mcpwall)</div>
-                <div style="display: flex; gap: 8px;">
-                  <button id="test-mcpwall-btn" class="btn-primary" style="padding: 4px 10px; font-size: 11.5px;">Test Human Gate</button>
+                <div class="panel-header-actions">
+                  <button id="test-mcpwall-btn" class="btn-primary btn-gate-action">Test Human Gate</button>
                 </div>
               </div>
-              <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+              <div class="panel-description">
                 Local-first policy firewall enforcing path containment, argument size limits, and cryptographic human approval tickets.
               </div>
-              <div id="mcpwall-live-output" style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 14px; font-family: var(--font-mono); font-size: 12px; display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
+              <div id="mcpwall-live-output" class="terminal-log-box">
                 <div>[POLICY] Denied tools: `delete_database`, `drop_table`, `shell_exec_raw`</div>
                 <div>[CONTAINMENT] Path roots bound to canonical workspace</div>
-                <div style="color: var(--cyan);">[GATE] Ticket `mcp-gate-7f39b1a`: Destructive `write_file` requires human approval hash</div>
-                <div style="color: var(--emerald);">[INVARIANT] Replay prevention active: Single-use tickets auto-consumed</div>
+                <div class="text-cyan">[GATE] Ticket `mcp-gate-7f39b1a`: Destructive `write_file` requires human approval hash</div>
+                <div class="text-emerald">[INVARIANT] Replay prevention active: Single-use tickets auto-consumed</div>
               </div>
             </div>
 
             <div class="glass-panel">
               <div class="panel-header">
                 <div class="panel-title">📡 AgentPCAP Timeline & Settler Ledger</div>
-                <div style="display: flex; gap: 8px;">
-                  <button id="test-veridag-btn" class="btn-primary" style="padding: 4px 10px; font-size: 11.5px;">Run Merkle Proof</button>
+                <div class="panel-header-actions">
+                  <button id="test-veridag-btn" class="btn-primary btn-gate-action">Run Merkle Proof</button>
                 </div>
               </div>
-              <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+              <div class="panel-description">
                 Unified packet capture for A2A and MCP traffic paired with TokenGoblin velocity regulation and Settler dual-entry balance invariants.
               </div>
-              <div id="settler-live-output" style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 14px; font-family: var(--font-mono); font-size: 12px; display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
+              <div id="settler-live-output" class="terminal-log-box">
                 <div>[PCAP] Frame capture active (.apcap format supported)</div>
                 <div>[PATHOLOGY] Retry Storm Detector: 0 anomalies</div>
                 <div>[VELOCITY] Token burn rate: 42 tokens/sec (Threshold: 2,500 tps)</div>
-                <div style="color: var(--emerald);">[SETTLER] Dual-Entry Invariant: Initial == Spent + Reserved + Remaining (0 error)</div>
+                <div class="text-emerald">[SETTLER] Dual-Entry Invariant: Initial == Spent + Reserved + Remaining (0 error)</div>
               </div>
             </div>
           </div>

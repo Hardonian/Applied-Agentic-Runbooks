@@ -21,7 +21,16 @@ from agent_factory.api.middleware import (
     SecurityHeadersMiddleware,
     TimingMiddleware,
 )
-from agent_factory.api.routes import agents, blueprints, executions, telemetry, tools, workflows
+from agent_factory.api.routes import (
+    agents,
+    arena,
+    blueprints,
+    executions,
+    telemetry,
+    tools,
+    workflows,
+)
+from agent_factory.api.ws import router as websocket_router
 from agent_factory.cache import get_cache
 from agent_factory.database import init_db
 from agent_factory.monitoring import setup_metrics, setup_structured_logging, setup_tracing
@@ -117,6 +126,8 @@ app.include_router(workflows.router, prefix="/api/v1/workflows", tags=["workflow
 app.include_router(blueprints.router, prefix="/api/v1/blueprints", tags=["blueprints"])
 app.include_router(executions.router, prefix="/api/v1/executions", tags=["executions"])
 app.include_router(telemetry.router, prefix="/api/v1/telemetry", tags=["telemetry"])
+app.include_router(arena.router, prefix="/api/v1/arena", tags=["arena"])
+app.include_router(websocket_router, prefix="/api/v1/ws", tags=["websocket"])
 
 # Authentication routes
 from agent_factory.api.routes import auth

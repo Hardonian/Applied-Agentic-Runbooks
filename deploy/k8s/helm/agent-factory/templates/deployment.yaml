@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "agent-factory.fullname" . }}
+  labels: {{- include "agent-factory.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels: {{- include "agent-factory.labels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations: {{- toYaml .Values.podAnnotations | nindent 8 }}
+      labels: {{- include "agent-factory.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: agent-factory
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports: [{name: http, containerPort: {{ .Values.containerPort }}}]
+          env:
+            {{- range $key, $value := .Values.env }}
+            - {name: {{ $key }}, value: {{ $value | quote }}}
+            {{- end }}
+          envFrom:
+            - secretRef: {name: {{ .Values.existingSecret }}}
+          livenessProbe:
+            httpGet: {path: /live, port: http}
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet: {path: /ready, port: http}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          {{- if .Values.secretMount.enabled }}
+          volumeMounts:
+            - {name: runtime-secrets, mountPath: {{ .Values.secretMount.path }}, readOnly: true}
+          {{- end }}
+      {{- if .Values.secretMount.enabled }}
+      volumes:
+        - name: runtime-secrets
+          secret: {secretName: {{ .Values.existingSecret }}}
+      {{- end }}
+      nodeSelector: {{- toYaml .Values.nodeSelector | nindent 8 }}
+      tolerations: {{- toYaml .Values.tolerations | nindent 8 }}
+      affinity: {{- toYaml .Values.affinity | nindent 8 }}

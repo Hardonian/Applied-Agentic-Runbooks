@@ -21,6 +21,11 @@ from typing import Dict, Any, Optional
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8")
+
 import httpx
 from datetime import datetime
 
@@ -58,25 +63,31 @@ def print_info(message: str):
     print(f"{Colors.YELLOW}ℹ{Colors.RESET} {message}")
 
 
-def make_request(method: str, url: str, **kwargs) -> httpx.Response:
-    """Make HTTP request with error handling."""
-    try:
-        response = httpx.request(method, url, timeout=30.0, **kwargs)
-        return response
-    except Exception as e:
-        print_error(f"Request failed: {e}")
-        raise
-
-
 class ProductVerifier:
     """Product verification test suite."""
     
     def __init__(self, base_url: str):
-        self.base_url = base_url
-        self.client = httpx.Client(base_url=base_url, timeout=30.0)
+        self.base_url = base_url.rstrip("/")
+        self.in_process = False
+        try:
+            resp = httpx.get(f"{self.base_url}/health", timeout=1.5)
+            self.client = httpx.Client(base_url=self.base_url, timeout=30.0)
+            print_info(f"Connected to live Agent Factory service at {self.base_url}")
+        except Exception:
+            from fastapi.testclient import TestClient
+            from agent_factory.api.main import app
+            self.client = TestClient(app)
+            self.in_process = True
+            print_info(f"Live server at {self.base_url} not detected. Using direct FastAPI in-process test engine.")
+        
         self.token: Optional[str] = None
         self.user_id: Optional[str] = None
         self.tenant_id: Optional[str] = None
+
+    def _url(self, path: str) -> str:
+        if self.in_process:
+            return path
+        return f"{self.base_url}{path}"
     
     def step1_signup(self) -> bool:
         """Step 1: Sign up a new user."""
@@ -84,7 +95,7 @@ class ProductVerifier:
         
         try:
             response = self.client.post(
-                f"{self.base_url}/api/v1/auth/signup",
+                self._url("/api/v1/auth/signup"),
                 json={
                     "email": TEST_EMAIL,
                     "password": TEST_PASSWORD
@@ -118,7 +129,7 @@ class ProductVerifier:
         
         try:
             response = self.client.post(
-                f"{self.base_url}/api/v1/research",
+                self._url("/api/v1/research"),
                 json={
                     "query": "What are the latest developments in quantum computing?",
                     "max_results": 5,
@@ -153,7 +164,7 @@ class ProductVerifier:
         
         try:
             response = self.client.get(
-                f"{self.base_url}/api/v1/research/usage",
+                self._url("/api/v1/research/usage"),
                 headers={"Authorization": f"Bearer {self.token}"}
             )
             
@@ -189,7 +200,7 @@ class ProductVerifier:
         for i in range(10):  # Try up to 10 times
             try:
                 response = self.client.post(
-                    f"{self.base_url}/api/v1/research",
+                    self._url("/api/v1/research"),
                     json={
                         "query": f"Test query {i+1}",
                         "max_results": 5,
@@ -224,7 +235,7 @@ class ProductVerifier:
         
         try:
             response = self.client.post(
-                f"{self.base_url}/api/v1/payments/upgrade",
+                self._url("/api/v1/payments/upgrade"),
                 headers={"Authorization": f"Bearer {self.token}"}
             )
             
@@ -263,7 +274,7 @@ class ProductVerifier:
         
         try:
             response = self.client.post(
-                f"{self.base_url}/api/v1/research",
+                self._url("/api/v1/research"),
                 json={
                     "query": "What are the benefits of renewable energy?",
                     "max_results": 10,  # Pro tier allows more results
@@ -295,7 +306,7 @@ class ProductVerifier:
         
         try:
             response = self.client.get(
-                f"{self.base_url}/api/v1/research/reports",
+                self._url("/api/v1/research/reports"),
                 headers={"Authorization": f"Bearer {self.token}"}
             )
             

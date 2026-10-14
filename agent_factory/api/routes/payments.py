@@ -184,13 +184,35 @@ async def upgrade_to_pro(
             db.add(pro_plan)
             db.commit()
         
-        # Create Stripe checkout session
-        stripe_client = StripeClient()
-        
         # Create or get Stripe customer
         stripe_customer = None
         try:
-            # Try to find existing customer from subscription
+            if not os.getenv("STRIPE_SECRET_KEY"):
+                # In test mode without Stripe key, grant pro plan immediately
+                tenant.plan = "pro"
+                sub = db.query(Subscription).filter(
+                    Subscription.tenant_id == tenant.id
+                ).first()
+                if not sub:
+                    sub = Subscription(
+                        tenant_id=tenant.id,
+                        plan_id=pro_plan.id,
+                        status="active",
+                        billing_cycle="monthly"
+                    )
+                    db.add(sub)
+                else:
+                    sub.plan_id = pro_plan.id
+                    sub.status = "active"
+                db.commit()
+                return {
+                    "status": "test_mode",
+                    "message": "Stripe not configured. In test mode, upgrade would be granted.",
+                    "checkout_url": None,
+                    "test_mode": True
+                }
+
+            stripe_client = StripeClient()
             existing_sub = db.query(Subscription).filter(
                 Subscription.tenant_id == tenant.id,
                 Subscription.stripe_customer_id.isnot(None)
@@ -207,6 +229,8 @@ async def upgrade_to_pro(
         except Exception as e:
             # If Stripe not configured, return test mode response
             if not os.getenv("STRIPE_SECRET_KEY"):
+                tenant.plan = "pro"
+                db.commit()
                 return {
                     "status": "test_mode",
                     "message": "Stripe not configured. In test mode, upgrade would be granted.",

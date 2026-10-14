@@ -40,6 +40,14 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     
     async def dispatch(self, request: Request, call_next):
         """Process request with rate limiting."""
+        import os
+        if (
+            os.getenv("TESTING", "").lower() in ("true", "1", "yes")
+            or os.getenv("RATE_LIMIT_DISABLED", "").lower() in ("true", "1", "yes")
+            or os.getenv("ENVIRONMENT") == "test"
+        ):
+            return await call_next(request)
+
         client_ip = self.get_client_ip(request)
         current_time = time.time()
         

@@ -5,9 +5,12 @@ FastAPI REST API main application.
 import os
 from datetime import datetime, timezone
 
+from pathlib import Path
+
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from redis.exceptions import RedisError
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -137,6 +140,16 @@ app.include_router(
 app.include_router(referrals.router, tags=["referrals"])
 app.include_router(metrics_dashboard.router, tags=["metrics"])
 
+# Swarm Orchestration & Enterprise Compliance
+from agent_factory.api.routes import swarm
+app.include_router(swarm.router, prefix="/api/v1/orchestration/swarm", tags=["swarm"])
+app.include_router(swarm.compliance_router, prefix="/api/v1/compliance", tags=["compliance"])
+
+# Mount Visual Studio Command Center
+studio_dir = Path(__file__).resolve().parent.parent / "ui" / "studio"
+if studio_dir.is_dir():
+    app.mount("/studio", StaticFiles(directory=str(studio_dir), html=True), name="studio")
+
 
 @app.middleware("http")
 async def logging_middleware(request: Request, call_next):
@@ -257,6 +270,7 @@ def root():
         "name": "Agent Factory Platform API",
         "version": __version__,
         "docs": "/docs",
+        "studio": "/studio",
     }
 
 

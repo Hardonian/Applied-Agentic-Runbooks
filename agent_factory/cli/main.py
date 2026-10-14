@@ -2,8 +2,21 @@
 Main CLI entry point for Agent Factory Platform.
 """
 
+import sys
 import typer
 from typing import Optional
+
+# Ensure safe console encoding on Windows hosts
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 from agent_factory.cli.commands import agent, tool, workflow, blueprint, registry, marketplace, doctor, config, docs
 
@@ -101,6 +114,8 @@ def serve(
     """
     import uvicorn
     typer.echo(f"🚀 Starting Agent Factory Studio at http://{host}:{port}")
+    typer.echo(f"🎨 Studio UI Dashboard: http://{host}:{port}/studio")
+    typer.echo(f"📚 OpenAPI Documentation: http://{host}:{port}/docs")
     uvicorn.run("agent_factory.api.main:app", host=host, port=port, reload=reload)
 
 
@@ -186,6 +201,71 @@ def pack(
     out_path, checksum = BlueprintPackager.pack_directory(src, out, manifest)
     typer.echo(f"📦 Successfully packaged [{src.name}] into {out_path}")
     typer.echo(f"🔑 SHA-256 Checksum: {checksum}")
+
+
+@app.command()
+def certify(
+    agent_id: str = typer.Argument(..., help="Agent ID to certify"),
+    output: Optional[str] = typer.Option(None, "--output", "-o", help="Export path for certification Markdown report"),
+):
+    """
+    Generate an enterprise audit compliance certificate (SOC 2, HIPAA, EU AI Act, OWASP) for an agent.
+    """
+    from agent_factory.agents.agent import Agent
+    from agent_factory.compliance.certification import AgentCertificationGenerator
+    from agent_factory.core.guardrails import Guardrails, SQLInjectionGuardrail
+
+    guardrails = Guardrails()
+    guardrails.add_input_guardrail(SQLInjectionGuardrail())
+    agent = Agent(id=agent_id, name=agent_id, instructions=f"Enterprise Agent {agent_id}", guardrails=guardrails)
+    cert = AgentCertificationGenerator.generate_certificate(agent)
+
+    typer.echo(f"\n[CERTIFICATION] Agent Factory Compliance Record: [{agent_id}]")
+    typer.echo(f"Certificate ID : {cert.certificate_id}")
+    typer.echo(f"Grade          : {cert.grade.value} ({cert.overall_score}/100)")
+    typer.echo(f"Risk Tier      : {cert.risk_tier.value}")
+    typer.echo(f"Integrity Hash : {cert.integrity_hash[:24]}...")
+    typer.echo(f"Digital Seal   : {cert.digital_seal[:24]}...")
+    typer.echo(f"OWASP Score    : {cert.owasp_score}/100")
+    typer.echo("-" * 60)
+    for ev in cert.evidence_trail:
+        typer.echo(f"[{ev.status}] {ev.framework} {ev.control_id}: {ev.control_name}")
+
+    if output:
+        from pathlib import Path
+        out_file = Path(output)
+        out_file.write_text(cert.to_markdown(), encoding="utf-8")
+        typer.echo(f"\n[SAVED] Audit certification document: {out_file.resolve()}")
+
+
+@app.command()
+def swarm(
+    task: str = typer.Argument(..., help="Task prompt for the multi-agent swarm"),
+    pattern: str = typer.Option("hierarchical", "--pattern", "-p", help="Swarm pattern (hierarchical, peer_debate, voting_consensus, dynamic_router)"),
+):
+    """
+    Execute a collaborative multi-agent swarm on a complex task.
+    """
+    from agent_factory.agents.agent import Agent
+    from agent_factory.orchestration.swarm import SwarmOrchestrator, SwarmPattern
+
+    swarm_agents = [
+        Agent(id="researcher", name="Researcher", instructions="Conduct background analysis."),
+        Agent(id="analyst", name="Analyst", instructions="Evaluate risks and trade-offs."),
+        Agent(id="synthesizer", name="Synthesizer", instructions="Formulate final recommendations."),
+    ]
+    supervisor = Agent(id="supervisor", name="Supervisor", instructions="Lead and coordinate team.")
+
+    orchestrator = SwarmOrchestrator(
+        agents=swarm_agents,
+        supervisor=supervisor,
+        pattern=SwarmPattern(pattern),
+    )
+    res = orchestrator.execute(task)
+    typer.echo(f"\n[SWARM] Multi-Agent Swarm Execution Complete ({pattern}):")
+    typer.echo(f"Status: {res.status.value} | Execution Time: {res.execution_time:.2f}s")
+    typer.echo("-" * 60)
+    typer.echo(res.final_output)
 
 
 if __name__ == "__main__":

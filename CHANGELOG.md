@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Self-Healing Autonomous Agent Execution Engine** (`agent_factory.runtime.self_healing`): Dynamic error taxonomy (Rate limits, tool crashes, schema validation errors, timeouts), reflection-driven autonomous recovery prompts, and integrated circuit breakers.
+- **Enterprise AI Compliance & Certification Generator** (`agent_factory.compliance.certification`): Cryptographic SHA-256 agent instruction fingerprints, automated OWASP Top 10 for LLMs scanning, SOC 2 Type II, HIPAA, FERPA, EU AI Act audit mapping, and exportable digital seal records.
+- **Visual Studio Command Center Integration**: Mounted interactive command center at `/studio`, added `/studio` discovery link to root API, and enhanced `agent-factory serve` output.
+- **Multi-Agent Swarm Orchestration Endpoint**: REST API at `/api/v1/orchestration/swarm/execute` and CLI command `agent-factory swarm` supporting hierarchical supervisor, peer debate, voting consensus, and dynamic intent routing.
+- **Enterprise Agent Compliance Certification API & CLI**: REST endpoint at `/api/v1/compliance/certify` and CLI command `agent-factory certify <agent_id>`.
+- **Windows Console & CP1252 Terminal Resilience**: Auto-reconfigured UTF-8 stdout/stderr streams to prevent encoding exceptions on Windows hosts.
+- **Automated In-Process Reality Mode Fallback**: `scripts/verify_product.py` seamlessly executes full E2E product lifecycle using in-process TestClient with test-mode Stripe bypass.
+
+### Fixed
+- Modern bcrypt/passlib compatibility via runtime patch.
+- Rate-limiting flake elimination in test environment runs.
+- Mypy py310 modern typing target configuration.
+
 ## [0.2.0] - 2026-10-12
 
 ### Added

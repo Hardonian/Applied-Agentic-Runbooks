@@ -14,6 +14,15 @@ def __getattr__(name: str):
     elif name == "Execution":
         from agent_factory.runtime.engine import Execution
         return Execution
+    elif name in (
+        "SelfHealingAgentExecutor",
+        "SelfHealingResult",
+        "FailureCategory",
+        "RecoveryStrategy",
+        "HealingAction",
+    ):
+        import agent_factory.runtime.self_healing as sh
+        return getattr(sh, name)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 __all__ = [
@@ -21,4 +30,9 @@ __all__ = [
     "Execution",
     "MemoryStore",
     "SQLiteMemoryStore",
+    "SelfHealingAgentExecutor",
+    "SelfHealingResult",
+    "FailureCategory",
+    "RecoveryStrategy",
+    "HealingAction",
 ]

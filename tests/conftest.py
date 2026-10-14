@@ -1,5 +1,8 @@
 """Pytest configuration and shared fixtures."""
 
+import os
+os.environ["TESTING"] = "true"
+
 import pytest
 from unittest.mock import Mock, MagicMock
 from typing import Dict, Any

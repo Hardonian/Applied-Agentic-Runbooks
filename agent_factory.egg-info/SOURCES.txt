@@ -17,6 +17,7 @@ agent_factory/api/main.py
 agent_factory/api/middleware.py
 agent_factory/api/runtime.py
 agent_factory/api/routes/__init__.py
+agent_factory/api/routes/advanced.py
 agent_factory/api/routes/agents.py
 agent_factory/api/routes/auth.py
 agent_factory/api/routes/blueprints.py
@@ -96,6 +97,7 @@ agent_factory/eval/model.py
 agent_factory/eval/runner.py
 agent_factory/financial/__init__.py
 agent_factory/financial/cost_tracker.py
+agent_factory/financial/token_goblin.py
 agent_factory/integrations/__init__.py
 agent_factory/integrations/anthropic_client.py
 agent_factory/integrations/openai_client.py
@@ -137,12 +139,15 @@ agent_factory/notebook_converter/writer.py
 agent_factory/operations/__init__.py
 agent_factory/operations/alerting.py
 agent_factory/operations/sla_monitor.py
+agent_factory/optimization/__init__.py
+agent_factory/optimization/cascade_router.py
 agent_factory/orchestration/__init__.py
 agent_factory/orchestration/dag_engine.py
 agent_factory/orchestration/executor.py
 agent_factory/orchestration/graph.py
 agent_factory/orchestration/router.py
 agent_factory/orchestration/swarm.py
+agent_factory/orchestration/veridag.py
 agent_factory/payments/__init__.py
 agent_factory/payments/revenue_sharing.py
 agent_factory/payments/stripe_client.py
@@ -152,6 +157,8 @@ agent_factory/promptlog/diff.py
 agent_factory/promptlog/model.py
 agent_factory/promptlog/replay.py
 agent_factory/promptlog/storage.py
+agent_factory/reasoning/__init__.py
+agent_factory/reasoning/mcts.py
 agent_factory/registry/__init__.py
 agent_factory/registry/local_registry.py
 agent_factory/registry/remote_registry.py
@@ -172,6 +179,7 @@ agent_factory/security/auth.py
 agent_factory/security/capability_tokens.py
 agent_factory/security/circuit_breaker.py
 agent_factory/security/firewall.py
+agent_factory/security/mcpwall.py
 agent_factory/security/owasp_scanner.py
 agent_factory/security/rate_limit.py
 agent_factory/security/rbac.py
@@ -191,6 +199,7 @@ agent_factory/telemetry/__init__.py
 agent_factory/telemetry/analytics.py
 agent_factory/telemetry/collector.py
 agent_factory/telemetry/model.py
+agent_factory/telemetry/pcap.py
 agent_factory/telemetry/revenue.py
 agent_factory/telemetry/backends/__init__.py
 agent_factory/telemetry/backends/base.py
@@ -200,6 +209,7 @@ agent_factory/tools/__init__.py
 agent_factory/tools/base.py
 agent_factory/tools/decorator.py
 agent_factory/tools/interpreter.py
+agent_factory/tools/jit_synthesizer.py
 agent_factory/tools/mcp.py
 agent_factory/ui/__init__.py
 agent_factory/ui/generator.py
@@ -212,7 +222,9 @@ agent_factory/utils/safe_evaluator.py
 agent_factory/workflows/__init__.py
 agent_factory/workflows/model.py
 agent_factory/workflows/visualizer.py
+tests/test_advanced_api_routes.py
 tests/test_agent.py
+tests/test_agent_pcap_telemetry.py
 tests/test_agents_with_knowledge.py
 tests/test_analytics.py
 tests/test_api_agents.py
@@ -225,6 +237,7 @@ tests/test_auth.py
 tests/test_billing.py
 tests/test_blueprint.py
 tests/test_blueprint_loader.py
+tests/test_cascade_optimizer.py
 tests/test_cli_agent.py
 tests/test_compliance_certification.py
 tests/test_database_models.py
@@ -238,11 +251,14 @@ tests/test_eval.py
 tests/test_export_import.py
 tests/test_integrations_anthropic.py
 tests/test_integrations_openai.py
+tests/test_jit_synthesizer.py
 tests/test_job_queue.py
 tests/test_job_queue_implementation.py
 tests/test_knowledge_pack_loader.py
 tests/test_knowledge_packs.py
 tests/test_marketplace.py
+tests/test_mcpwall_security.py
+tests/test_mcts_reasoning.py
 tests/test_memory_stores.py
 tests/test_notebook_converter.py
 tests/test_orchestration.py
@@ -265,7 +281,9 @@ tests/test_services.py
 tests/test_storage.py
 tests/test_swarm_and_studio_api.py
 tests/test_telemetry.py
+tests/test_token_goblin_governor.py
 tests/test_tool.py
+tests/test_veridag_orchestration.py
 tests/test_worker.py
 tests/test_workflow.py
 tests/test_workflow_visualizer.py

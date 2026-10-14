@@ -268,5 +268,46 @@ def swarm(
     typer.echo(res.final_output)
 
 
+@app.command()
+def mcts(
+    problem: str = typer.Argument(..., help="Problem statement to explore via MCTS"),
+    depth: int = typer.Option(3, "--depth", "-d", help="Maximum tree search depth"),
+    simulations: int = typer.Option(8, "--simulations", "-s", help="Number of Monte Carlo simulations"),
+):
+    """
+    Execute Speculative Monte Carlo Tree Search (MCTS) reasoning across multi-path hypotheses.
+    """
+    from agent_factory.reasoning.mcts import SpeculativeMCTSEngine
+
+    engine = SpeculativeMCTSEngine(max_depth=depth, num_simulations=simulations)
+    res = engine.search(problem)
+    typer.echo(f"\n[MCTS] Speculative Tree Search Complete:")
+    typer.echo(f"Confidence: {res.confidence_score*100:.1f}% | Nodes: {res.total_nodes_explored} | Pruned: {res.branches_pruned} | Depth: {res.depth_reached}")
+    typer.echo("-" * 60)
+    for idx, step in enumerate(res.best_trajectory, 1):
+        typer.echo(f"{idx}. {step}")
+    typer.echo(f"\n[SOLUTION]:\n{res.final_solution}")
+
+
+@app.command()
+def cascade(
+    prompt: str = typer.Argument(..., help="Prompt to execute via Speculative Model Cascade"),
+    tier: Optional[str] = typer.Option(None, "--tier", "-t", help="Force model tier (fast, standard, deep)"),
+):
+    """
+    Execute prompt via Speculative Model Cascade optimizing for Pareto cost and latency.
+    """
+    from agent_factory.optimization.cascade_router import SpeculativeCascadeRouter, ModelTier
+
+    tier_enum = ModelTier(tier) if tier else None
+    router = SpeculativeCascadeRouter()
+    res = router.execute(prompt, force_tier=tier_enum)
+    typer.echo(f"\n[CASCADE] Pareto Optimization Complete:")
+    typer.echo(f"Tier: {res.tier_used.value.upper()} ({res.model_used}) | Speculative Draft: {'ACCEPTED' if res.speculative_draft_accepted else 'ESCALATED'}")
+    typer.echo(f"Cost Savings: {res.cost_savings_percentage:.1f}% | Latency Speedup: {res.speedup_factor:.1f}x (${res.cost_usd:.6f} vs ${res.frontier_baseline_cost_usd:.6f})")
+    typer.echo("-" * 60)
+    typer.echo(res.output)
+
+
 if __name__ == "__main__":
     app()

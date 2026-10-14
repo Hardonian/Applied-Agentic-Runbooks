@@ -142,8 +142,11 @@ app.include_router(metrics_dashboard.router, tags=["metrics"])
 
 # Swarm Orchestration & Enterprise Compliance
 from agent_factory.api.routes import swarm
+from agent_factory.api.routes.advanced import advanced_router
+
 app.include_router(swarm.router, prefix="/api/v1/orchestration/swarm", tags=["swarm"])
 app.include_router(swarm.compliance_router, prefix="/api/v1/compliance", tags=["compliance"])
+app.include_router(advanced_router, prefix="/api/v1", tags=["advanced"])
 
 # Mount Visual Studio Command Center
 studio_dir = Path(__file__).resolve().parent.parent / "ui" / "studio"

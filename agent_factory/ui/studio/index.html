@@ -43,6 +43,14 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
           SaaS Billing & Wallet
         </li>
+        <li class="nav-item" data-target="mcts">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><line x1="12" y1="8" x2="5" y2="16"/><line x1="12" y1="8" x2="19" y2="16"/></svg>
+          MCTS & Model Cascade
+        </li>
+        <li class="nav-item" data-target="hardonian">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          Trust & PCAP Substrate
+        </li>
       </ul>
 
       <div class="sidebar-footer">
@@ -270,6 +278,121 @@ graph = builder.compile()</pre>
               <div style="font-size: 13px; color: var(--text-muted);">Prepaid Credit Wallet</div>
               <h3 style="font-size: 22px; font-weight: 800; color: #fff; margin: 6px 0;">$48.50</h3>
               <div style="font-size: 13px; color: var(--cyan); font-weight: 600;">+ Auto Top-up Enabled</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- View 7: Speculative MCTS & Model Cascade -->
+        <section id="mcts" class="view-section">
+          <div class="grid-3" style="margin-bottom: 20px;">
+            <div class="glass-panel">
+              <div style="font-size: 13px; color: var(--text-muted);">Pareto Cost Reduction</div>
+              <h3 style="font-size: 24px; font-weight: 800; color: var(--emerald); margin: 6px 0;">90.4% Saved</h3>
+              <div style="font-size: 12px; color: var(--text-muted);">vs Frontier o1 Baseline</div>
+            </div>
+            <div class="glass-panel">
+              <div style="font-size: 13px; color: var(--text-muted);">Speculative Speedup</div>
+              <h3 style="font-size: 24px; font-weight: 800; color: var(--cyan); margin: 6px 0;">4.8x Faster</h3>
+              <div style="font-size: 12px; color: var(--text-muted);">p50 Latency: 240ms</div>
+            </div>
+            <div class="glass-panel">
+              <div style="font-size: 13px; color: var(--text-muted);">MCTS Exploration Efficiency</div>
+              <h3 style="font-size: 24px; font-weight: 800; color: #fff; margin: 6px 0;">94.2%</h3>
+              <div style="font-size: 12px; color: var(--emerald);">0 Cascading Dead-Ends</div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="glass-panel">
+              <div class="panel-header">
+                <div class="panel-title">🧠 Speculative Tree-of-Thoughts / MCTS Visualizer</div>
+                <span class="badge cyan">PUCT Search</span>
+              </div>
+              <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+                Non-myopic multi-path simulation exploring candidate reasoning hypotheses with dynamic branch pruning.
+              </div>
+              <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 14px; font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); line-height: 1.6;">
+                <div>Root: Problem Formulation [Visits: 12 | Q: 0.82]</div>
+                <div style="margin-left: 16px; color: var(--emerald);">├─ [P=0.33] Step 1.A: Atomic Requirement Decomposition [Q: 0.88] (Selected)</div>
+                <div style="margin-left: 32px; color: var(--emerald);">│  └─ [P=0.50] Step 2.C: Verification & Constraint Invariant [Q: 0.94] (Optimal)</div>
+                <div style="margin-left: 16px; color: var(--text-muted);">├─ [P=0.33] Step 1.B: Unconstrained Heuristic Generation [Q: 0.42] (Pruned)</div>
+                <div style="margin-left: 16px; color: var(--text-muted);">└─ [P=0.33] Step 1.C: Greedy Autoregressive Chain [Q: 0.31] (Pruned)</div>
+              </div>
+            </div>
+
+            <div class="glass-panel">
+              <div class="panel-header">
+                <div class="panel-title">⚡ Speculative Cascade & JIT Tooling Lab</div>
+                <span class="badge emerald">Pareto Optimal</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="font-size: 13px; color: var(--text-muted);">
+                  <strong>Model Cascade Router:</strong> Auto-probes Fast Tier (4o-mini/Flash), verifies self-confidence, and speculatively escalates to Deep Tier only when required.
+                </div>
+                <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px; font-family: var(--font-mono); font-size: 12px;">
+                  <div style="color: var(--cyan);">[FAST TIER - 240ms] Speculative Draft generated: Confidence 0.89</div>
+                  <div style="color: var(--emerald);">[VERIFIER] Format & constraint check PASSED. Returning immediately.</div>
+                  <div style="color: var(--text-muted); margin-top: 6px;">Cost: $0.000032 (Saved $0.003208 vs o1)</div>
+                </div>
+                <div style="font-size: 13px; color: var(--text-muted);">
+                  <strong>JIT Tool Synthesizer:</strong> Dynamic tool compilation with AST sandbox security and runtime hot-swapping into agent toolbelts.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- View 8: Hardonian Trust, VeriDAG & AgentPCAP -->
+        <section id="hardonian" class="view-section">
+          <div class="grid-3" style="margin-bottom: 20px;">
+            <div class="glass-panel">
+              <div style="font-size: 13px; color: var(--text-muted);">MCPWall Security Policy</div>
+              <h3 style="font-size: 24px; font-weight: 800; color: var(--emerald); margin: 6px 0;">Zero-Trust</h3>
+              <div style="font-size: 12px; color: var(--cyan);">Single-Use TTL Human Gates</div>
+            </div>
+            <div class="glass-panel">
+              <div style="font-size: 13px; color: var(--text-muted);">VeriDAG Merkle State</div>
+              <h3 style="font-size: 24px; font-weight: 800; color: #fff; margin: 6px 0;">100% Cryptographic</h3>
+              <div style="font-size: 12px; color: var(--emerald);">Tamper-Proof Proof Bundles</div>
+            </div>
+            <div class="glass-panel">
+              <div style="font-size: 13px; color: var(--text-muted);">AgentPCAP Pathology Monitor</div>
+              <h3 style="font-size: 24px; font-weight: 800; color: var(--cyan); margin: 6px 0;">0 Pathologies</h3>
+              <div style="font-size: 12px; color: var(--text-muted);">Deterministic Loop Prevention</div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="glass-panel">
+              <div class="panel-header">
+                <div class="panel-title">🛡️ MCPWall Zero-Trust Firewall (Hardonian/mcpwall)</div>
+                <span class="badge cyan">Active Guard</span>
+              </div>
+              <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+                Local-first policy firewall enforcing path containment, argument size limits, and cryptographic human approval tickets.
+              </div>
+              <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 14px; font-family: var(--font-mono); font-size: 12px; display: flex; flex-direction: column; gap: 8px;">
+                <div>[POLICY] Denied tools: `delete_database`, `drop_table`, `shell_exec_raw`</div>
+                <div>[CONTAINMENT] Path roots bound to canonical workspace</div>
+                <div style="color: var(--cyan);">[GATE] Ticket `mcp-gate-7f39b1a`: Destructive `write_file` requires human approval hash</div>
+                <div style="color: var(--emerald);">[INVARIANT] Replay prevention active: Single-use tickets auto-consumed</div>
+              </div>
+            </div>
+
+            <div class="glass-panel">
+              <div class="panel-header">
+                <div class="panel-title">📡 AgentPCAP Timeline & Settler Ledger</div>
+                <span class="badge emerald">Audited</span>
+              </div>
+              <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+                Unified packet capture for A2A and MCP traffic paired with TokenGoblin velocity regulation and Settler dual-entry balance invariants.
+              </div>
+              <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 14px; font-family: var(--font-mono); font-size: 12px; display: flex; flex-direction: column; gap: 8px;">
+                <div>[PCAP] Frame capture active (.apcap format supported)</div>
+                <div>[PATHOLOGY] Retry Storm Detector: 0 anomalies</div>
+                <div>[VELOCITY] Token burn rate: 42 tokens/sec (Threshold: 2,500 tps)</div>
+                <div style="color: var(--emerald);">[SETTLER] Dual-Entry Invariant: Initial == Spent + Reserved + Remaining (0 error)</div>
+              </div>
             </div>
           </div>
         </section>

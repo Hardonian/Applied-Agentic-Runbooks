@@ -50,7 +50,7 @@ class PCAPFrame:
         if not self.payload_hash:
             try:
                 raw = json.dumps(self.payload, sort_keys=True, default=str)
-            except Exception:
+            except (TypeError, ValueError, AttributeError):
                 raw = str(self.payload)
             self.payload_hash = hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
 

@@ -3,9 +3,10 @@ FastAPI REST API main application.
 """
 
 import os
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
-
 from pathlib import Path
+from typing import Any
 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -37,10 +38,34 @@ sentry_client = setup_sentry()
 if sentry_client:
     logger.info("Sentry error tracking enabled")
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Initialize services on application startup."""
+    try:
+        from agent_factory.utils.env_validator import validate_agent_factory_env
+
+        validated_env = validate_agent_factory_env(raise_on_error=True)
+        logger.info("Environment variables validated", validated_count=len(validated_env))
+
+        # Initialize database
+        init_db()
+        logger.info("Database initialized")
+
+        # Initialize cache
+        cache = get_cache()
+        if cache:
+            logger.info("Cache initialized")
+
+    except Exception as e:  # noqa: BLE001
+        logger.error("Failed to initialize application", error=str(e))
+    yield
+
+
 app = FastAPI(
     title="Agent Factory Platform API",
     description="REST API for building and running AI agents",
     version=__version__,
+    lifespan=lifespan,
 )
 
 # CORS middleware.  A wildcard origin cannot be safely combined with browser
@@ -82,28 +107,7 @@ app.add_middleware(RequestIDMiddleware)
 app.add_middleware(TimingMiddleware)
 
 
-@app.on_event("startup")
-async def startup_event():
-    """Initialize services on application startup."""
-    try:
-        # Validate environment variables
-        from agent_factory.utils.env_validator import validate_agent_factory_env
 
-        validated_env = validate_agent_factory_env(raise_on_error=True)
-        logger.info("Environment variables validated", validated_count=len(validated_env))
-
-        # Initialize database
-        init_db()
-        logger.info("Database initialized")
-
-        # Initialize cache
-        cache = get_cache()
-        if cache:
-            logger.info("Cache initialized")
-
-    except Exception as e:
-        logger.error("Failed to initialize application", error=str(e))
-        raise
 
 
 # Include routers
@@ -294,7 +298,7 @@ async def health():
     import time
 
     start_time = time.time()
-    health_status = {
+    health_status: dict[str, Any] = {
         "status": "healthy",
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "version": __version__,
@@ -304,7 +308,7 @@ async def health():
     overall_healthy = True
 
     # Check database
-    db_check = {"status": "unknown", "response_time_ms": 0}
+    db_check: dict[str, Any] = {"status": "unknown", "response_time_ms": 0.0}
     try:
         from sqlalchemy import text
 
@@ -323,7 +327,7 @@ async def health():
     health_status["checks"]["database"] = db_check
 
     # Check cache
-    cache_check = {"status": "unknown", "response_time_ms": 0}
+    cache_check: dict[str, Any] = {"status": "unknown", "response_time_ms": 0.0}
     try:
         cache = get_cache()
         if cache.client:
@@ -342,17 +346,18 @@ async def health():
     health_status["checks"]["cache"] = cache_check
 
     # Check LLM providers (optional, don't fail if not configured)
-    llm_check = {"status": "unknown"}
+    llm_check: dict[str, Any] = {"status": "unknown"}
     openai_key = os.getenv("OPENAI_API_KEY")
     anthropic_key = os.getenv("ANTHROPIC_API_KEY")
 
     if openai_key or anthropic_key:
         llm_check["status"] = "configured"
-        llm_check["providers"] = []
+        providers: list[str] = []
         if openai_key:
-            llm_check["providers"].append("openai")
+            providers.append("openai")
         if anthropic_key:
-            llm_check["providers"].append("anthropic")
+            providers.append("anthropic")
+        llm_check["providers"] = providers
     else:
         llm_check["status"] = "not_configured"
         llm_check["message"] = "No LLM providers configured (optional)"

@@ -10,26 +10,32 @@ Provides comprehensive tracking of:
 - Growth metrics
 """
 
-from agent_factory.telemetry.model import (
-    TelemetryEvent,
-    AgentRunEvent,
-    WorkflowRunEvent,
-    BlueprintInstallEvent,
-    ErrorEvent,
-    BillingUsageEvent,
-    TenantEvent,
-    ProjectEvent,
-    UserActivatedEvent,
-    ReferralEvent,
-    RevenueEvent,
-    UserSignupEvent,
-    UserLoginEvent,
-)
-from agent_factory.telemetry.collector import TelemetryCollector, get_collector
+from agent_factory.telemetry.analytics import AnalyticsEngine, get_analytics
 from agent_factory.telemetry.backends.base import TelemetryBackend
 from agent_factory.telemetry.backends.sqlite import SQLiteTelemetryBackend
-# PostgresTelemetryBackend imported lazily via backends.__getattr__
-from agent_factory.telemetry.analytics import AnalyticsEngine, get_analytics
+from agent_factory.telemetry.collector import TelemetryCollector, get_collector
+from agent_factory.telemetry.model import (
+    AgentRunEvent,
+    BillingUsageEvent,
+    BlueprintInstallEvent,
+    ErrorEvent,
+    ProjectEvent,
+    ReferralEvent,
+    RevenueEvent,
+    TelemetryEvent,
+    TenantEvent,
+    UserActivatedEvent,
+    UserLoginEvent,
+    UserSignupEvent,
+    WorkflowRunEvent,
+)
+from agent_factory.telemetry.pcap import (
+    AgentPCAPTracer,
+    FrameType,
+    PathologyDiagnostic,
+    PathologyType,
+    PCAPFrame,
+)
 
 try:
     from agent_factory.telemetry.revenue import RevenueTracker, get_revenue_tracker
@@ -46,26 +52,31 @@ def __getattr__(name: str):
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 __all__ = [
-    "TelemetryEvent",
+    "AgentPCAPTracer",
     "AgentRunEvent",
-    "WorkflowRunEvent",
+    "AnalyticsEngine",
+    "BillingUsageEvent",
     "BlueprintInstallEvent",
     "ErrorEvent",
-    "BillingUsageEvent",
-    "TenantEvent",
+    "FrameType",
+    "PCAPFrame",
+    "PathologyDiagnostic",
+    "PathologyType",
+    "PostgresTelemetryBackend",
     "ProjectEvent",
-    "UserActivatedEvent",
     "ReferralEvent",
     "RevenueEvent",
-    "UserSignupEvent",
-    "UserLoginEvent",
-    "TelemetryCollector",
-    "get_collector",
-    "TelemetryBackend",
-    "SQLiteTelemetryBackend",
-    "PostgresTelemetryBackend",
-    "AnalyticsEngine",
-    "get_analytics",
     "RevenueTracker",
+    "SQLiteTelemetryBackend",
+    "TelemetryBackend",
+    "TelemetryCollector",
+    "TelemetryEvent",
+    "TenantEvent",
+    "UserActivatedEvent",
+    "UserLoginEvent",
+    "UserSignupEvent",
+    "WorkflowRunEvent",
+    "get_analytics",
+    "get_collector",
     "get_revenue_tracker",
 ]

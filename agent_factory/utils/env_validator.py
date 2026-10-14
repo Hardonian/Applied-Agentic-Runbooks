@@ -5,9 +5,10 @@ Validates required and optional environment variables on startup.
 """
 
 import os
-from urllib.parse import urlparse
-from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass
+from typing import Any
+from urllib.parse import urlparse
+
 from agent_factory.core.exceptions import ConfigurationError
 
 
@@ -16,14 +17,13 @@ class EnvVar:
     """Environment variable definition."""
     name: str
     required: bool = False
-    default: Optional[str] = None
+    default: str | None = None
     description: str = ""
-    validator: Optional[Any] = None
+    validator: Any | None = None
 
 
 class EnvironmentValidationError(ConfigurationError):
     """Raised when environment validation fails."""
-    pass
 
 
 class EnvironmentValidator:
@@ -32,21 +32,25 @@ class EnvironmentValidator:
     """
 
     def __init__(self):
-        self.required_vars: List[Tuple[str, str]] = []
-        self.optional_vars: Dict[str, Dict[str, Any]] = {}
+        self.required_vars: list[tuple[str, str]] = []
+        self.optional_vars: dict[str, dict[str, Any]] = {}
 
     def add_required(self, name: str, description: str = "") -> None:
         """Add a required environment variable."""
         self.required_vars.append((name, description))
 
-    def add_optional(self, name: str, default: Optional[str] = None, description: str = "") -> None:
+    def add_optional(self, name: str, default: str | None = None, description: str = "") -> None:
         """Add an optional environment variable with an optional default value."""
         self.optional_vars[name] = {
             "default": default,
             "description": description,
         }
 
-    def validate(self, raise_on_error: bool = False) -> Tuple[bool, List[str]]:
+    def __len__(self) -> int:
+        """Return total count of configured environment variables."""
+        return len(self.required_vars) + len(self.optional_vars)
+
+    def validate(self, raise_on_error: bool = False) -> tuple[bool, list[str]]:
         """
         Validate environment variables.
         
@@ -56,7 +60,7 @@ class EnvironmentValidator:
         Returns:
             Tuple of (is_valid, list_of_error_messages)
         """
-        errors: List[str] = []
+        errors: list[str] = []
 
         # Check required variables
         for name, description in self.required_vars:
@@ -75,7 +79,7 @@ class EnvironmentValidator:
 
         return is_valid, errors
 
-    def get(self, name: str, default: Optional[str] = None) -> Optional[str]:
+    def get(self, name: str, default: str | None = None) -> str | None:
         """Retrieve the value of an environment variable or the provided default."""
         return os.getenv(name, default)
 
@@ -102,7 +106,7 @@ def validate_agent_factory_env(raise_on_error: bool = False) -> EnvironmentValid
         "Comma-separated browser origins allowed to call the API",
     )
 
-    is_valid, errors = validator.validate(raise_on_error=False)
+    _is_valid, errors = validator.validate(raise_on_error=False)
     env = os.getenv("ENVIRONMENT", "development").lower()
     if env not in {"development", "staging", "production", "test"}:
         errors.append("ENVIRONMENT must be development, staging, production, or test")

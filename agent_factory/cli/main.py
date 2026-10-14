@@ -3,22 +3,32 @@ Main CLI entry point for Agent Factory Platform.
 """
 
 import sys
+
 import typer
-from typing import Optional
 
 # Ensure safe console encoding on Windows hosts
 if hasattr(sys.stdout, "reconfigure"):
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:
+    except Exception:  # noqa: BLE001, S110
         pass
 if hasattr(sys.stderr, "reconfigure"):
     try:
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:
+    except Exception:  # noqa: BLE001, S110
         pass
 
-from agent_factory.cli.commands import agent, tool, workflow, blueprint, registry, marketplace, doctor, config, docs
+from agent_factory.cli.commands import (
+    agent,
+    blueprint,
+    config,
+    docs,
+    doctor,
+    marketplace,
+    registry,
+    tool,
+    workflow,
+)
 
 app = typer.Typer(
     name="agent-factory",
@@ -32,24 +42,30 @@ app.add_typer(tool.app, name="tool")
 app.add_typer(workflow.app, name="workflow")
 app.add_typer(blueprint.app, name="blueprint")
 app.add_typer(registry.app, name="registry")
-app.add_typer(marketplace.app, name="marketplace")
+if marketplace and hasattr(marketplace, "app") and marketplace.app is not None:
+    app.add_typer(marketplace.app, name="marketplace")
 app.add_typer(doctor.app, name="doctor")
 app.add_typer(config.app, name="config")
 app.add_typer(docs.app, name="docs")
 
 # Add execution commands
 from agent_factory.cli.commands.execution import app as execution_app
-app.add_typer(execution_app, name="execution")
+
+if execution_app is not None:
+    app.add_typer(execution_app, name="execution")
 
 # Add new command groups
-from agent_factory.cli.commands import notebook, promptlog, eval, ui, saas, metrics, export
+from agent_factory.cli.commands import eval, export, metrics, notebook, promptlog, saas, ui
+
 app.add_typer(notebook.app, name="notebook")
 app.add_typer(promptlog.app, name="promptlog")
 app.add_typer(eval.app, name="eval")
 app.add_typer(ui.app, name="ui")
 app.add_typer(saas.app, name="saas")
-app.add_typer(metrics.app, name="metrics")
-app.add_typer(export.app, name="export")
+if metrics and hasattr(metrics, "app") and metrics.app is not None:
+    app.add_typer(metrics.app, name="metrics")
+if export and hasattr(export, "app") and export.app is not None:
+    app.add_typer(export.app, name="export")
 
 
 @app.command()
@@ -62,10 +78,9 @@ def version():
 @app.command()
 def init(
     project_name: str = typer.Option("my_agent_project", "--name", "-n", help="Project name"),
-    path: Optional[str] = typer.Option(None, "--path", "-p", help="Project path"),
+    path: str | None = typer.Option(None, "--path", "-p", help="Project path"),
 ):
     """Initialize a new Agent Factory project."""
-    import os
     from pathlib import Path
     
     project_path = Path(path) if path else Path(project_name)
@@ -128,7 +143,6 @@ def chat(
     Start interactive terminal chat session with an agent.
     """
     from agent_factory.agents.agent import Agent
-    from agent_factory.integrations.universal_client import UniversalLLMClient
     
     typer.echo(f"💬 Agent Factory Interactive Chat Session [{agent_id}] (Model: {model})")
     typer.echo("Type 'exit' or 'quit' to terminate.\n" + "=" * 50)
@@ -176,12 +190,13 @@ def audit(
 @app.command()
 def pack(
     blueprint_dir: str = typer.Argument(..., help="Path to blueprint directory"),
-    output: Optional[str] = typer.Option(None, "--output", "-o", help="Output .afpkg path"),
+    output: str | None = typer.Option(None, "--output", "-o", help="Output .afpkg path"),
 ):
     """
     Pack a blueprint into a cryptographically signed .afpkg archive.
     """
     from pathlib import Path
+
     from agent_factory.marketplace.packager import BlueprintPackager, PackageManifest
     
     src = Path(blueprint_dir)
@@ -206,7 +221,7 @@ def pack(
 @app.command()
 def certify(
     agent_id: str = typer.Argument(..., help="Agent ID to certify"),
-    output: Optional[str] = typer.Option(None, "--output", "-o", help="Export path for certification Markdown report"),
+    output: str | None = typer.Option(None, "--output", "-o", help="Export path for certification Markdown report"),
 ):
     """
     Generate an enterprise audit compliance certificate (SOC 2, HIPAA, EU AI Act, OWASP) for an agent.
@@ -281,7 +296,7 @@ def mcts(
 
     engine = SpeculativeMCTSEngine(max_depth=depth, num_simulations=simulations)
     res = engine.search(problem)
-    typer.echo(f"\n[MCTS] Speculative Tree Search Complete:")
+    typer.echo("\n[MCTS] Speculative Tree Search Complete:")
     typer.echo(f"Confidence: {res.confidence_score*100:.1f}% | Nodes: {res.total_nodes_explored} | Pruned: {res.branches_pruned} | Depth: {res.depth_reached}")
     typer.echo("-" * 60)
     for idx, step in enumerate(res.best_trajectory, 1):
@@ -292,17 +307,17 @@ def mcts(
 @app.command()
 def cascade(
     prompt: str = typer.Argument(..., help="Prompt to execute via Speculative Model Cascade"),
-    tier: Optional[str] = typer.Option(None, "--tier", "-t", help="Force model tier (fast, standard, deep)"),
+    tier: str | None = typer.Option(None, "--tier", "-t", help="Force model tier (fast, standard, deep)"),
 ):
     """
     Execute prompt via Speculative Model Cascade optimizing for Pareto cost and latency.
     """
-    from agent_factory.optimization.cascade_router import SpeculativeCascadeRouter, ModelTier
+    from agent_factory.optimization.cascade_router import ModelTier, SpeculativeCascadeRouter
 
     tier_enum = ModelTier(tier) if tier else None
     router = SpeculativeCascadeRouter()
     res = router.execute(prompt, force_tier=tier_enum)
-    typer.echo(f"\n[CASCADE] Pareto Optimization Complete:")
+    typer.echo("\n[CASCADE] Pareto Optimization Complete:")
     typer.echo(f"Tier: {res.tier_used.value.upper()} ({res.model_used}) | Speculative Draft: {'ACCEPTED' if res.speculative_draft_accepted else 'ESCALATED'}")
     typer.echo(f"Cost Savings: {res.cost_savings_percentage:.1f}% | Latency Speedup: {res.speedup_factor:.1f}x (${res.cost_usd:.6f} vs ${res.frontier_baseline_cost_usd:.6f})")
     typer.echo("-" * 60)

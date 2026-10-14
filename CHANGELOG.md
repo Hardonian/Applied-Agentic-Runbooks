@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - **Speculative Monte Carlo Tree Search (MCTS) & Tree-of-Thoughts Engine** (`agent_factory.reasoning.mcts`): Non-myopic multi-path hypothesis search with PUCT exploration/exploitation, dynamic dead-end pruning, and state-value backpropagation.
 - **Just-In-Time (JIT) Dynamic Tool Synthesizer & Autonomous Sandbox** (`agent_factory.tools.jit_synthesizer`): Autonomous code generation, AST-level zero-trust security audit, self-testing verification suite, and live toolbelt hot-swapping.
 - **Speculative Model Cascade & Pareto Cost-Latency Optimizer** (`agent_factory.optimization.cascade_router`): Fast tier speculation (gpt-4o-mini/flash) delivering 90%+ cost reduction and 4x+ latency acceleration, cascading to deep reasoning tiers only when confidence fails threshold.
@@ -28,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Automated In-Process Reality Mode Fallback**: `scripts/verify_product.py` seamlessly executes full E2E product lifecycle using in-process TestClient with test-mode Stripe bypass.
 
 ### Fixed
+
 - Modern bcrypt/passlib compatibility via runtime patch.
 - Rate-limiting flake elimination in test environment runs.
 - Mypy py310 modern typing target configuration.
@@ -35,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.0] - 2026-10-12
 
 ### Added
+
 - Comprehensive documentation rewrite for human-friendly onboarding
 - USE_CASES.md with 10 concrete real-world examples
 - PRODUCT_OVERVIEW.md for product positioning
@@ -52,12 +55,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependency audit and CycloneDX SBOM release artifacts
 
 ### Changed
+
 - README.md completely rewritten for better onboarding
 - Documentation humanized across all docs
 - Improved error messages and developer feedback
 - Enhanced API documentation
 
 ### Fixed
+
 - Import consistency across codebase
 - Documentation links and references
 - Example code snippets
@@ -67,6 +72,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2024-01-XX
 
 ### Added
+
 - Core Agent, Tool, and Workflow primitives
 - Blueprint system for reusable configurations
 - REST API with FastAPI
@@ -85,12 +91,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Education-focused blueprints
 
 ### Changed
+
 - Initial release
 
 ---
 
 ## Release Notes Template
 
+```markdown
 ### Version X.Y.Z - YYYY-MM-DD
 
 #### Added
@@ -110,6 +118,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Security
 - Security improvements
+```
 
 ---
 

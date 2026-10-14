@@ -116,7 +116,7 @@ def synthesize_tool(request: JITSynthesizeRequest):
             "integrity_hash": tool.integrity_hash,
             "source_code": tool.source_code,
         }
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"JIT Tool synthesis failed: {e!s}",

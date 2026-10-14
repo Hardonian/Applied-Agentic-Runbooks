@@ -101,8 +101,8 @@
 
               <div style="display: flex; flex-direction: column; gap: 16px;">
                 <div>
-                  <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">Target LLM Model</label>
-                  <select id="model-select" style="width: 100%; background: #1e293b; color: #fff; border: 1px solid var(--border); padding: 10px; border-radius: var(--radius-sm); font-size: 13.5px;">
+                  <label for="model-select" style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">Target LLM Model</label>
+                  <select id="model-select" title="Target LLM Model" aria-label="Target LLM Model" style="width: 100%; background: #1e293b; color: #fff; border: 1px solid var(--border); padding: 10px; border-radius: var(--radius-sm); font-size: 13.5px;">
                     <option value="gpt-4o">OpenAI GPT-4o (Omni Fast)</option>
                     <option value="claude-3-7-sonnet">Anthropic Claude 3.7 Sonnet (Thinking Engine)</option>
                     <option value="deepseek-r1">DeepSeek R1 (Autonomous Reasoning)</option>
@@ -112,8 +112,8 @@
                 </div>
 
                 <div>
-                  <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">System Instructions</label>
-                  <textarea rows="6" style="width: 100%; background: #1e293b; color: #fff; border: 1px solid var(--border); padding: 12px; border-radius: var(--radius-sm); font-size: 13px; font-family: var(--font-mono); resize: none;">You are an expert autonomous assistant powered by Agent Factory. Execute user tasks with high precision, utilize zero-trust sandboxed tools, and reason before responding.</textarea>
+                  <label for="system-instructions" style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">System Instructions</label>
+                  <textarea id="system-instructions" title="System Instructions" aria-label="System Instructions" placeholder="Enter system instructions for agent execution..." rows="6" style="width: 100%; background: #1e293b; color: #fff; border: 1px solid var(--border); padding: 12px; border-radius: var(--radius-sm); font-size: 13px; font-family: var(--font-mono); resize: none;">You are an expert autonomous assistant powered by Agent Factory. Execute user tasks with high precision, utilize zero-trust sandboxed tools, and reason before responding.</textarea>
                 </div>
 
                 <div>
@@ -136,7 +136,7 @@
                 </div>
               </div>
               <div class="chat-input-bar">
-                <input type="text" id="chat-input" class="chat-input" placeholder="Type a prompt or task for the agent...">
+                <input type="text" id="chat-input" class="chat-input" title="Agent Prompt Input" aria-label="Agent Prompt Input" placeholder="Type a prompt or task for the agent...">
                 <button id="send-btn" class="btn-primary">Execute</button>
               </div>
             </div>
@@ -162,7 +162,8 @@
             <div class="panel-header">
               <div class="panel-title">1-Click Universal Framework & Container Exporter</div>
               <div style="display: flex; gap: 12px;">
-                <select id="exporter-select" style="background: #1e293b; color: #fff; border: 1px solid var(--border); padding: 8px 12px; border-radius: var(--radius-sm);">
+                <label for="exporter-select" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0;">Export Target Framework</label>
+                <select id="exporter-select" title="Export Target Framework" aria-label="Export Target Framework" style="background: #1e293b; color: #fff; border: 1px solid var(--border); padding: 8px 12px; border-radius: var(--radius-sm);">
                   <option value="langgraph">LangGraph (StateGraph)</option>
                   <option value="crewai">CrewAI (Agent/Task/Crew)</option>
                   <option value="autogen">AutoGen / AG2 (GroupChat)</option>
@@ -311,7 +312,11 @@ graph = builder.compile()</pre>
               <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
                 Non-myopic multi-path simulation exploring candidate reasoning hypotheses with dynamic branch pruning.
               </div>
-              <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 14px; font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); line-height: 1.6;">
+              <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                <input id="mcts-input-prompt" type="text" title="MCTS Prompt Input" aria-label="MCTS Prompt Input" placeholder="Enter reasoning problem..." value="Design optimal distributed agent consensus algorithm" style="flex: 1; background: #0f172a; border: 1px solid var(--border); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12.5px;">
+                <button id="run-mcts-btn" class="btn-primary" style="white-space: nowrap; padding: 0 16px;">Run Search</button>
+              </div>
+              <div id="mcts-live-output" style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 14px; font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); line-height: 1.6; max-height: 220px; overflow-y: auto;">
                 <div>Root: Problem Formulation [Visits: 12 | Q: 0.82]</div>
                 <div style="margin-left: 16px; color: var(--emerald);">├─ [P=0.33] Step 1.A: Atomic Requirement Decomposition [Q: 0.88] (Selected)</div>
                 <div style="margin-left: 32px; color: var(--emerald);">│  └─ [P=0.50] Step 2.C: Verification & Constraint Invariant [Q: 0.94] (Optimal)</div>
@@ -329,13 +334,14 @@ graph = builder.compile()</pre>
                 <div style="font-size: 13px; color: var(--text-muted);">
                   <strong>Model Cascade Router:</strong> Auto-probes Fast Tier (4o-mini/Flash), verifies self-confidence, and speculatively escalates to Deep Tier only when required.
                 </div>
-                <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px; font-family: var(--font-mono); font-size: 12px;">
+                <div style="display: flex; gap: 8px;">
+                  <input id="cascade-input-prompt" type="text" title="Cascade Prompt Input" aria-label="Cascade Prompt Input" placeholder="Enter prompt to cascade..." value="Extract structured JSON schema and verify strict compliance" style="flex: 1; background: #0f172a; border: 1px solid var(--border); color: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12.5px;">
+                  <button id="run-cascade-btn" class="btn-primary" style="white-space: nowrap; padding: 0 16px;">Test Cascade</button>
+                </div>
+                <div id="cascade-live-output" style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px; font-family: var(--font-mono); font-size: 12px; max-height: 180px; overflow-y: auto;">
                   <div style="color: var(--cyan);">[FAST TIER - 240ms] Speculative Draft generated: Confidence 0.89</div>
                   <div style="color: var(--emerald);">[VERIFIER] Format & constraint check PASSED. Returning immediately.</div>
-                  <div style="color: var(--text-muted); margin-top: 6px;">Cost: $0.000032 (Saved $0.003208 vs o1)</div>
-                </div>
-                <div style="font-size: 13px; color: var(--text-muted);">
-                  <strong>JIT Tool Synthesizer:</strong> Dynamic tool compilation with AST sandbox security and runtime hot-swapping into agent toolbelts.
+                  <div style="color: var(--text-muted); margin-top: 6px;">Cost: $0.000032 (Saved 90.4% vs o1 baseline)</div>
                 </div>
               </div>
             </div>
@@ -366,12 +372,14 @@ graph = builder.compile()</pre>
             <div class="glass-panel">
               <div class="panel-header">
                 <div class="panel-title">🛡️ MCPWall Zero-Trust Firewall (Hardonian/mcpwall)</div>
-                <span class="badge cyan">Active Guard</span>
+                <div style="display: flex; gap: 8px;">
+                  <button id="test-mcpwall-btn" class="btn-primary" style="padding: 4px 10px; font-size: 11.5px;">Test Human Gate</button>
+                </div>
               </div>
               <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
                 Local-first policy firewall enforcing path containment, argument size limits, and cryptographic human approval tickets.
               </div>
-              <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 14px; font-family: var(--font-mono); font-size: 12px; display: flex; flex-direction: column; gap: 8px;">
+              <div id="mcpwall-live-output" style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 14px; font-family: var(--font-mono); font-size: 12px; display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
                 <div>[POLICY] Denied tools: `delete_database`, `drop_table`, `shell_exec_raw`</div>
                 <div>[CONTAINMENT] Path roots bound to canonical workspace</div>
                 <div style="color: var(--cyan);">[GATE] Ticket `mcp-gate-7f39b1a`: Destructive `write_file` requires human approval hash</div>
@@ -382,12 +390,14 @@ graph = builder.compile()</pre>
             <div class="glass-panel">
               <div class="panel-header">
                 <div class="panel-title">📡 AgentPCAP Timeline & Settler Ledger</div>
-                <span class="badge emerald">Audited</span>
+                <div style="display: flex; gap: 8px;">
+                  <button id="test-veridag-btn" class="btn-primary" style="padding: 4px 10px; font-size: 11.5px;">Run Merkle Proof</button>
+                </div>
               </div>
               <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
                 Unified packet capture for A2A and MCP traffic paired with TokenGoblin velocity regulation and Settler dual-entry balance invariants.
               </div>
-              <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 14px; font-family: var(--font-mono); font-size: 12px; display: flex; flex-direction: column; gap: 8px;">
+              <div id="settler-live-output" style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 14px; font-family: var(--font-mono); font-size: 12px; display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto;">
                 <div>[PCAP] Frame capture active (.apcap format supported)</div>
                 <div>[PATHOLOGY] Retry Storm Detector: 0 anomalies</div>
                 <div>[VELOCITY] Token burn rate: 42 tokens/sec (Threshold: 2,500 tps)</div>

@@ -1,5 +1,33 @@
 # Agent Factory Platform - Complete Architecture & Directory Tree
 
+## Enterprise Platform Trinity
+
+The platform joins evaluation, live operations, and deployment through one evidence
+contract. `agent_factory.evaluation.arena.ArenaRunner` executes five deterministic,
+offline-capable suites: reasoning frontier, Pareto model cascade, adversarial MCPWall,
+self-healing fault injection, and Settler accounting. Every summary embeds a VeriDAG
+Merkle proof and AgentPCAP capture; the REST leaderboard ranks their pass rate, Pareto
+score, and tail latency.
+
+`agent_factory.api.ws` supplies a bounded in-process pub/sub bus. `/api/v1/ws/stream`
+handles token chunks and operator approval decisions, while `/api/v1/ws/arena` carries
+suite progress, tree/capture telemetry, and final summaries. Slow consumers lose only
+their oldest queued event and cannot block producers. Studio 2.0 consumes these same
+contracts and uses external `style.css` exclusively.
+
+`agent_factory.telemetry.otel_exporter` maps AgentPCAP frames to OTLP log records,
+VeriDAG transitions to OTLP spans, and native counters to Prometheus exposition text.
+No OpenTelemetry SDK is required and export is a safe no-op without an endpoint. The
+`deploy/` tree provides a complete Compose stack, provisioned observability, a Helm
+chart with autoscaling and health gates, and an air-gapped local-model overlay.
+
+```text
+ArenaRunner ── events ──> EventBus ──> REST/WebSocket ──> Studio
+     │                       │
+     ├── VeriDAG proof       └── OTel Collector / Prometheus / Jaeger
+     └── AgentPCAP capture
+```
+
 ## Full Directory Structure
 
 ```

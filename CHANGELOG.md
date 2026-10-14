@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Enterprise Platform Trinity**: Added the five-suite Autonomous Arena and red-team gauntlet, proof-backed leaderboards, `/api/v1/arena` REST endpoints, and `agent-factory arena run`.
+- **Real-Time Streaming Studio 2.0**: Added bounded bi-directional WebSocket channels at `/api/v1/ws/stream` and `/api/v1/ws/arena`, live token/tree/capture/velocity event contracts, MCPWall operator decisions, a dynamic arena dashboard, and an AgentPCAP frame player with zero inline CSS.
+- **Cloud-Native OTel & Helm Substrate**: Added a dependency-free AgentPCAP/VeriDAG OTLP bridge, Prometheus exposition, a production PostgreSQL/Redis/Prometheus/Grafana Compose stack, a production Helm chart with HPA/probes/ingress/secret mounts, and an air-gapped Ollama profile.
 - **Speculative Monte Carlo Tree Search (MCTS) & Tree-of-Thoughts Engine** (`agent_factory.reasoning.mcts`): Non-myopic multi-path hypothesis search with PUCT exploration/exploitation, dynamic dead-end pruning, and state-value backpropagation.
 - **Just-In-Time (JIT) Dynamic Tool Synthesizer & Autonomous Sandbox** (`agent_factory.tools.jit_synthesizer`): Autonomous code generation, AST-level zero-trust security audit, self-testing verification suite, and live toolbelt hot-swapping.
 - **Speculative Model Cascade & Pareto Cost-Latency Optimizer** (`agent_factory.optimization.cascade_router`): Fast tier speculation (gpt-4o-mini/flash) delivering 90%+ cost reduction and 4x+ latency acceleration, cascading to deep reasoning tiers only when confidence fails threshold.

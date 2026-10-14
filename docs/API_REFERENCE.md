@@ -1,5 +1,46 @@
 # Agent Factory Platform - API Reference
 
+## Autonomous Arena
+
+### `POST /api/v1/arena/run`
+
+Runs all suites by default. The optional body accepts `suites` (values:
+`reasoning_frontier`, `pareto_cascade`, `adversarial_security`, `self_healing`, and
+`settler_accounting`) and `concurrency` from 1–1000. The response contains suite
+results, pass/Pareto/latency/token/cost metrics, a VeriDAG proof, and `.apcap` data.
+
+```json
+{"suites": ["adversarial_security", "settler_accounting"], "concurrency": 64}
+```
+
+### `GET /api/v1/arena/leaderboard?limit=20`
+
+Returns recent runs ordered by pass rate, Pareto frontier score, and p95 latency. Each
+entry includes the cryptographic Merkle root used to verify its state transitions.
+
+## WebSocket streaming
+
+Connect to `/api/v1/ws/stream` for token chunks and interactive approval decisions, or
+`/api/v1/ws/arena` for benchmark progress and evidence. Messages are JSON envelopes
+with `type`, `topic`, `timestamp`, and event-specific fields.
+
+Client control messages include:
+
+- `{"type":"ping"}`
+- `{"type":"stream.prompt","prompt":"..."}`
+- `{"type":"arena.run","suites":["reasoning_frontier"]}`
+- `{"type":"approval.approve","ticket_id":"...","approver":"..."}`
+- `{"type":"approval.deny","ticket_id":"...","approver":"..."}`
+
+Server events include `token.chunk`, `arena.suite.started`, `arena.suite.completed`,
+`arena.completed`, `approval.requested`, and `approval.resolved`.
+
+## CLI
+
+`agent-factory arena run` runs every suite offline. Repeat `--suite` to select suites,
+set `--concurrency`, and use `--output summary.json` to persist a summary alongside its
+`.apcap` and VeriDAG artifacts.
+
 Complete reference for the Agent Factory REST API, Python SDK, and CLI.
 
 ---

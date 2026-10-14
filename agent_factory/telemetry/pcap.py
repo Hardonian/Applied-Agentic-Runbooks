@@ -14,7 +14,7 @@ import hashlib
 import json
 import time
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
@@ -24,6 +24,17 @@ class FrameType(str, Enum):
     TOOL = "tool"        # Tool invocation & result
     MODEL = "model"      # LLM inference request/response
     SYSTEM = "system"    # Lifecycle & guardrail events
+
+
+class PCAPFrameType(str, Enum):
+    """Expanded protocol names accepted by the OTel compatibility surface."""
+
+    A2A = "a2a"
+    TOOL_CALL = "tool_call"
+    TOOL_RESULT = "tool_result"
+    MODEL_REQUEST = "model_request"
+    MODEL_RESPONSE = "model_response"
+    SYSTEM = "system"
 
 
 class PathologyType(str, Enum):
@@ -37,16 +48,22 @@ class PathologyType(str, Enum):
 class PCAPFrame:
     """A single captured protocol frame in the agent communication stream."""
     frame_id: str
-    timestamp: float
-    frame_type: FrameType
-    source: str
-    destination: str
-    payload: dict[str, Any]
+    timestamp: float = field(default_factory=time.time)
+    frame_type: FrameType | PCAPFrameType = FrameType.SYSTEM
+    source: str = ""
+    destination: str = ""
+    payload: dict[str, Any] = field(default_factory=dict)
     tokens_used: int = 0
     duration_ms: float = 0.0
     payload_hash: str = ""
+    src_actor: str = ""
+    dst_actor: str = ""
 
     def __post_init__(self):
+        if self.src_actor and not self.source:
+            self.source = self.src_actor
+        if self.dst_actor and not self.destination:
+            self.destination = self.dst_actor
         if not self.payload_hash:
             try:
                 raw = json.dumps(self.payload, sort_keys=True, default=str)

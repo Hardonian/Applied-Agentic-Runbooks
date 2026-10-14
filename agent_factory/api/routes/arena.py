@@ -59,4 +59,4 @@ async def arena_leaderboard(limit: int = 20) -> dict[str, Any]:
         }
         for index, run in enumerate(ranked, start=1)
     ]
-    return {"entries": entries, "total_runs": len(_runs)}
+    return {"entries": entries, "count": len(entries), "total_runs": len(_runs)}

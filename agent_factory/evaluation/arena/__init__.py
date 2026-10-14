@@ -1,8 +1,8 @@
 """Autonomous, offline-capable Agent Factory benchmark arena."""
 
 from agent_factory.evaluation.arena.runner import (
-    ArenaRunSummary,
     ArenaRunner,
+    ArenaRunSummary,
     GauntletSuite,
     SuiteResult,
 )

@@ -55,9 +55,14 @@ class OTelExporter:
         records = []
         for frame in frames:
             if isinstance(frame, PCAPFrame):
+                signal_name = frame.frame_type.value
+                if signal_name == "tool":
+                    signal_name = "tool_call"
+                elif signal_name == "model":
+                    signal_name = "model_call"
                 payload = {
                     "frame_id": frame.frame_id,
-                    "frame_type": frame.frame_type.value,
+                    "frame_type": signal_name,
                     "source": frame.source,
                     "destination": frame.destination,
                     "payload_hash": frame.payload_hash,
@@ -73,9 +78,15 @@ class OTelExporter:
                 {
                     "timeUnixNano": str(int(timestamp * 1_000_000_000)),
                     "severityText": "INFO",
-                    "body": {"stringValue": json.dumps(payload, sort_keys=True, default=str)},
+                    "body": {"stringValue": str(payload.get("frame_type", "agentpcap"))},
                     "attributes": [
-                        {"key": "agent.factory.signal", "value": {"stringValue": "agentpcap"}}
+                        {"key": "agent.factory.signal", "value": {"stringValue": "agentpcap"}},
+                        {
+                            "key": "agent.factory.payload",
+                            "value": {
+                                "stringValue": json.dumps(payload, sort_keys=True, default=str)
+                            },
+                        },
                     ],
                 }
             )
@@ -132,6 +143,68 @@ class OTelExporter:
                 }
             ]
         }
+
+    def veridag_to_otlp_spans(
+        self, proof: VeriDAGExecutionProof | dict[str, Any]
+    ) -> dict[str, Any]:
+        """Compatibility trace view containing a root DAG span and child step spans."""
+        if isinstance(proof, VeriDAGExecutionProof) and proof.step_order:
+            execution_id = proof.execution_id
+            end_ns = int(proof.timestamp * 1_000_000_000)
+            trace_id = self._hex_id(execution_id, 32)
+            root_id = self._hex_id(f"{execution_id}:root", 16)
+            spans: list[dict[str, Any]] = [
+                {
+                    "traceId": trace_id,
+                    "spanId": root_id,
+                    "name": f"veridag.{proof.dag_id or proof.workflow_name or 'execution'}",
+                    "startTimeUnixNano": str(end_ns),
+                    "endTimeUnixNano": str(end_ns),
+                    "attributes": [],
+                    "status": {"code": 1 if proof.is_valid else 2},
+                }
+            ]
+            for step_id in proof.step_order:
+                spans.append(
+                    {
+                        "traceId": trace_id,
+                        "spanId": self._hex_id(f"{execution_id}:{step_id}", 16),
+                        "parentSpanId": root_id,
+                        "name": f"veridag.{step_id}",
+                        "startTimeUnixNano": str(end_ns),
+                        "endTimeUnixNano": str(end_ns),
+                        "attributes": [
+                            {
+                                "key": "veridag.step_hash",
+                                "value": {"stringValue": proof.step_hashes.get(step_id, "")},
+                            }
+                        ],
+                        "status": {"code": 1},
+                    }
+                )
+            return {
+                "resourceSpans": [
+                    {
+                        "resource": self._resource(),
+                        "scopeSpans": [
+                            {
+                                "scope": {"name": "agent_factory.orchestration.veridag"},
+                                "spans": spans,
+                            }
+                        ],
+                    }
+                ]
+            }
+        return self.veridag_to_otlp(proof)
+
+    @staticmethod
+    def metrics_to_prometheus(metrics: dict[str, float], prefix: str = "agent_factory") -> str:
+        """Convert a numeric metric mapping to Prometheus exposition format."""
+        lines: list[str] = []
+        for name, value in sorted(metrics.items()):
+            safe_name = "".join(char if char.isalnum() or char == "_" else "_" for char in name)
+            lines.append(f"{prefix}_{safe_name} {value}")
+        return "\n".join(lines) + "\n"
 
     def prometheus_metrics(
         self,

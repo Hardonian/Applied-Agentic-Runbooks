@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import hashlib
+import json
 import time
 from typing import Any
 
@@ -75,13 +76,20 @@ async def _handle_control(websocket: WebSocket, message: dict[str, Any], topic: 
 
 async def _serve(websocket: WebSocket, topic: str) -> None:
     await websocket.accept()
-    sender = asyncio.create_task(_send_events(websocket, topic))
-    await websocket.send_json({"type": "connected", "topic": topic})
+    requested_topic = websocket.query_params.get("topic", topic)
+    sender = asyncio.create_task(_send_events(websocket, requested_topic))
+    await websocket.send_json({"type": "connected", "topic": requested_topic})
     try:
         while True:
-            message = await websocket.receive_json()
-            await _handle_control(websocket, message, topic)
-    except WebSocketDisconnect:
+            packet = await websocket.receive()
+            if packet.get("text") == "ping":
+                message = {"type": "ping"}
+            elif packet.get("text"):
+                message = json.loads(packet["text"])
+            else:
+                continue
+            await _handle_control(websocket, message, requested_topic)
+    except (WebSocketDisconnect, RuntimeError):
         pass
     finally:
         sender.cancel()

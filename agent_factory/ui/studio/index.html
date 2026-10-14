@@ -1,415 +1,67 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agent Factory Studio | Next-Gen AI Agent Platform</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Agent Factory Studio 2.0</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app-container">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="brand-header">
-        <div class="brand-logo">AF</div>
-        <div>
-          <div class="brand-title">Agent Factory</div>
-          <div class="brand-subtitle">v2.0 Autonomous Suite</div>
-        </div>
-      </div>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">AF</span><div><strong>Agent Factory</strong><small>Enterprise command center</small></div></div>
+    <div class="connection"><span id="connection-dot" class="status-dot"></span><span id="connection-label">Connecting</span></div>
+  </header>
 
-      <ul class="nav-menu">
-        <li class="nav-item active" data-target="playground">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Playground & Chat
-        </li>
-        <li class="nav-item" data-target="workflows">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          Visual DAG Studio
-        </li>
-        <li class="nav-item" data-target="exporters">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 16l4-4-4-4M8 8l-4 4 4 4M21 12H9"/></svg>
-          Universal Exporter
-        </li>
-        <li class="nav-item" data-target="blueprints">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-          Marketplace Store
-        </li>
-        <li class="nav-item" data-target="security">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          Security & OWASP
-        </li>
-        <li class="nav-item" data-target="billing">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-          SaaS Billing & Wallet
-        </li>
-        <li class="nav-item" data-target="mcts">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="3"/><circle cx="5" cy="19" r="3"/><circle cx="19" cy="19" r="3"/><line x1="12" y1="8" x2="5" y2="16"/><line x1="12" y1="8" x2="19" y2="16"/></svg>
-          MCTS & Model Cascade
-        </li>
-        <li class="nav-item" data-target="hardonian">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-          Trust & PCAP Substrate
-        </li>
-      </ul>
+  <main>
+    <section class="hero">
+      <div><p class="eyebrow">Autonomous Arena</p><h1>Live gauntlet operations</h1><p>Verifiable benchmarks, streaming evidence, and human-gated execution in one view.</p></div>
+      <button id="run-arena" class="primary">Run all five suites</button>
+    </section>
 
-      <div class="sidebar-footer">
-        <div class="sidebar-workspace-label">Active Workspace</div>
-        <div class="sidebar-workspace-name">Production Enterprise</div>
-        <div class="sidebar-workspace-status">● Multi-Provider Connected</div>
-      </div>
-    </aside>
+    <section class="metric-grid" aria-label="Arena metrics">
+      <article class="metric"><span>Pass rate</span><strong id="pass-rate">—</strong><div class="bar"><i id="pass-bar"></i></div></article>
+      <article class="metric"><span>Pareto score</span><strong id="pareto-score">—</strong><div id="pareto-dial" class="dial"><b>0</b></div></article>
+      <article class="metric"><span>p95 latency</span><strong id="p95-latency">—</strong><small>milliseconds</small></article>
+      <article class="metric"><span>Token velocity</span><strong id="token-velocity">—</strong><small>tokens / second</small></article>
+    </section>
 
-    <!-- Main Stage -->
-    <main class="main-stage">
-      <!-- Topbar -->
-      <header class="topbar">
-        <div class="topbar-left">
-          <h2 class="topbar-title">Studio Command Center</h2>
-          <span class="badge cyan">Stack Agnostic</span>
-        </div>
+    <section class="workspace">
+      <article class="panel arena-panel">
+        <div class="panel-head"><div><p class="eyebrow">Benchmark feed</p><h2>Suite progress</h2></div><span id="arena-status" class="pill">Idle</span></div>
+        <div id="suite-list" class="suite-list"></div>
+        <div id="event-log" class="terminal" role="log" aria-live="polite"></div>
+      </article>
 
-        <div class="topbar-stats">
-          <div class="stat-chip emerald">
-            <span class="dot"></span>
-            Latency: <span id="stat-latency" class="stat-value">42ms</span>
-          </div>
-          <div class="stat-chip cyan">
-            <span class="dot"></span>
-            Tokens: <span id="stat-tokens" class="stat-value">1,420</span>
-          </div>
-          <div class="stat-chip purple">
-            <span class="dot"></span>
-            Cost: <span id="stat-cost" class="stat-value">$0.0035</span>
-          </div>
-        </div>
-      </header>
+      <article class="panel">
+        <div class="panel-head"><div><p class="eyebrow">Ranked evidence</p><h2>Leaderboard</h2></div><button id="refresh-board" class="secondary">Refresh</button></div>
+        <div class="table-wrap"><table><thead><tr><th>#</th><th>Run</th><th>Pass</th><th>p95</th><th>Merkle</th></tr></thead><tbody id="leaderboard"></tbody></table></div>
+      </article>
+    </section>
 
-      <!-- Viewport Views -->
-      <div class="view-viewport">
-        <!-- View 1: Playground -->
-        <section id="playground" class="view-section active">
-          <div class="grid-2">
-            <div class="glass-panel">
-              <div class="panel-header">
-                <div class="panel-title">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                  Agent Configuration
-                </div>
-                <span class="badge purple">Universal Gateway</span>
-              </div>
+    <section class="workspace lower">
+      <article class="panel">
+        <div class="panel-head"><div><p class="eyebrow">AgentPCAP</p><h2>Frame player</h2></div><span id="anomaly-count" class="pill safe">0 anomalies</span></div>
+        <input id="frame-scrubber" class="scrubber" type="range" min="0" max="0" value="0" aria-label="Packet frame">
+        <div id="frame-inspector" class="frame-inspector">No capture loaded.</div>
+      </article>
 
-              <div class="form-group-stack">
-                <div>
-                  <label for="model-select" class="form-label">Target LLM Model</label>
-                  <select id="model-select" title="Target LLM Model" aria-label="Target LLM Model" class="form-select">
-                    <option value="gpt-4o">OpenAI GPT-4o (Omni Fast)</option>
-                    <option value="claude-3-7-sonnet">Anthropic Claude 3.7 Sonnet (Thinking Engine)</option>
-                    <option value="deepseek-r1">DeepSeek R1 (Autonomous Reasoning)</option>
-                    <option value="gemini-2.0-flash">Google Gemini 2.0 Flash (Ultra-Low Latency)</option>
-                    <option value="ollama/llama3.3">Local Ollama / Llama 3.3 (Zero Cloud Cost)</option>
-                  </select>
-                </div>
+      <article class="panel">
+        <div class="panel-head"><div><p class="eyebrow">Bi-directional stream</p><h2>Token console</h2></div><span class="pill live">Live</span></div>
+        <div id="token-output" class="token-output">Send a prompt to inspect chunk delivery.</div>
+        <form id="prompt-form" class="prompt-form"><input id="prompt" autocomplete="off" placeholder="Ask the offline deterministic agent…" aria-label="Prompt"><button class="primary" type="submit">Stream</button></form>
+      </article>
+    </section>
+  </main>
 
-                <div>
-                  <label for="system-instructions" class="form-label">System Instructions</label>
-                  <textarea id="system-instructions" title="System Instructions" aria-label="System Instructions" placeholder="Enter system instructions for agent execution..." rows="6" class="form-textarea">You are an expert autonomous assistant powered by Agent Factory. Execute user tasks with high precision, utilize zero-trust sandboxed tools, and reason before responding.</textarea>
-                </div>
-
-                <div>
-                  <label class="form-label">Active Tool Capabilities</label>
-                  <div class="badge-row">
-                    <span class="badge cyan">Python AST Sandbox</span>
-                    <span class="badge purple">Anthropic MCP Client</span>
-                    <span class="badge emerald">Hybrid GraphRAG</span>
-                    <span class="badge cyan">Zero-Trust HMAC</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Live Streaming Chat -->
-            <div class="chat-window">
-              <div class="chat-messages" id="chat-messages">
-                <div class="chat-bubble agent">
-                  Hello! I am ready to assist. Select any bleeding-edge model, configure tools, or prompt me directly.
-                </div>
-              </div>
-              <div class="chat-input-bar">
-                <input type="text" id="chat-input" class="chat-input" title="Agent Prompt Input" aria-label="Agent Prompt Input" placeholder="Type a prompt or task for the agent...">
-                <button id="send-btn" class="btn-primary">Execute</button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- View 2: Multi-Agent DAG Studio -->
-        <section id="workflows" class="view-section">
-          <div class="glass-panel mb-24">
-            <div class="panel-header">
-              <div class="panel-title">Interactive Multi-Agent Swarm DAG Visualizer</div>
-              <span class="badge emerald">Topological Executor Active</span>
-            </div>
-            <div class="dag-canvas" id="dag-container">
-              <!-- Rendered via app.js SVG -->
-            </div>
-          </div>
-        </section>
-
-        <!-- View 3: Universal Exporter -->
-        <section id="exporters" class="view-section">
-          <div class="glass-panel">
-            <div class="panel-header">
-              <div class="panel-title">1-Click Universal Framework & Container Exporter</div>
-              <div class="exporter-actions">
-                <label for="exporter-select" class="sr-only">Export Target Framework</label>
-                <select id="exporter-select" title="Export Target Framework" aria-label="Export Target Framework" class="exporter-select">
-                  <option value="langgraph">LangGraph (StateGraph)</option>
-                  <option value="crewai">CrewAI (Agent/Task/Crew)</option>
-                  <option value="autogen">AutoGen / AG2 (GroupChat)</option>
-                  <option value="docker">Docker Microservice Container</option>
-                </select>
-                <button id="copy-code-btn" class="btn-primary btn-copy">Copy Code</button>
-              </div>
-            </div>
-            <pre class="code-block" id="export-code-view">from langgraph.graph import StateGraph, START, END
-
-# Generated LangGraph DAG for Agent Factory
-builder = StateGraph(WorkflowState)
-builder.add_node("router", router_node)
-builder.add_node("researcher", researcher_node)
-builder.add_node("synthesizer", synthesizer_node)
-
-builder.add_edge(START, "router")
-builder.add_conditional_edges("router", route_decision)
-builder.add_edge("researcher", "synthesizer")
-builder.add_edge("synthesizer", END)
-
-graph = builder.compile()</pre>
-          </div>
-        </section>
-
-        <!-- View 4: Marketplace Store -->
-        <section id="blueprints" class="view-section">
-          <div class="grid-3">
-            <div class="blueprint-card">
-              <div class="blueprint-header">
-                <span class="badge purple">Autonomous</span>
-                <span class="badge-verified">Verified</span>
-              </div>
-              <h3 class="blueprint-title">Full-Stack Engineer & Auditor</h3>
-              <p class="blueprint-desc">Autonomous repo scanner, bug fixer, unit test generator, security patcher.</p>
-              <button class="btn-primary btn-blueprint-install">1-Click Install</button>
-            </div>
-
-            <div class="blueprint-card">
-              <div class="blueprint-header">
-                <span class="badge cyan">Enterprise</span>
-                <span class="badge-verified">Verified</span>
-              </div>
-              <h3 class="blueprint-title">Regulatory Compliance Officer</h3>
-              <p class="blueprint-desc">Enterprise doc intelligence, GDPR/HIPAA/SOC2 compliance checks & citations.</p>
-              <button class="btn-primary btn-blueprint-install">1-Click Install</button>
-            </div>
-
-            <div class="blueprint-card">
-              <div class="blueprint-header">
-                <span class="badge emerald">Swarm</span>
-                <span class="badge-verified">Verified</span>
-              </div>
-              <h3 class="blueprint-title">Research Consensus Swarm</h3>
-              <p class="blueprint-desc">Multi-agent debate, literature search, consensus synthesis & fact checking.</p>
-              <button class="btn-primary btn-blueprint-install">1-Click Install</button>
-            </div>
-          </div>
-        </section>
-
-        <!-- View 5: Security & OWASP -->
-        <section id="security" class="view-section">
-          <div class="grid-2">
-            <div class="glass-panel">
-              <div class="panel-header">
-                <div class="panel-title">OWASP Top 10 for LLMs Compliance Scorecard</div>
-                <span class="badge emerald">Score: 95/100</span>
-              </div>
-              <ul class="scorecard-list">
-                <li class="scorecard-item">
-                  <span>LLM01: Prompt Injection Defense</span>
-                  <span class="scorecard-pass">PASS</span>
-                </li>
-                <li class="scorecard-item">
-                  <span>LLM06: Sensitive Data & Secret Redaction</span>
-                  <span class="scorecard-pass">PASS</span>
-                </li>
-                <li class="scorecard-item">
-                  <span>LLM08: Zero-Trust Tool Authorization</span>
-                  <span class="scorecard-pass">PASS</span>
-                </li>
-              </ul>
-            </div>
-
-            <div class="glass-panel">
-              <div class="panel-header">
-                <div class="panel-title">Real-Time LLM Firewall Event Stream</div>
-                <span class="badge cyan">Active Guard</span>
-              </div>
-              <div class="event-stream-container">
-                <div>[12:30:15] <span class="text-emerald">OK</span> Prompt sanitized. 0 injection markers detected.</div>
-                <div>[12:30:42] <span class="text-cyan">INFO</span> HMAC capability token generated for tool `python_interpreter`.</div>
-                <div>[12:31:05] <span class="text-emerald">OK</span> Canary token verified intact in completion response.</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- View 6: SaaS Billing -->
-        <section id="billing" class="view-section">
-          <div class="grid-3">
-            <div class="glass-panel">
-              <div class="metric-label">Current Plan</div>
-              <h3 class="billing-metric-value">Pro Agent Suite</h3>
-              <div class="billing-sub-primary">$99 / month</div>
-            </div>
-            <div class="glass-panel">
-              <div class="metric-label">Token Usage (Billing Cycle)</div>
-              <h3 class="billing-metric-value">1.42M / 15.0M</h3>
-              <div class="billing-sub-emerald">9.4% used</div>
-            </div>
-            <div class="glass-panel">
-              <div class="metric-label">Prepaid Credit Wallet</div>
-              <h3 class="billing-metric-value">$48.50</h3>
-              <div class="billing-sub-cyan">+ Auto Top-up Enabled</div>
-            </div>
-          </div>
-        </section>
-
-        <!-- View 7: Speculative MCTS & Model Cascade -->
-        <section id="mcts" class="view-section">
-          <div class="grid-3 mb-20">
-            <div class="glass-panel">
-              <div class="metric-label">Pareto Cost Reduction</div>
-              <h3 class="kpi-value text-emerald">90.4% Saved</h3>
-              <div class="kpi-subtext">vs Frontier o1 Baseline</div>
-            </div>
-            <div class="glass-panel">
-              <div class="metric-label">Speculative Speedup</div>
-              <h3 class="kpi-value text-cyan">4.8x Faster</h3>
-              <div class="kpi-subtext">p50 Latency: 240ms</div>
-            </div>
-            <div class="glass-panel">
-              <div class="metric-label">MCTS Exploration Efficiency</div>
-              <h3 class="kpi-value text-white">94.2%</h3>
-              <div class="kpi-subtext-emerald">0 Cascading Dead-Ends</div>
-            </div>
-          </div>
-
-          <div class="grid-2">
-            <div class="glass-panel">
-              <div class="panel-header">
-                <div class="panel-title">🧠 Speculative Tree-of-Thoughts / MCTS Visualizer</div>
-                <span class="badge cyan">PUCT Search</span>
-              </div>
-              <div class="panel-description">
-                Non-myopic multi-path simulation exploring candidate reasoning hypotheses with dynamic branch pruning.
-              </div>
-              <div class="input-action-row mb-10">
-                <input id="mcts-input-prompt" type="text" title="MCTS Prompt Input" aria-label="MCTS Prompt Input" placeholder="Enter reasoning problem..." value="Design optimal distributed agent consensus algorithm" class="lab-input">
-                <button id="run-mcts-btn" class="btn-primary btn-lab-action">Run Search</button>
-              </div>
-              <div id="mcts-live-output" class="mcts-console-box">
-                <div>Root: Problem Formulation [Visits: 12 | Q: 0.82]</div>
-                <div class="mcts-branch-indent-1 text-emerald">├─ [P=0.33] Step 1.A: Atomic Requirement Decomposition [Q: 0.88] (Selected)</div>
-                <div class="mcts-branch-indent-2 text-emerald">│  └─ [P=0.50] Step 2.C: Verification & Constraint Invariant [Q: 0.94] (Optimal)</div>
-                <div class="mcts-branch-indent-1 text-muted">├─ [P=0.33] Step 1.B: Unconstrained Heuristic Generation [Q: 0.42] (Pruned)</div>
-                <div class="mcts-branch-indent-1 text-muted">└─ [P=0.33] Step 1.C: Greedy Autoregressive Chain [Q: 0.31] (Pruned)</div>
-              </div>
-            </div>
-
-            <div class="glass-panel">
-              <div class="panel-header">
-                <div class="panel-title">⚡ Speculative Cascade & JIT Tooling Lab</div>
-                <span class="badge emerald">Pareto Optimal</span>
-              </div>
-              <div class="cascade-lab-stack">
-                <div class="panel-description">
-                  <strong>Model Cascade Router:</strong> Auto-probes Fast Tier (4o-mini/Flash), verifies self-confidence, and speculatively escalates to Deep Tier only when required.
-                </div>
-                <div class="input-action-row">
-                  <input id="cascade-input-prompt" type="text" title="Cascade Prompt Input" aria-label="Cascade Prompt Input" placeholder="Enter prompt to cascade..." value="Extract structured JSON schema and verify strict compliance" class="lab-input">
-                  <button id="run-cascade-btn" class="btn-primary btn-lab-action">Test Cascade</button>
-                </div>
-                <div id="cascade-live-output" class="cascade-console-box">
-                  <div class="text-cyan">[FAST TIER - 240ms] Speculative Draft generated: Confidence 0.89</div>
-                  <div class="text-emerald">[VERIFIER] Format & constraint check PASSED. Returning immediately.</div>
-                  <div class="text-muted mt-6">Cost: $0.000032 (Saved 90.4% vs o1 baseline)</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- View 8: Hardonian Trust, VeriDAG & AgentPCAP -->
-        <section id="hardonian" class="view-section">
-          <div class="grid-3 mb-20">
-            <div class="glass-panel">
-              <div class="metric-label">MCPWall Security Policy</div>
-              <h3 class="kpi-value text-emerald">Zero-Trust</h3>
-              <div class="kpi-subtext-cyan">Single-Use TTL Human Gates</div>
-            </div>
-            <div class="glass-panel">
-              <div class="metric-label">VeriDAG Merkle State</div>
-              <h3 class="kpi-value text-white">100% Cryptographic</h3>
-              <div class="kpi-subtext-emerald">Tamper-Proof Proof Bundles</div>
-            </div>
-            <div class="glass-panel">
-              <div class="metric-label">AgentPCAP Pathology Monitor</div>
-              <h3 class="kpi-value text-cyan">0 Pathologies</h3>
-              <div class="kpi-subtext">Deterministic Loop Prevention</div>
-            </div>
-          </div>
-
-          <div class="grid-2">
-            <div class="glass-panel">
-              <div class="panel-header">
-                <div class="panel-title">🛡️ MCPWall Zero-Trust Firewall (Hardonian/mcpwall)</div>
-                <div class="panel-header-actions">
-                  <button id="test-mcpwall-btn" class="btn-primary btn-gate-action">Test Human Gate</button>
-                </div>
-              </div>
-              <div class="panel-description">
-                Local-first policy firewall enforcing path containment, argument size limits, and cryptographic human approval tickets.
-              </div>
-              <div id="mcpwall-live-output" class="terminal-log-box">
-                <div>[POLICY] Denied tools: `delete_database`, `drop_table`, `shell_exec_raw`</div>
-                <div>[CONTAINMENT] Path roots bound to canonical workspace</div>
-                <div class="text-cyan">[GATE] Ticket `mcp-gate-7f39b1a`: Destructive `write_file` requires human approval hash</div>
-                <div class="text-emerald">[INVARIANT] Replay prevention active: Single-use tickets auto-consumed</div>
-              </div>
-            </div>
-
-            <div class="glass-panel">
-              <div class="panel-header">
-                <div class="panel-title">📡 AgentPCAP Timeline & Settler Ledger</div>
-                <div class="panel-header-actions">
-                  <button id="test-veridag-btn" class="btn-primary btn-gate-action">Run Merkle Proof</button>
-                </div>
-              </div>
-              <div class="panel-description">
-                Unified packet capture for A2A and MCP traffic paired with TokenGoblin velocity regulation and Settler dual-entry balance invariants.
-              </div>
-              <div id="settler-live-output" class="terminal-log-box">
-                <div>[PCAP] Frame capture active (.apcap format supported)</div>
-                <div>[PATHOLOGY] Retry Storm Detector: 0 anomalies</div>
-                <div>[VELOCITY] Token burn rate: 42 tokens/sec (Threshold: 2,500 tps)</div>
-                <div class="text-emerald">[SETTLER] Dual-Entry Invariant: Initial == Spent + Reserved + Remaining (0 error)</div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-    </main>
-  </div>
-
+  <dialog id="approval-modal">
+    <form method="dialog" class="modal-card">
+      <p class="eyebrow">MCPWall human gate</p><h2>Dangerous operation intercepted</h2>
+      <p id="approval-message">Review the SHA-256-bound capability request.</p>
+      <code id="approval-hash"></code>
+      <div class="modal-actions"><button id="deny-operation" class="danger" value="deny">Deny</button><button id="approve-operation" class="primary" value="approve">Approve once</button></div>
+    </form>
+  </dialog>
   <script src="app.js"></script>
 </body>
 </html>

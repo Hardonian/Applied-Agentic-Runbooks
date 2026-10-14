@@ -38,7 +38,7 @@ class GauntletSuite(str, Enum):
 class SuiteResult:
     """Result and resource telemetry for one gauntlet suite."""
 
-    suite: str
+    suite: GauntletSuite
     passed: bool
     pass_rate: float
     latency_ms: float
@@ -61,9 +61,17 @@ class ArenaRunSummary:
     apcap: dict[str, Any]
     artifact_paths: dict[str, str] = field(default_factory=dict)
 
+    @property
+    def pcap_frames(self) -> list[dict[str, Any]]:
+        """Compatibility view of the embedded AgentPCAP frame timeline."""
+        frames = self.apcap.get("frames", [])
+        return frames if isinstance(frames, list) else []
+
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-serializable run record."""
         payload = asdict(self)
+        for suite in payload["suites"]:
+            suite["suite"] = suite["suite"].value
         payload["duration_ms"] = round((self.completed_at - self.started_at) * 1000, 3)
         return payload
 
@@ -139,7 +147,7 @@ class ArenaRunner:
             tokens_used=tokens,
             duration_ms=latency_ms,
         )
-        return SuiteResult(suite.value, passed, pass_rate, latency_ms, tokens, cost, details)
+        return SuiteResult(suite, passed, pass_rate, latency_ms, tokens, cost, details)
 
     @staticmethod
     def _reasoning_frontier() -> tuple[bool, float, int, float, dict[str, Any]]:
@@ -249,12 +257,13 @@ class ArenaRunner:
         previous: str | None = None
         for result in results:
             payload = asdict(result)
-            nodes[result.suite] = {
+            node_id = result.suite.value
+            nodes[node_id] = {
                 "fn": lambda _inputs, item=payload: item,
                 "parents": [previous] if previous else [],
                 "executor_id": "arena-runner",
             }
-            previous = result.suite
+            previous = node_id
         _, proof = VeriDAGEngine.execute_verifiable_dag(run_id, nodes, {"run_id": run_id})
         return proof.to_dict()
 

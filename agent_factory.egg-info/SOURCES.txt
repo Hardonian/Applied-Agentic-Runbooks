@@ -19,6 +19,7 @@ agent_factory/api/runtime.py
 agent_factory/api/routes/__init__.py
 agent_factory/api/routes/advanced.py
 agent_factory/api/routes/agents.py
+agent_factory/api/routes/arena.py
 agent_factory/api/routes/auth.py
 agent_factory/api/routes/blueprints.py
 agent_factory/api/routes/executions.py
@@ -33,6 +34,9 @@ agent_factory/api/routes/swarm.py
 agent_factory/api/routes/telemetry.py
 agent_factory/api/routes/tools.py
 agent_factory/api/routes/workflows.py
+agent_factory/api/ws/__init__.py
+agent_factory/api/ws/event_bus.py
+agent_factory/api/ws/routes.py
 agent_factory/auth/api_keys.py
 agent_factory/billing/__init__.py
 agent_factory/billing/gateway.py
@@ -48,6 +52,7 @@ agent_factory/cli/__init__.py
 agent_factory/cli/main.py
 agent_factory/cli/commands/__init__.py
 agent_factory/cli/commands/agent.py
+agent_factory/cli/commands/arena.py
 agent_factory/cli/commands/blueprint.py
 agent_factory/cli/commands/config.py
 agent_factory/cli/commands/docs.py
@@ -95,6 +100,9 @@ agent_factory/eval/__init__.py
 agent_factory/eval/autotune.py
 agent_factory/eval/model.py
 agent_factory/eval/runner.py
+agent_factory/evaluation/__init__.py
+agent_factory/evaluation/arena/__init__.py
+agent_factory/evaluation/arena/runner.py
 agent_factory/financial/__init__.py
 agent_factory/financial/cost_tracker.py
 agent_factory/financial/token_goblin.py
@@ -199,6 +207,7 @@ agent_factory/telemetry/__init__.py
 agent_factory/telemetry/analytics.py
 agent_factory/telemetry/collector.py
 agent_factory/telemetry/model.py
+agent_factory/telemetry/otel_exporter.py
 agent_factory/telemetry/pcap.py
 agent_factory/telemetry/revenue.py
 agent_factory/telemetry/backends/__init__.py
@@ -232,6 +241,7 @@ tests/test_api_executions.py
 tests/test_api_referrals.py
 tests/test_api_tools.py
 tests/test_api_workflows.py
+tests/test_arena_benchmark.py
 tests/test_audit.py
 tests/test_auth.py
 tests/test_billing.py
@@ -262,6 +272,7 @@ tests/test_mcts_reasoning.py
 tests/test_memory_stores.py
 tests/test_notebook_converter.py
 tests/test_orchestration.py
+tests/test_otel_telemetry.py
 tests/test_path_validation.py
 tests/test_payments.py
 tests/test_promptlog.py
@@ -284,6 +295,7 @@ tests/test_telemetry.py
 tests/test_token_goblin_governor.py
 tests/test_tool.py
 tests/test_veridag_orchestration.py
+tests/test_websocket_streaming.py
 tests/test_worker.py
 tests/test_workflow.py
 tests/test_workflow_visualizer.py

@@ -15,7 +15,7 @@ import json
 import time
 import uuid
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 
@@ -35,12 +35,18 @@ class VeriDAGNodeProof:
 @dataclass
 class VeriDAGExecutionProof:
     """Complete cryptographic proof bundle for an entire DAG workflow execution."""
-    execution_id: str
-    workflow_name: str
-    final_merkle_root: str
-    node_proofs: dict[str, VeriDAGNodeProof]
-    timestamp: float
+    execution_id: str = ""
+    workflow_name: str = ""
+    final_merkle_root: str = ""
+    node_proofs: dict[str, VeriDAGNodeProof] = field(default_factory=dict)
+    timestamp: float = field(default_factory=time.time)
     is_valid: bool = True
+    dag_id: str = ""
+    step_order: list[str] = field(default_factory=list)
+    step_hashes: dict[str, str] = field(default_factory=dict)
+    state_transitions: list[dict[str, Any]] = field(default_factory=list)
+    merkle_tree_levels: list[list[str]] = field(default_factory=list)
+    proof_signature: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         """Convert proof bundle to JSON-serializable dictionary."""

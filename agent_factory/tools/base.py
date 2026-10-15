@@ -2,10 +2,11 @@
 Tool base class - Core primitive for tools that agents can use.
 """
 
-from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Callable
 import inspect
+from abc import ABC
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from typing import Any
 
 from agent_factory.core.exceptions import ToolExecutionError, ToolValidationError
 
@@ -18,7 +19,7 @@ class ParameterSchema:
     description: str
     required: bool = True
     default: Any = None
-    enum: Optional[List[Any]] = None
+    enum: list[Any] | None = None
 
 
 @dataclass
@@ -30,9 +31,9 @@ class ToolMetadata:
     version: str = "1.0.0"
     author: str = "unknown"
     category: str = "general"
-    parameters: Dict[str, ParameterSchema] = field(default_factory=dict)
-    tags: List[str] = field(default_factory=list)
-    pricing: Optional[Dict[str, Any]] = None
+    parameters: dict[str, ParameterSchema] = field(default_factory=dict)
+    tags: list[str] = field(default_factory=list)
+    pricing: dict[str, Any] | None = None
 
 
 @dataclass
@@ -40,8 +41,8 @@ class ToolResult:
     """Standard result structure returned from a tool execution."""
     output: Any
     success: bool = True
-    error: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    error: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class Tool(ABC):
@@ -56,10 +57,10 @@ class Tool(ABC):
         id: str,
         name: str,
         description: str,
-        implementation: Optional[Callable] = None,
-        metadata: Optional[ToolMetadata] = None,
-        func: Optional[Callable] = None,
-        parameters: Optional[Dict[str, Any]] = None,
+        implementation: Callable | None = None,
+        metadata: ToolMetadata | None = None,
+        func: Callable | None = None,
+        parameters: dict[str, Any] | None = None,
     ):
         """
         Initialize a Tool.
@@ -85,7 +86,7 @@ class Tool(ABC):
         )
         self._schema = parameters or self._infer_schema()
     
-    def _infer_schema(self) -> Dict[str, Any]:
+    def _infer_schema(self) -> dict[str, Any]:
         """Infer JSON schema from function signature."""
         sig = inspect.signature(self._implementation)
         parameters = {}
@@ -150,7 +151,7 @@ class Tool(ABC):
         try:
             return self._implementation(**kwargs)
         except Exception as e:
-            raise ToolExecutionError(f"Tool {self.id} execution failed: {str(e)}")
+            raise ToolExecutionError(f"Tool {self.id} execution failed: {e!s}")
     
     def __call__(self, *args, **kwargs) -> Any:
         """
@@ -195,7 +196,7 @@ class Tool(ABC):
         
         return True
     
-    def get_schema(self) -> Dict[str, Any]:
+    def get_schema(self) -> dict[str, Any]:
         """
         Get JSON schema for the tool.
         
@@ -215,7 +216,7 @@ class Tool(ABC):
             },
         }
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize tool to dictionary."""
         return {
             "id": self.id,

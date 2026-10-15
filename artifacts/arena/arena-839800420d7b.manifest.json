@@ -1,0 +1,21 @@
+{
+  "manifest_version": "1.0",
+  "run_id": "arena-839800420d7b",
+  "benchmark_version": "2026.10",
+  "agent_factory_version": "0.2.0",
+  "container_image_digest": "unknown",
+  "artifacts": {
+    "veridag": {
+      "file": "arena-839800420d7b.veridag.json",
+      "sha256": "3b6e560cf330095dd95b7d5d2c667b3b437bee45534343defe6cca8116b7d2fe"
+    },
+    "apcap": {
+      "file": "arena-839800420d7b.apcap",
+      "sha256": "dd2bbd05ded091021306010a6f424be9f142f2f58080fbcf4fa8422e51d8a5d3"
+    }
+  },
+  "signature": {
+    "algorithm": "sha256",
+    "value": "c83563b04d3ff98316c32dbcec8d3ecc4e651ea0a4faf1c8149d4f0254367622"
+  }
+}

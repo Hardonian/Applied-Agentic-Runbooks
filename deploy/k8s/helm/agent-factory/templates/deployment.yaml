@@ -12,10 +12,14 @@ spec:
       annotations: {{- toYaml .Values.podAnnotations | nindent 8 }}
       labels: {{- include "agent-factory.labels" . | nindent 8 }}
     spec:
+      serviceAccountName: {{ include "agent-factory.fullname" . }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      topologySpreadConstraints: {{- toYaml .Values.topologySpreadConstraints | nindent 8 }}
       containers:
         - name: agent-factory
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
           ports: [{name: http, containerPort: {{ .Values.containerPort }}}]
           env:
             {{- range $key, $value := .Values.env }}
@@ -32,12 +36,22 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 10
           resources: {{- toYaml .Values.resources | nindent 12 }}
-          {{- if .Values.secretMount.enabled }}
           volumeMounts:
+            - {name: arena-artifacts, mountPath: /var/lib/agent-factory/arena}
+            - {name: tmp, mountPath: /tmp}
+          {{- if .Values.secretMount.enabled }}
             - {name: runtime-secrets, mountPath: {{ .Values.secretMount.path }}, readOnly: true}
           {{- end }}
-      {{- if .Values.secretMount.enabled }}
       volumes:
+        - name: arena-artifacts
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim: {claimName: {{ include "agent-factory.fullname" . }}-artifacts}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        - name: tmp
+          emptyDir: {}
+      {{- if .Values.secretMount.enabled }}
         - name: runtime-secrets
           secret: {secretName: {{ .Values.existingSecret }}}
       {{- end }}

@@ -8,8 +8,8 @@ from agent_factory.agents.config import AgentConfig as Config
 __all__ = [
     "Agent",
     "AgentConfig",
-    "Config",
     "AgentResult",
     "AgentStatus",
+    "Config",
     "Handoff",
 ]

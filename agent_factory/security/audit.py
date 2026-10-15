@@ -1,8 +1,8 @@
 """Audit logging."""
 
-import json
 from datetime import datetime
-from typing import Optional, Dict, Any
+from typing import Any
+
 from agent_factory.monitoring.logging import StructuredLogger
 
 
@@ -16,13 +16,13 @@ class AuditLogger:
     def log_event(
         self,
         event_type: str,
-        user_id: Optional[str] = None,
-        resource_type: Optional[str] = None,
-        resource_id: Optional[str] = None,
-        action: Optional[str] = None,
+        user_id: str | None = None,
+        resource_type: str | None = None,
+        resource_id: str | None = None,
+        action: str | None = None,
         success: bool = True,
-        details: Optional[Dict[str, Any]] = None,
-        ip_address: Optional[str] = None,
+        details: dict[str, Any] | None = None,
+        ip_address: str | None = None,
     ):
         """
         Log audit event.
@@ -61,13 +61,13 @@ _audit_logger = AuditLogger()
 
 def audit_log(
     event_type: str,
-    user_id: Optional[str] = None,
-    resource_type: Optional[str] = None,
-    resource_id: Optional[str] = None,
-    action: Optional[str] = None,
+    user_id: str | None = None,
+    resource_type: str | None = None,
+    resource_id: str | None = None,
+    action: str | None = None,
     success: bool = True,
-    details: Optional[Dict[str, Any]] = None,
-    ip_address: Optional[str] = None,
+    details: dict[str, Any] | None = None,
+    ip_address: str | None = None,
 ):
     """
     Log audit event (convenience function).

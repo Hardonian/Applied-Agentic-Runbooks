@@ -4,7 +4,7 @@ Billing data models.
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, Optional, Any
+from typing import Any
 
 
 @dataclass
@@ -15,12 +15,12 @@ class Plan:
     plan_type: str = "free"  # free, pro, enterprise
     # ``price`` remains a convenience alias for one-time/simple plan callers;
     # recurring plans should use the explicit monthly/yearly fields.
-    price: Optional[float] = None
+    price: float | None = None
     price_monthly: float = 0.0
     price_yearly: float = 0.0
     currency: str = "USD"
-    features: Dict[str, Any] = None
-    limits: Dict[str, Any] = None
+    features: dict[str, Any] = None
+    limits: dict[str, Any] = None
     
     def __post_init__(self):
         if self.price is not None and self.price_monthly == 0.0:
@@ -43,8 +43,8 @@ class Subscription:
     billing_cycle: str = "monthly"  # monthly, yearly
     current_period_start: datetime = None
     current_period_end: datetime = None
-    stripe_subscription_id: Optional[str] = None
-    stripe_customer_id: Optional[str] = None
+    stripe_subscription_id: str | None = None
+    stripe_customer_id: str | None = None
     
     def __post_init__(self):
         if self.current_period_start is None:

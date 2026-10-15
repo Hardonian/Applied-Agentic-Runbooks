@@ -5,10 +5,10 @@ Tracks costs per agent, workflow, user, and tenant with budget management.
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
 from datetime import datetime, timedelta
-from enum import Enum
 from decimal import Decimal
+from enum import Enum
+from typing import Any
 
 
 class CostType(str, Enum):
@@ -30,7 +30,7 @@ class CostRecord:
     entity_type: str  # "agent", "workflow", "user", "tenant"
     entity_id: str
     currency: str = "USD"
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -44,7 +44,7 @@ class Budget:
     currency: str = "USD"
     period: str = "monthly"  # "daily", "weekly", "monthly", "yearly"
     start_date: datetime = field(default_factory=datetime.utcnow)
-    end_date: Optional[datetime] = None
+    end_date: datetime | None = None
     alert_threshold: Decimal = Decimal("0.8")  # Alert at 80%
 
 
@@ -65,9 +65,9 @@ class CostTracker:
     
     def __init__(self):
         """Initialize cost tracker."""
-        self.costs: List[CostRecord] = []
-        self.budgets: Dict[str, Budget] = {}
-        self._cost_cache: Dict[str, Decimal] = {}
+        self.costs: list[CostRecord] = []
+        self.budgets: dict[str, Budget] = {}
+        self._cost_cache: dict[str, Decimal] = {}
     
     def record_cost(
         self,
@@ -75,7 +75,7 @@ class CostTracker:
         amount: Decimal,
         entity_type: str,
         entity_id: str,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> str:
         """
         Record a cost event.
@@ -107,7 +107,7 @@ class CostTracker:
         
         # Update cache
         cache_key = f"{entity_type}:{entity_id}"
-        self._cost_cache[cache_key] = self._cost_cache.get(cache_key, Decimal("0")) + amount
+        self._cost_cache[cache_key] = self._cost_cache.get(cache_key, Decimal(0)) + amount
         
         # Check budgets
         self._check_budgets(entity_type, entity_id, amount)
@@ -118,8 +118,8 @@ class CostTracker:
         self,
         entity_type: str,
         entity_id: str,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
     ) -> Decimal:
         """
         Get total cost for an entity.
@@ -137,10 +137,10 @@ class CostTracker:
         
         # If no date filter, use cache
         if start_date is None and end_date is None:
-            return self._cost_cache.get(cache_key, Decimal("0"))
+            return self._cost_cache.get(cache_key, Decimal(0))
         
         # Calculate with date filter
-        total = Decimal("0")
+        total = Decimal(0)
         for cost in self.costs:
             if cost.entity_type == entity_type and cost.entity_id == entity_id:
                 if start_date and cost.timestamp < start_date:
@@ -154,9 +154,9 @@ class CostTracker:
     def get_costs_by_type(
         self,
         cost_type: CostType,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-    ) -> List[CostRecord]:
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+    ) -> list[CostRecord]:
         """
         Get costs by type.
         
@@ -216,7 +216,7 @@ class CostTracker:
         self.budgets[budget_id] = budget
         return budget_id
     
-    def get_budget_status(self, budget_id: str) -> Dict[str, Any]:
+    def get_budget_status(self, budget_id: str) -> dict[str, Any]:
         """
         Get budget status.
         
@@ -294,7 +294,7 @@ class CostTracker:
                     # Trigger alert (would integrate with alerting system)
                     self._trigger_budget_alert(budget, status)
     
-    def _trigger_budget_alert(self, budget: Budget, status: Dict[str, Any]) -> None:
+    def _trigger_budget_alert(self, budget: Budget, status: dict[str, Any]) -> None:
         """Trigger budget alert."""
         # Would integrate with alerting system
         import logging
@@ -312,9 +312,9 @@ class CostTracker:
         self,
         entity_type: str,
         entity_id: str,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-    ) -> Dict[str, Decimal]:
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+    ) -> dict[str, Decimal]:
         """
         Get cost breakdown by type.
         
@@ -327,7 +327,7 @@ class CostTracker:
         Returns:
             Dictionary of cost type to amount
         """
-        breakdown = {cost_type.value: Decimal("0") for cost_type in CostType}
+        breakdown = {cost_type.value: Decimal(0) for cost_type in CostType}
         
         for cost in self.costs:
             if cost.entity_type == entity_type and cost.entity_id == entity_id:
@@ -391,7 +391,7 @@ class CostTracker:
 
 
 # Global instance
-_cost_tracker: Optional[CostTracker] = None
+_cost_tracker: CostTracker | None = None
 
 
 def get_cost_tracker() -> CostTracker:

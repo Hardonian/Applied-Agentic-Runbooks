@@ -3,6 +3,7 @@
 from agent_factory.telemetry.backends.base import TelemetryBackend
 from agent_factory.telemetry.backends.sqlite import SQLiteTelemetryBackend
 
+
 # Lazy import Postgres backend to avoid requiring sqlalchemy at import time
 def __getattr__(name: str):
     """Lazy import for PostgresTelemetryBackend."""
@@ -18,7 +19,7 @@ def __getattr__(name: str):
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 __all__ = [
-    "TelemetryBackend",
-    "SQLiteTelemetryBackend",
     "PostgresTelemetryBackend",
+    "SQLiteTelemetryBackend",
+    "TelemetryBackend",
 ]

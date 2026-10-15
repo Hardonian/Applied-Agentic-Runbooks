@@ -2,24 +2,24 @@
 AutoTune - Automatically optimize agent configurations.
 """
 
-import yaml
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import Any
 
+import yaml
+
+from agent_factory.agents.agent import AgentConfig
 from agent_factory.eval.model import BenchmarkSuite
 from agent_factory.eval.runner import BenchmarkRunner
-from agent_factory.agents.agent import AgentConfig
-from agent_factory.runtime.engine import RuntimeEngine
-from agent_factory.agents.agent import Agent
 from agent_factory.registry.local_registry import LocalRegistry
+from agent_factory.runtime.engine import RuntimeEngine
 
 
 def autotune_agent(
     agent_id: str,
     suite: BenchmarkSuite,
-    config_space: Optional[Dict[str, List[Any]]] = None,
-    output_path: Optional[str] = None,
-    runtime: Optional[RuntimeEngine] = None,
+    config_space: dict[str, list[Any]] | None = None,
+    output_path: str | None = None,
+    runtime: RuntimeEngine | None = None,
 ) -> AgentConfig:
     """
     Automatically tune agent configuration.
@@ -109,7 +109,7 @@ def autotune_agent(
     return best_config or AgentConfig()
 
 
-def _calculate_score(results: List[Any]) -> float:
+def _calculate_score(results: list[Any]) -> float:
     """
     Calculate optimization score from benchmark results.
     

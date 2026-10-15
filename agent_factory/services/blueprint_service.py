@@ -2,16 +2,17 @@
 Blueprint service - Business logic for blueprint operations.
 """
 
-from typing import Dict, List, Optional, Any
-from agent_factory.blueprints.model import Blueprint
+from typing import Any
+
 from agent_factory.blueprints.loader import BlueprintLoader
+from agent_factory.blueprints.model import Blueprint
 from agent_factory.registry.local_registry import LocalRegistry
 
 
 class BlueprintService:
     """Service for blueprint operations."""
     
-    def __init__(self, registry: Optional[LocalRegistry] = None):
+    def __init__(self, registry: LocalRegistry | None = None):
         """
         Initialize blueprint service.
         
@@ -33,7 +34,7 @@ class BlueprintService:
         """
         return self.loader.load(blueprint_path)
     
-    def install_blueprint(self, blueprint: Blueprint, tenant_id: Optional[str] = None) -> Dict[str, Any]:
+    def install_blueprint(self, blueprint: Blueprint, tenant_id: str | None = None) -> dict[str, Any]:
         """
         Install a blueprint.
         
@@ -67,7 +68,7 @@ class BlueprintService:
         
         return result
     
-    def get_blueprint(self, blueprint_id: str) -> Optional[Blueprint]:
+    def get_blueprint(self, blueprint_id: str) -> Blueprint | None:
         """
         Get blueprint by ID.
         
@@ -79,7 +80,7 @@ class BlueprintService:
         """
         return self.registry.get_blueprint(blueprint_id)
     
-    def list_blueprints(self) -> List[str]:
+    def list_blueprints(self) -> list[str]:
         """
         List all blueprint IDs.
         

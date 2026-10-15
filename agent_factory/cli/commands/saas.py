@@ -2,9 +2,9 @@
 CLI commands for SaaS scaffold generation - Complete implementation.
 """
 
-import typer
 from pathlib import Path
-import yaml
+
+import typer
 
 from agent_factory.blueprints.loader import BlueprintLoader
 
@@ -44,10 +44,10 @@ def create(
         _generate_readme(output_path, blueprint_id, blueprint)
         
         typer.echo(f"✅ SaaS scaffold created at: {output_path}")
-        typer.echo(f"\nNext steps:")
+        typer.echo("\nNext steps:")
         typer.echo(f"  1. cd {output_path}")
-        typer.echo(f"  2. Copy .env.example to .env and configure")
-        typer.echo(f"  3. docker-compose up")
+        typer.echo("  2. Copy .env.example to .env and configure")
+        typer.echo("  3. docker-compose up")
     except Exception as e:
         typer.echo(f"❌ Error: {e}", err=True)
         raise typer.Exit(1)

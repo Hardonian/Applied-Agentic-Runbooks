@@ -1,9 +1,11 @@
 """Tests for environment variable validator."""
 
-import pytest
 import os
-from agent_factory.utils.env_validator import EnvironmentValidator, validate_agent_factory_env
+
+import pytest
+
 from agent_factory.core.exceptions import ConfigurationError
+from agent_factory.utils.env_validator import EnvironmentValidator, validate_agent_factory_env
 
 
 @pytest.mark.unit
@@ -170,7 +172,7 @@ def test_mixed_required_and_optional():
     if "OPTIONAL_VAR" in os.environ:
         del os.environ["OPTIONAL_VAR"]
     
-    is_valid, errors = validator.validate(raise_on_error=False)
+    is_valid, _errors = validator.validate(raise_on_error=False)
     assert is_valid is True
     assert os.getenv("OPTIONAL_VAR") == "default"
     

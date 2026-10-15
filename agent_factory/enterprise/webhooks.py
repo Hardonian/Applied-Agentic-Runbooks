@@ -11,14 +11,14 @@ import hmac
 import json
 import os
 import uuid
+from collections.abc import Callable
 from datetime import datetime, timezone
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any
 from urllib.parse import urlparse
 
 import httpx
 
 from agent_factory.security.audit import audit_log
-
 
 MAX_DELIVERY_ATTEMPTS = 3
 DELIVERY_TIMEOUT_SECONDS = 10.0
@@ -31,9 +31,9 @@ class Webhook:
         self,
         id: str,
         url: str,
-        events: List[str],
-        secret: Optional[str] = None,
-        tenant_id: Optional[str] = None,
+        events: list[str],
+        secret: str | None = None,
+        tenant_id: str | None = None,
     ):
         self.id = id
         self.url = url
@@ -43,7 +43,7 @@ class Webhook:
         self.created_at = datetime.now(timezone.utc)
 
 
-_webhooks: Dict[str, Webhook] = {}
+_webhooks: dict[str, Webhook] = {}
 
 
 def _validate_webhook_url(url: str) -> None:
@@ -57,10 +57,10 @@ def _validate_webhook_url(url: str) -> None:
 
 def register_webhook(
     url: str,
-    events: List[str],
-    tenant_id: Optional[str] = None,
-    secret: Optional[str] = None,
-) -> Dict[str, Any]:
+    events: list[str],
+    tenant_id: str | None = None,
+    secret: str | None = None,
+) -> dict[str, Any]:
     """Register a validated endpoint for one or more event types."""
     _validate_webhook_url(url)
     event_names = sorted({event.strip() for event in events if event and event.strip()})
@@ -86,7 +86,7 @@ def register_webhook(
     return {"id": webhook_id, "url": url, "events": event_names, "status": "registered"}
 
 
-def _delivery_payload(event_type: str, payload: Dict[str, Any]) -> Tuple[bytes, str]:
+def _delivery_payload(event_type: str, payload: dict[str, Any]) -> tuple[bytes, str]:
     timestamp = datetime.now(timezone.utc).isoformat()
     body = json.dumps(
         {"event": event_type, "payload": payload, "timestamp": timestamp},
@@ -97,7 +97,7 @@ def _delivery_payload(event_type: str, payload: Dict[str, Any]) -> Tuple[bytes, 
     return body, timestamp
 
 
-def _delivery_headers(webhook: Webhook, body: bytes, timestamp: str) -> Dict[str, str]:
+def _delivery_headers(webhook: Webhook, body: bytes, timestamp: str) -> dict[str, str]:
     headers = {
         "Content-Type": "application/json",
         "X-Agent-Factory-Event": "webhook",
@@ -111,12 +111,12 @@ def _delivery_headers(webhook: Webhook, body: bytes, timestamp: str) -> Dict[str
 
 async def trigger_webhook(
     event_type: str,
-    payload: Dict[str, Any],
-    tenant_id: Optional[str] = None,
+    payload: dict[str, Any],
+    tenant_id: str | None = None,
     *,
     max_attempts: int = MAX_DELIVERY_ATTEMPTS,
-    client_factory: Optional[Callable[[], httpx.AsyncClient]] = None,
-) -> List[Dict[str, Any]]:
+    client_factory: Callable[[], httpx.AsyncClient] | None = None,
+) -> list[dict[str, Any]]:
     """Deliver an event to matching hooks with bounded retry/backoff.
 
     The return value is a per-webhook delivery record suitable for a worker or
@@ -135,14 +135,14 @@ async def trigger_webhook(
     if not matching_webhooks:
         return []
 
-    results: List[Dict[str, Any]] = []
+    results: list[dict[str, Any]] = []
     factory = client_factory or (lambda: httpx.AsyncClient(timeout=DELIVERY_TIMEOUT_SECONDS))
     async with factory() as client:
         for webhook in matching_webhooks:
             body, timestamp = _delivery_payload(event_type, payload)
             headers = _delivery_headers(webhook, body, timestamp)
-            last_error: Optional[str] = None
-            response_status: Optional[int] = None
+            last_error: str | None = None
+            response_status: int | None = None
             for attempt in range(1, max_attempts + 1):
                 try:
                     response = await client.post(webhook.url, content=body, headers=headers)
@@ -194,7 +194,7 @@ async def trigger_webhook(
     return results
 
 
-def list_webhooks(tenant_id: Optional[str] = None) -> List[Dict[str, Any]]:
+def list_webhooks(tenant_id: str | None = None) -> list[dict[str, Any]]:
     """List registrations without exposing webhook secrets."""
     return [
         {

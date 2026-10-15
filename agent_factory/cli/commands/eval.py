@@ -2,8 +2,8 @@
 CLI commands for evaluation, benchmarking, and autotune.
 """
 
+
 import typer
-from typing import Optional
 
 from agent_factory.eval import BenchmarkRunner, autotune_agent
 from agent_factory.eval.model import BenchmarkSuite, Scenario
@@ -66,7 +66,7 @@ def stress_test(
 def autotune(
     agent_id: str = typer.Argument(..., help="Agent ID to autotune"),
     suite_id: str = typer.Option("baseline", "--suite", "-s", help="Benchmark suite ID"),
-    output: Optional[str] = typer.Option(None, "--output", "-o", help="Output config file"),
+    output: str | None = typer.Option(None, "--output", "-o", help="Output config file"),
 ):
     """Automatically tune agent configuration."""
     # TODO: Load suite from file or registry
@@ -86,7 +86,7 @@ def autotune(
     
     try:
         tuned_config = autotune_agent(agent_id, suite, output_path=output_path)
-        typer.echo(f"✅ Autotune complete!")
+        typer.echo("✅ Autotune complete!")
         typer.echo(f"   Tuned config saved to: {output_path}")
         typer.echo(f"   Temperature: {tuned_config.temperature}")
         typer.echo(f"   Max Tokens: {tuned_config.max_tokens}")

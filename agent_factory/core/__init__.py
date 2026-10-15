@@ -5,24 +5,25 @@ Core module - Legacy imports for backward compatibility.
 # Import exceptions first to avoid circular imports
 # These don't depend on anything else in core, so safe to import immediately
 from agent_factory.core.exceptions import (
-    AgentFactoryError,
     AgentError,
-    AgentNotFoundError,
     AgentExecutionError,
-    ToolError,
-    ToolNotFoundError,
-    ToolExecutionError,
-    ToolValidationError,
-    WorkflowError,
-    WorkflowNotFoundError,
-    WorkflowExecutionError,
+    AgentFactoryError,
+    AgentNotFoundError,
     BlueprintError,
     BlueprintNotFoundError,
     BlueprintValidationError,
+    ToolError,
+    ToolExecutionError,
+    ToolNotFoundError,
+    ToolValidationError,
+    WorkflowError,
+    WorkflowExecutionError,
+    WorkflowNotFoundError,
 )
 
 # Import guardrails (doesn't depend on agents/tools)
-from agent_factory.core.guardrails import Guardrails, Guardrail, GuardrailResult
+from agent_factory.core.guardrails import Guardrail, GuardrailResult, Guardrails
+
 
 # Use __getattr__ for lazy imports to avoid circular dependencies
 # This allows "from agent_factory.core import Agent" to work without
@@ -30,9 +31,7 @@ from agent_factory.core.guardrails import Guardrails, Guardrail, GuardrailResult
 def __getattr__(name: str):
     """Lazy import for Agent, Tool, Workflow classes to avoid circular imports."""
     if name in ("Agent", "AgentConfig", "AgentResult", "AgentStatus", "Handoff"):
-        from agent_factory.agents.agent import (
-            Agent, AgentConfig, AgentResult, AgentStatus, Handoff
-        )
+        from agent_factory.agents.agent import Agent, AgentConfig, AgentResult, AgentStatus, Handoff
         if name == "Agent":
             return Agent
         elif name == "AgentConfig":
@@ -57,7 +56,12 @@ def __getattr__(name: str):
             return SQLiteMemoryStore
     elif name in ("Workflow", "WorkflowStep", "WorkflowResult", "Trigger", "TriggerType", "Condition"):
         from agent_factory.core.workflow import (
-            Workflow, WorkflowStep, WorkflowResult, Trigger, TriggerType, Condition
+            Condition,
+            Trigger,
+            TriggerType,
+            Workflow,
+            WorkflowResult,
+            WorkflowStep,
         )
         if name == "Workflow":
             return Workflow
@@ -77,39 +81,39 @@ __all__ = [
     # Agents
     "Agent",
     "AgentConfig",
-    "AgentResult",
-    "AgentStatus",
-    "Handoff",
-    # Tools
-    "Tool",
-    "function_tool",
-    # Workflows
-    "Workflow",
-    "WorkflowStep",
-    "WorkflowResult",
-    "Trigger",
-    "TriggerType",
-    "Condition",
-    # Memory
-    "MemoryStore",
-    "SQLiteMemoryStore",
+    "AgentError",
+    "AgentExecutionError",
     # Exceptions
     "AgentFactoryError",
-    "AgentError",
     "AgentNotFoundError",
-    "AgentExecutionError",
-    "ToolError",
-    "ToolNotFoundError",
-    "ToolExecutionError",
-    "ToolValidationError",
-    "WorkflowError",
-    "WorkflowNotFoundError",
-    "WorkflowExecutionError",
+    "AgentResult",
+    "AgentStatus",
     "BlueprintError",
     "BlueprintNotFoundError",
     "BlueprintValidationError",
-    # Guardrails
-    "Guardrails",
+    "Condition",
     "Guardrail",
     "GuardrailResult",
+    # Guardrails
+    "Guardrails",
+    "Handoff",
+    # Memory
+    "MemoryStore",
+    "SQLiteMemoryStore",
+    # Tools
+    "Tool",
+    "ToolError",
+    "ToolExecutionError",
+    "ToolNotFoundError",
+    "ToolValidationError",
+    "Trigger",
+    "TriggerType",
+    # Workflows
+    "Workflow",
+    "WorkflowError",
+    "WorkflowExecutionError",
+    "WorkflowNotFoundError",
+    "WorkflowResult",
+    "WorkflowStep",
+    "function_tool",
 ]

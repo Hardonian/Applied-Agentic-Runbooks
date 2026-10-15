@@ -1,9 +1,11 @@
 """Tests for Knowledge Pack Loader."""
 
-import pytest
 import tempfile
-import yaml
 from pathlib import Path
+
+import pytest
+import yaml
+
 from agent_factory.knowledge.loader import KnowledgePackLoader
 
 

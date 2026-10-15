@@ -1,0 +1,20 @@
+{{- if .Values.monitoring.prometheusRule.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "agent-factory.fullname" . }}
+spec:
+  groups:
+    - name: agent-factory
+      rules:
+        - alert: AgentFactoryArenaFailures
+          expr: increase(agent_factory_arena_runs_total{status="failed"}[10m]) > 0
+          for: 5m
+          labels: {severity: warning}
+          annotations: {summary: "Agent Factory Arena runs are failing"}
+        - alert: AgentFactoryWebSocketDrops
+          expr: increase(agent_factory_websocket_dropped_events_total[5m]) > 10
+          for: 5m
+          labels: {severity: warning}
+          annotations: {summary: "WebSocket consumers are falling behind"}
+{{- end }}

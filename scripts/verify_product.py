@@ -14,9 +14,7 @@ This script verifies the product is REALITY MODE ready.
 
 import os
 import sys
-import json
 import time
-from typing import Dict, Any, Optional
 
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -26,9 +24,8 @@ if hasattr(sys.stdout, "reconfigure"):
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
 
-import httpx
-from datetime import datetime
 
+import httpx
 
 BASE_URL = os.getenv("API_URL", "http://localhost:8000")
 TEST_EMAIL = f"test_{int(time.time())}@example.com"
@@ -70,19 +67,20 @@ class ProductVerifier:
         self.base_url = base_url.rstrip("/")
         self.in_process = False
         try:
-            resp = httpx.get(f"{self.base_url}/health", timeout=1.5)
+            httpx.get(f"{self.base_url}/health", timeout=1.5)
             self.client = httpx.Client(base_url=self.base_url, timeout=30.0)
             print_info(f"Connected to live Agent Factory service at {self.base_url}")
         except Exception:
             from fastapi.testclient import TestClient
+
             from agent_factory.api.main import app
             self.client = TestClient(app)
             self.in_process = True
             print_info(f"Live server at {self.base_url} not detected. Using direct FastAPI in-process test engine.")
         
-        self.token: Optional[str] = None
-        self.user_id: Optional[str] = None
-        self.tenant_id: Optional[str] = None
+        self.token: str | None = None
+        self.user_id: str | None = None
+        self.tenant_id: str | None = None
 
     def _url(self, path: str) -> str:
         if self.in_process:
@@ -178,7 +176,7 @@ class ProductVerifier:
             limit = data.get("limit")
             remaining = data.get("remaining")
             
-            print_success(f"Usage info retrieved")
+            print_success("Usage info retrieved")
             print_info(f"Plan: {plan}")
             print_info(f"Used: {used}/{limit}")
             print_info(f"Remaining: {remaining}")

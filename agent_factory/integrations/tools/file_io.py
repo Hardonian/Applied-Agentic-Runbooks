@@ -2,8 +2,9 @@
 
 import os
 from pathlib import Path
-from agent_factory.tools.decorator import function_tool
+
 from agent_factory.core.exceptions import ToolValidationError
+from agent_factory.tools.decorator import function_tool
 
 
 def _validate_path(file_path: str, allow_write: bool = False) -> Path:
@@ -55,14 +56,14 @@ def _validate_path(file_path: str, allow_write: bool = False) -> Path:
     path_str = str(path)
     for forbidden in forbidden_paths:
         if forbidden.lower() in path_str.lower():
-            raise ToolValidationError(f"Access to system directory not allowed")
+            raise ToolValidationError("Access to system directory not allowed")
     
     # For write operations, check if parent directory exists or can be created
     if allow_write:
         try:
             path.parent.mkdir(parents=True, exist_ok=True)
         except PermissionError:
-            raise ToolValidationError(f"Permission denied: cannot create directory")
+            raise ToolValidationError("Permission denied: cannot create directory")
         except Exception as e:
             raise ToolValidationError(f"Cannot create directory: {e}")
     

@@ -1,8 +1,9 @@
 """Tests for SDK client."""
 
-import pytest
-from unittest.mock import Mock, patch
 import os
+from unittest.mock import Mock, patch
+
+import pytest
 
 from agent_factory.sdk.client import Client
 
@@ -37,7 +38,7 @@ def test_sdk_client_http_headers(mock_client_class):
     mock_client = Mock()
     mock_client_class.return_value = mock_client
     
-    client = Client(api_key="test-key")
+    Client(api_key="test-key")
     
     assert mock_client_class.called
     call_kwargs = mock_client_class.call_args[1]

@@ -1,15 +1,13 @@
 """Tests for job queue system."""
 
+
 import pytest
-from datetime import datetime
-from unittest.mock import Mock
 
 from agent_factory.runtime.jobs import (
+    InMemoryJobQueue,
     Job,
     JobStatus,
     JobType,
-    JobQueue,
-    InMemoryJobQueue,
     SQLiteJobQueue,
     get_job_queue,
 )

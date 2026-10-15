@@ -2,14 +2,15 @@
 Tests for memory store implementations.
 """
 
-import pytest
-import tempfile
 import os
+import tempfile
+
+import pytest
+
 from agent_factory.runtime.memory import (
-    SQLiteMemoryStore,
     RedisMemoryStore,
+    SQLiteMemoryStore,
     get_memory_store,
-    Interaction,
 )
 
 

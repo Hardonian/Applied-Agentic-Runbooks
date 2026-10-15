@@ -8,13 +8,12 @@ Supports:
 - Dynamic Intent-Based Agent Handoffs
 """
 
-from enum import Enum
-from typing import List, Dict, Any, Optional, Callable
-from dataclasses import dataclass, field
 import time
-import uuid
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
 
-from agent_factory.agents.agent import Agent, AgentResult, AgentStatus
+from agent_factory.agents.agent import Agent, AgentStatus
 from agent_factory.integrations.universal_client import UniversalLLMClient
 
 
@@ -33,7 +32,7 @@ class SwarmMessage:
     role: str  # supervisor, worker, debater, voter
     content: str
     timestamp: float = field(default_factory=time.time)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -41,14 +40,14 @@ class SwarmResult:
     """Final result from multi-agent swarm execution."""
     final_output: str
     pattern: SwarmPattern
-    messages: List[SwarmMessage] = field(default_factory=list)
-    consensus_score: Optional[float] = None
-    winning_candidate: Optional[str] = None
+    messages: list[SwarmMessage] = field(default_factory=list)
+    consensus_score: float | None = None
+    winning_candidate: str | None = None
     execution_time: float = 0.0
     total_tokens: int = 0
     status: AgentStatus = AgentStatus.COMPLETED
-    error: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    error: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class SwarmOrchestrator:
@@ -58,13 +57,13 @@ class SwarmOrchestrator:
 
     def __init__(
         self,
-        agents: Optional[List[Agent]] = None,
-        supervisor: Optional[Agent] = None,
+        agents: list[Agent] | None = None,
+        supervisor: Agent | None = None,
         pattern: SwarmPattern = SwarmPattern.HIERARCHICAL,
         max_rounds: int = 4,
-        llm_client: Optional[UniversalLLMClient] = None,
+        llm_client: UniversalLLMClient | None = None,
     ):
-        self.agents: Dict[str, Agent] = {a.id: a for a in (agents or [])}
+        self.agents: dict[str, Agent] = {a.id: a for a in (agents or [])}
         self.supervisor = supervisor
         self.pattern = pattern
         self.max_rounds = max_rounds
@@ -74,12 +73,12 @@ class SwarmOrchestrator:
         """Register a worker/debater agent in the swarm."""
         self.agents[agent.id] = agent
 
-    def execute(self, task: str, context: Optional[Dict[str, Any]] = None) -> SwarmResult:
+    def execute(self, task: str, context: dict[str, Any] | None = None) -> SwarmResult:
         """
         Execute the multi-agent swarm based on the selected pattern.
         """
         start_time = time.time()
-        messages: List[SwarmMessage] = []
+        messages: list[SwarmMessage] = []
         ctx = context or {}
 
         try:
@@ -102,14 +101,14 @@ class SwarmOrchestrator:
                 error=str(e),
             )
 
-    def _run_hierarchical(self, task: str, context: Dict[str, Any], start_time: float) -> SwarmResult:
+    def _run_hierarchical(self, task: str, context: dict[str, Any], start_time: float) -> SwarmResult:
         """Supervisor plans, delegates to workers, and synthesizes final answer."""
-        messages: List[SwarmMessage] = []
+        messages: list[SwarmMessage] = []
         total_tokens = 0
 
         # Step 1: Supervisor or first agent assesses subtasks
-        worker_outputs: Dict[str, str] = {}
-        for agent_id, agent in self.agents.items():
+        worker_outputs: dict[str, str] = {}
+        for agent in self.agents.values():
             agent_res = agent.run(task, context=context)
             total_tokens += agent_res.tokens_used
             worker_outputs[agent.name] = agent_res.output
@@ -147,9 +146,9 @@ class SwarmOrchestrator:
             status=AgentStatus.COMPLETED,
         )
 
-    def _run_peer_debate(self, task: str, context: Dict[str, Any], start_time: float) -> SwarmResult:
+    def _run_peer_debate(self, task: str, context: dict[str, Any], start_time: float) -> SwarmResult:
         """Agents critique and refine solutions across multiple rounds."""
-        messages: List[SwarmMessage] = []
+        messages: list[SwarmMessage] = []
         total_tokens = 0
         agents_list = list(self.agents.values())
         if not agents_list:
@@ -183,11 +182,11 @@ class SwarmOrchestrator:
             status=AgentStatus.COMPLETED,
         )
 
-    def _run_voting_consensus(self, task: str, context: Dict[str, Any], start_time: float) -> SwarmResult:
+    def _run_voting_consensus(self, task: str, context: dict[str, Any], start_time: float) -> SwarmResult:
         """Collects proposed answers from each agent and synthesizes consensus score."""
-        messages: List[SwarmMessage] = []
+        messages: list[SwarmMessage] = []
         total_tokens = 0
-        candidates: List[str] = []
+        candidates: list[str] = []
 
         for agent in self.agents.values():
             res = agent.run(task, context=context)
@@ -214,9 +213,9 @@ class SwarmOrchestrator:
             status=AgentStatus.COMPLETED,
         )
 
-    def _run_dynamic_router(self, task: str, context: Dict[str, Any], start_time: float) -> SwarmResult:
+    def _run_dynamic_router(self, task: str, context: dict[str, Any], start_time: float) -> SwarmResult:
         """Route task to most specialized agent based on instruction affinity."""
-        messages: List[SwarmMessage] = []
+        messages: list[SwarmMessage] = []
         agents_list = list(self.agents.values())
         if not agents_list:
             raise ValueError("No agents registered for dynamic router.")

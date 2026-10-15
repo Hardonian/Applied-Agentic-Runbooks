@@ -7,7 +7,7 @@ registrations and are never imported from an export artifact.
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import yaml
 
@@ -17,7 +17,7 @@ from agent_factory.registry.local_registry import LocalRegistry
 from agent_factory.workflows.model import Workflow
 
 
-def _registry(registry: Optional[LocalRegistry]) -> LocalRegistry:
+def _registry(registry: LocalRegistry | None) -> LocalRegistry:
     return registry or LocalRegistry()
 
 
@@ -27,7 +27,7 @@ def _validate_format(format: str) -> str:
     return format
 
 
-def _write_export(output_path: Path, data: Dict[str, Any], format: str) -> Path:
+def _write_export(output_path: Path, data: dict[str, Any], format: str) -> Path:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     if format == "yaml":
         output_path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
@@ -36,7 +36,7 @@ def _write_export(output_path: Path, data: Dict[str, Any], format: str) -> Path:
     return output_path
 
 
-def _read_export(import_path: Path) -> Dict[str, Any]:
+def _read_export(import_path: Path) -> dict[str, Any]:
     if not import_path.exists() or not import_path.is_file():
         raise FileNotFoundError(f"Import file not found: {import_path}")
     data = (
@@ -49,7 +49,7 @@ def _read_export(import_path: Path) -> Dict[str, Any]:
     return data
 
 
-def _envelope(kind: str, definition: Dict[str, Any]) -> Dict[str, Any]:
+def _envelope(kind: str, definition: dict[str, Any]) -> dict[str, Any]:
     return {
         "version": "1.0",
         "exported_at": datetime.now(timezone.utc).isoformat(),
@@ -59,10 +59,10 @@ def _envelope(kind: str, definition: Dict[str, Any]) -> Dict[str, Any]:
 
 def export_agent(
     agent_id: str,
-    output_path: Optional[Path] = None,
+    output_path: Path | None = None,
     format: str = "yaml",
     *,
-    registry: Optional[LocalRegistry] = None,
+    registry: LocalRegistry | None = None,
 ) -> Path:
     """Export a registered agent definition."""
     format = _validate_format(format)
@@ -76,9 +76,9 @@ def export_agent(
 
 def export_blueprint(
     blueprint_id: str,
-    output_path: Optional[Path] = None,
+    output_path: Path | None = None,
     *,
-    registry: Optional[LocalRegistry] = None,
+    registry: LocalRegistry | None = None,
 ) -> Path:
     """Export a blueprint manifest as ``blueprint.yaml``."""
     blueprint = _registry(registry).get_blueprint(blueprint_id)
@@ -92,10 +92,10 @@ def export_blueprint(
 
 def export_workflow(
     workflow_id: str,
-    output_path: Optional[Path] = None,
+    output_path: Path | None = None,
     format: str = "yaml",
     *,
-    registry: Optional[LocalRegistry] = None,
+    registry: LocalRegistry | None = None,
 ) -> Path:
     """Export a registered workflow definition."""
     format = _validate_format(format)
@@ -116,8 +116,8 @@ def export_all(
     include_blueprints: bool = True,
     include_workflows: bool = True,
     *,
-    registry: Optional[LocalRegistry] = None,
-) -> Dict[str, List[Path]]:
+    registry: LocalRegistry | None = None,
+) -> dict[str, list[Path]]:
     """Export all definitions from a caller-selected (tenant-scoped) registry.
 
     ``LocalRegistry`` itself has no tenant filter, so callers must pass a
@@ -126,7 +126,7 @@ def export_all(
     """
     active_registry = _registry(registry)
     output_dir.mkdir(parents=True, exist_ok=True)
-    exported: Dict[str, List[Path]] = {"agents": [], "blueprints": [], "workflows": []}
+    exported: dict[str, list[Path]] = {"agents": [], "blueprints": [], "workflows": []}
     if include_agents:
         exported["agents"] = [
             export_agent(agent_id, output_dir / "agents" / f"{agent_id}.yaml", registry=active_registry)
@@ -145,7 +145,7 @@ def export_all(
     return exported
 
 
-def import_agent(import_path: Path, agent_id: Optional[str] = None, *, registry: Optional[LocalRegistry] = None) -> str:
+def import_agent(import_path: Path, agent_id: str | None = None, *, registry: LocalRegistry | None = None) -> str:
     """Import an agent definition and register it in the selected registry."""
     data = _read_export(import_path)
     definition = data.get("agent", data)
@@ -159,7 +159,7 @@ def import_agent(import_path: Path, agent_id: Optional[str] = None, *, registry:
     return agent.id
 
 
-def import_workflow(import_path: Path, workflow_id: Optional[str] = None, *, registry: Optional[LocalRegistry] = None) -> str:
+def import_workflow(import_path: Path, workflow_id: str | None = None, *, registry: LocalRegistry | None = None) -> str:
     """Import a workflow definition and register it in the selected registry."""
     data = _read_export(import_path)
     definition = data.get("workflow", data)
@@ -173,7 +173,7 @@ def import_workflow(import_path: Path, workflow_id: Optional[str] = None, *, reg
     return workflow.id
 
 
-def import_blueprint(import_path: Path, *, registry: Optional[LocalRegistry] = None) -> str:
+def import_blueprint(import_path: Path, *, registry: LocalRegistry | None = None) -> str:
     """Import a blueprint manifest and register it in the selected registry."""
     blueprint_file = import_path / "blueprint.yaml" if import_path.is_dir() else import_path
     data = _read_export(blueprint_file)

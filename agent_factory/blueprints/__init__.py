@@ -2,6 +2,7 @@
 Blueprint packaging system.
 """
 
+from agent_factory.blueprints.loader import BlueprintLoader
 from agent_factory.blueprints.model import (
     Blueprint,
     BlueprintConfig,
@@ -9,13 +10,12 @@ from agent_factory.blueprints.model import (
     PricingInfo,
     PricingModel,
 )
-from agent_factory.blueprints.loader import BlueprintLoader
 
 __all__ = [
     "Blueprint",
     "BlueprintConfig",
+    "BlueprintLoader",
     "BlueprintMetadata",
     "PricingInfo",
     "PricingModel",
-    "BlueprintLoader",
 ]

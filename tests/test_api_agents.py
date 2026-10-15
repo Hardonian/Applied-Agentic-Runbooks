@@ -2,6 +2,7 @@
 
 import pytest
 from fastapi.testclient import TestClient
+
 from agent_factory.api.main import app
 from agent_factory.security.auth import User, get_current_user
 

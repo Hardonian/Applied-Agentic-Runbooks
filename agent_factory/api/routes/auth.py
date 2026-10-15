@@ -7,22 +7,22 @@ Provides:
 - Magic link (stub for future)
 """
 
-import os
-from datetime import datetime, timedelta
-from fastapi import APIRouter, HTTPException, Depends, status
+import bcrypt
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPBearer
 from pydantic import BaseModel, EmailStr, validator
-import bcrypt
 
 if not hasattr(bcrypt, "__about__"):
     bcrypt.__about__ = type("about", (), {"__version__": getattr(bcrypt, "__version__", "4.0.0")})()
 
-from passlib.context import CryptContext
 import uuid
 
-from agent_factory.security.auth import create_access_token, verify_token
+from passlib.context import CryptContext
+
+from agent_factory.database.models import Tenant
+from agent_factory.database.models import User as UserModel
 from agent_factory.database.session import get_db
-from agent_factory.database.models import User as UserModel, Tenant
+from agent_factory.security.auth import create_access_token, verify_token
 
 router = APIRouter()
 security = HTTPBearer()
@@ -145,7 +145,7 @@ async def signup(request: SignupRequest):
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Signup failed: {str(e)}"
+            detail=f"Signup failed: {e!s}"
         )
     finally:
         db.close()
@@ -201,7 +201,7 @@ async def login(request: LoginRequest):
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Login failed: {str(e)}"
+            detail=f"Login failed: {e!s}"
         )
     finally:
         db.close()

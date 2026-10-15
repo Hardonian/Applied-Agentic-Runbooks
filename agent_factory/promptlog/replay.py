@@ -3,21 +3,19 @@ Replay agent runs with different configurations.
 """
 
 import uuid
-from typing import Dict, Optional, Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional
 
 from agent_factory.promptlog.model import Run
 from agent_factory.promptlog.storage import PromptLogStorage
 
 if TYPE_CHECKING:
     from agent_factory.runtime.engine import RuntimeEngine
-    from agent_factory.agents.agent import Agent, AgentConfig
-    from agent_factory.registry.local_registry import LocalRegistry
 
 
 def replay_run(
     run_id: str,
     storage: PromptLogStorage,
-    agent_config_override: Optional[Dict[str, Any]] = None,
+    agent_config_override: dict[str, Any] | None = None,
     runtime: Optional["RuntimeEngine"] = None,
 ) -> Run:
     """
@@ -37,9 +35,9 @@ def replay_run(
     if not original_run:
         raise ValueError(f"Run not found: {run_id}")
     
-    from agent_factory.runtime.engine import RuntimeEngine
-    from agent_factory.registry.local_registry import LocalRegistry
     from agent_factory.agents.agent import AgentConfig
+    from agent_factory.registry.local_registry import LocalRegistry
+    from agent_factory.runtime.engine import RuntimeEngine
 
     # Create runtime engine if not provided
     if runtime is None:

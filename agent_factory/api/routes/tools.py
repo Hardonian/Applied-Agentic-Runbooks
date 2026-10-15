@@ -1,13 +1,14 @@
 """Tool API routes."""
 
-from fastapi import APIRouter, HTTPException, Depends
-from typing import List, Optional, Dict, Any
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from agent_factory.registry.local_registry import LocalRegistry
-from agent_factory.tools.base import Tool
 from agent_factory.security.auth import get_current_user
-from agent_factory.security.rbac import require_user_permission, Permission
+from agent_factory.security.rbac import Permission, require_user_permission
+from agent_factory.tools.base import Tool
 
 router = APIRouter()
 registry = LocalRegistry()
@@ -18,23 +19,23 @@ class ToolCreate(BaseModel):
     id: str
     name: str
     description: str
-    implementation_code: Optional[str] = None  # For simple tools, code as string
-    metadata: Optional[Dict[str, Any]] = None
+    implementation_code: str | None = None  # For simple tools, code as string
+    metadata: dict[str, Any] | None = None
 
 
 class ToolUpdate(BaseModel):
     """Tool update model."""
-    name: Optional[str] = None
-    description: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    name: str | None = None
+    description: str | None = None
+    metadata: dict[str, Any] | None = None
 
 
 class ToolTestParams(BaseModel):
     """Tool test parameters."""
-    params: Dict[str, Any]
+    params: dict[str, Any]
 
 
-@router.post("/", response_model=Dict[str, Any])
+@router.post("/", response_model=dict[str, Any])
 async def create_tool(
     tool_data: ToolCreate,
     user=Depends(get_current_user)
@@ -86,14 +87,14 @@ async def create_tool(
     return {"id": tool.id, "status": "created"}
 
 
-@router.get("/", response_model=List[str])
+@router.get("/", response_model=list[str])
 def list_tools(user=Depends(get_current_user)):
     """List all tools."""
     require_user_permission(user, Permission.READ_AGENTS)
     return registry.list_tools()
 
 
-@router.get("/{tool_id}", response_model=Dict[str, Any])
+@router.get("/{tool_id}", response_model=dict[str, Any])
 def get_tool(tool_id: str, user=Depends(get_current_user)):
     """Get tool by ID."""
     require_user_permission(user, Permission.READ_AGENTS)
@@ -105,7 +106,7 @@ def get_tool(tool_id: str, user=Depends(get_current_user)):
     return tool.to_dict()
 
 
-@router.put("/{tool_id}", response_model=Dict[str, Any])
+@router.put("/{tool_id}", response_model=dict[str, Any])
 async def update_tool(
     tool_id: str,
     tool_data: ToolUpdate,
@@ -123,12 +124,11 @@ async def update_tool(
         tool.name = tool_data.name
     if tool_data.description:
         tool.description = tool_data.description
-    if tool_data.metadata:
-        if tool.metadata:
-            tool.metadata.version = tool_data.metadata.get("version", tool.metadata.version)
-            tool.metadata.author = tool_data.metadata.get("author", tool.metadata.author)
-            tool.metadata.category = tool_data.metadata.get("category", tool.metadata.category)
-            tool.metadata.tags = tool_data.metadata.get("tags", tool.metadata.tags)
+    if tool_data.metadata and tool.metadata:
+        tool.metadata.version = tool_data.metadata.get("version", tool.metadata.version)
+        tool.metadata.author = tool_data.metadata.get("author", tool.metadata.author)
+        tool.metadata.category = tool_data.metadata.get("category", tool.metadata.category)
+        tool.metadata.tags = tool_data.metadata.get("tags", tool.metadata.tags)
     
     registry.register_tool(tool)
     
@@ -151,7 +151,7 @@ async def delete_tool(
     return {"status": "deleted"}
 
 
-@router.get("/{tool_id}/schema", response_model=Dict[str, Any])
+@router.get("/{tool_id}/schema", response_model=dict[str, Any])
 def get_tool_schema(tool_id: str, user=Depends(get_current_user)):
     """Get tool schema."""
     require_user_permission(user, Permission.READ_AGENTS)
@@ -163,7 +163,7 @@ def get_tool_schema(tool_id: str, user=Depends(get_current_user)):
     return tool.get_schema()
 
 
-@router.post("/{tool_id}/test", response_model=Dict[str, Any])
+@router.post("/{tool_id}/test", response_model=dict[str, Any])
 def test_tool(tool_id: str, test_params: ToolTestParams, user=Depends(get_current_user)):
     """Test a tool with given parameters."""
     require_user_permission(user, Permission.EXECUTE_AGENTS)

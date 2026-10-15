@@ -99,6 +99,9 @@ agent-factory = "agent_factory.cli.main:app"
 where = ["."]
 include = ["agent_factory*"]
 
+[tool.setuptools.package-data]
+agent_factory = ["py.typed", "ui/studio/*", "ui/embed/*"]
+
 [tool.black]
 line-length = 100
 target-version = ['py38', 'py39', 'py310', 'py311']

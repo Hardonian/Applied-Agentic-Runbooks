@@ -4,13 +4,13 @@ Parse Jupyter notebook files.
 
 import json
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Any
 
 
 class NotebookParser:
     """Parse .ipynb files and extract code cells."""
     
-    def parse(self, notebook_path: Path) -> Dict[str, Any]:
+    def parse(self, notebook_path: Path) -> dict[str, Any]:
         """
         Parse a notebook file.
         

@@ -1,26 +1,44 @@
 """Database models and utilities."""
 
 from agent_factory.database.models import (
-    Base,
-    User,
-    Tenant,
     Agent as AgentModel,
-    Workflow as WorkflowModel,
-    Blueprint as BlueprintModel,
-    Execution as ExecutionModel,
+)
+from agent_factory.database.models import (
+    ApprovalTicket as ApprovalTicketModel,
+)
+from agent_factory.database.models import (
+    ArenaRun as ArenaRunModel,
+)
+from agent_factory.database.models import (
     AuditLog as AuditLogModel,
+)
+from agent_factory.database.models import (
+    Base,
+    Tenant,
+    User,
+)
+from agent_factory.database.models import (
+    Blueprint as BlueprintModel,
+)
+from agent_factory.database.models import (
+    Execution as ExecutionModel,
+)
+from agent_factory.database.models import (
+    Workflow as WorkflowModel,
 )
 from agent_factory.database.session import get_db, init_db
 
 __all__ = [
-    "Base",
-    "User",
-    "Tenant",
     "AgentModel",
-    "WorkflowModel",
+    "ApprovalTicketModel",
+    "ArenaRunModel",
+    "AuditLogModel",
+    "Base",
     "BlueprintModel",
     "ExecutionModel",
-    "AuditLogModel",
+    "Tenant",
+    "User",
+    "WorkflowModel",
     "get_db",
     "init_db",
 ]

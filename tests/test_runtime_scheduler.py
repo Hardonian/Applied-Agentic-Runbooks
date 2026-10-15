@@ -1,8 +1,8 @@
 """Tests for runtime scheduler."""
 
+from unittest.mock import Mock
+
 import pytest
-import time
-from unittest.mock import Mock, patch
 
 from agent_factory.runtime.scheduler import Scheduler
 

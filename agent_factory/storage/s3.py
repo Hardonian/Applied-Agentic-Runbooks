@@ -3,12 +3,11 @@ S3 storage backend.
 """
 
 import os
-from typing import BinaryIO, Optional, List
-from agent_factory.storage.local import LocalStorage
-from datetime import datetime, timedelta
 from io import BytesIO
+from typing import BinaryIO
 
 from agent_factory.storage.base import StorageBackend, StorageFile
+from agent_factory.storage.local import LocalStorage
 
 
 class S3Storage(StorageBackend):
@@ -17,8 +16,8 @@ class S3Storage(StorageBackend):
     def __init__(
         self,
         bucket_name: str,
-        aws_access_key_id: Optional[str] = None,
-        aws_secret_access_key: Optional[str] = None,
+        aws_access_key_id: str | None = None,
+        aws_secret_access_key: str | None = None,
         region: str = "us-east-1",
     ):
         """
@@ -45,7 +44,7 @@ class S3Storage(StorageBackend):
             region_name=region or os.getenv("AWS_REGION", "us-east-1"),
         )
     
-    def upload(self, path: str, file_obj: BinaryIO, content_type: Optional[str] = None) -> str:
+    def upload(self, path: str, file_obj: BinaryIO, content_type: str | None = None) -> str:
         """Upload a file."""
         extra_args = {}
         if content_type:
@@ -77,7 +76,7 @@ class S3Storage(StorageBackend):
         except Exception:
             return False
     
-    def list_files(self, prefix: str = "", limit: int = 1000) -> List[StorageFile]:
+    def list_files(self, prefix: str = "", limit: int = 1000) -> list[StorageFile]:
         """List files."""
         files = []
         
@@ -94,7 +93,7 @@ class S3Storage(StorageBackend):
         
         return files
     
-    def get_url(self, path: str, expires_in: Optional[int] = None) -> str:
+    def get_url(self, path: str, expires_in: int | None = None) -> str:
         """Get URL for file access."""
         if expires_in:
             # Generate presigned URL
@@ -108,7 +107,7 @@ class S3Storage(StorageBackend):
             return f"https://{self.bucket_name}.s3.amazonaws.com/{path}"
 
 
-def get_storage_backend(storage_type: Optional[str] = None, **kwargs) -> StorageBackend:
+def get_storage_backend(storage_type: str | None = None, **kwargs) -> StorageBackend:
     """
     Get storage backend instance.
     

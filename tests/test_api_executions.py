@@ -1,9 +1,10 @@
 """Tests for execution API routes."""
 
+from datetime import datetime
+from unittest.mock import patch
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import Mock, patch
-from datetime import datetime
 
 from agent_factory.api.main import app
 from agent_factory.runtime.engine import Execution

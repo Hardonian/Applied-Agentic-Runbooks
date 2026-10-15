@@ -4,16 +4,19 @@ Advanced Reasoning, JIT Tooling, Model Cascade, and Substrate Security API Route
 
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Request, status
 from pydantic import BaseModel, Field
 
+from agent_factory.api.ws.event_bus import event_bus
 from agent_factory.optimization.cascade_router import ModelTier, SpeculativeCascadeRouter
 from agent_factory.reasoning.mcts import SpeculativeMCTSEngine
+from agent_factory.security.approval import approval_authority
+from agent_factory.security.auth import get_current_user_from_request
 from agent_factory.security.mcpwall import MCPWall
 from agent_factory.tools.jit_synthesizer import JITToolSynthesizer, ToolSynthesisSpec
 
 advanced_router = APIRouter()
-_global_mcpwall = MCPWall()
+_global_mcpwall = MCPWall(ticket_store=approval_authority)
 
 
 class MCTSSearchRequest(BaseModel):
@@ -124,15 +127,33 @@ def synthesize_tool(request: JITSynthesizeRequest):
 
 
 @advanced_router.post("/security/mcpwall/validate", response_model=dict[str, Any])
-def validate_mcp_call(request: MCPWallValidateRequest):
+async def validate_mcp_call(request: MCPWallValidateRequest, http_request: Request):
     """
     Inspect tool call against MCPWall zero-trust security boundaries and human gates.
     """
+    user = await get_current_user_from_request(http_request)
+    tenant_id = user.tenant_id if user and user.tenant_id else "public"
+    requested_by = user.id if user else None
     verdict = _global_mcpwall.validate_tool_call(
         tool_name=request.tool_name,
         arguments=request.arguments,
         approval_ticket_id=request.approval_ticket_id,
+        tenant_id=tenant_id,
+        requested_by=requested_by,
     )
+    if verdict.ticket:
+        await event_bus.publish(
+            f"approvals:{tenant_id}",
+            {
+                "type": "approval.requested",
+                "data": {
+                    "ticket_id": verdict.ticket.ticket_id,
+                    "tool_name": verdict.ticket.tool_name,
+                    "request_hash": verdict.ticket.request_hash,
+                    "expires_at": verdict.ticket.expires_at,
+                },
+            },
+        )
     return {
         "allowed": verdict.allowed,
         "reason": verdict.reason,

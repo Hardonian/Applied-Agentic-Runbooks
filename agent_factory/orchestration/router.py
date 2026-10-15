@@ -2,9 +2,9 @@
 Message routing logic for multi-agent orchestration.
 """
 
-from typing import Dict, Any, Optional
+from typing import Any
 
-from agent_factory.orchestration.graph import AgentGraph, RoutingEdge
+from agent_factory.orchestration.graph import AgentGraph
 from agent_factory.utils.safe_evaluator import SafeEvaluator
 
 
@@ -17,10 +17,10 @@ class AgentRouter:
     
     def route(
         self,
-        message: Dict[str, Any],
+        message: dict[str, Any],
         current_agent_id: str,
         graph: AgentGraph,
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Determine next agent to route to.
         

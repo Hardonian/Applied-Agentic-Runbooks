@@ -2,13 +2,11 @@
 Tests for multi-agent orchestration.
 """
 
-import pytest
 
+from agent_factory.agents.agent import Agent, AgentResult, AgentStatus
+from agent_factory.orchestration.executor import OrchestrationExecutor
 from agent_factory.orchestration.graph import AgentGraph, AgentNode, RoutingEdge
 from agent_factory.orchestration.router import AgentRouter
-from agent_factory.orchestration.executor import OrchestrationExecutor
-from agent_factory.agents.agent import Agent
-from agent_factory.agents.agent import AgentResult, AgentStatus
 
 
 def test_agent_graph():

@@ -5,10 +5,11 @@ receivers:
 exporters:
   debug: {verbosity: basic}
   prometheus: {endpoint: 0.0.0.0:9464}
+  otlp/jaeger: {endpoint: jaeger:4317, tls: {insecure: true}}
 processors:
   batch: {}
 service:
   pipelines:
-    traces: {receivers: [otlp], processors: [batch], exporters: [debug]}
+    traces: {receivers: [otlp], processors: [batch], exporters: [debug, otlp/jaeger]}
     logs: {receivers: [otlp], processors: [batch], exporters: [debug]}
     metrics: {receivers: [otlp], processors: [batch], exporters: [prometheus]}

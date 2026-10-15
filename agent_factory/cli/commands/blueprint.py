@@ -1,12 +1,11 @@
 """Blueprint CLI commands."""
 
+
 import typer
-from pathlib import Path
-from typing import Optional
 
 from agent_factory.blueprints.model import Blueprint
-from agent_factory.registry.local_registry import LocalRegistry
 from agent_factory.marketplace import publish_blueprint
+from agent_factory.registry.local_registry import LocalRegistry
 
 app = typer.Typer(name="blueprint", help="Manage blueprints")
 
@@ -15,21 +14,20 @@ app = typer.Typer(name="blueprint", help="Manage blueprints")
 def install(
     blueprint_id: str = typer.Argument(..., help="Blueprint ID"),
     target_path: str = typer.Option(".", "--path", "-p", help="Installation path"),
-    version: Optional[str] = typer.Option(None, "--version", "-v", help="Blueprint version constraint (e.g., '1.0.0', '>=1.0.0')"),
+    version: str | None = typer.Option(None, "--version", "-v", help="Blueprint version constraint (e.g., '1.0.0', '>=1.0.0')"),
     from_marketplace: bool = typer.Option(False, "--marketplace", "-m", help="Install from marketplace index"),
     verify_hash: bool = typer.Option(True, "--verify-hash/--no-verify-hash", help="Verify blueprint hash"),
 ):
     """Install a blueprint."""
-    import sys
-    from packaging import version as pkg_version
     
     registry = LocalRegistry()
     
     # Try marketplace first if requested
     if from_marketplace:
         try:
-            from pathlib import Path
             import json
+            from pathlib import Path
+
             import httpx
             
             index_path = Path("blueprints_index.json")
@@ -74,7 +72,7 @@ def install(
                     # Download blueprint
                     download_url = blueprint_entry.get('download_url')
                     if download_url:
-                        typer.echo(f"📥 Downloading blueprint from marketplace...")
+                        typer.echo("📥 Downloading blueprint from marketplace...")
                         try:
                             response = httpx.get(download_url, timeout=30.0)
                             if response.status_code == 200:
@@ -84,7 +82,7 @@ def install(
                                     content_hash = f"sha256:{hashlib.sha256(response.content).hexdigest()}"
                                     expected_hash = blueprint_entry.get('hash', '')
                                     if expected_hash and content_hash != expected_hash:
-                                        typer.echo(f"❌ Hash verification failed!")
+                                        typer.echo("❌ Hash verification failed!")
                                         typer.echo(f"   Expected: {expected_hash}")
                                         typer.echo(f"   Got: {content_hash}")
                                         raise typer.Exit(1)
@@ -185,9 +183,9 @@ def create(
 @app.command()
 def update(
     blueprint_id: str = typer.Argument(..., help="Blueprint ID"),
-    name: Optional[str] = typer.Option(None, "--name", "-n", help="Blueprint name"),
-    description: Optional[str] = typer.Option(None, "--description", "-d", help="Blueprint description"),
-    version: Optional[str] = typer.Option(None, "--version", "-v", help="Blueprint version"),
+    name: str | None = typer.Option(None, "--name", "-n", help="Blueprint name"),
+    description: str | None = typer.Option(None, "--description", "-d", help="Blueprint description"),
+    version: str | None = typer.Option(None, "--version", "-v", help="Blueprint version"),
 ):
     """Update a blueprint."""
     registry = LocalRegistry()
@@ -246,7 +244,7 @@ def validate(
 @app.command()
 def test(
     blueprint_id: str = typer.Argument(..., help="Blueprint ID"),
-    test_input: Optional[str] = typer.Option(None, "--input", "-i", help="Test input"),
+    test_input: str | None = typer.Option(None, "--input", "-i", help="Test input"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Verbose output"),
 ):
     """Test a blueprint by running it with sample input."""
@@ -286,11 +284,11 @@ def test(
                 typer.echo("⏳ Running agent...")
                 result = agent.run(input_text)
                 
-                typer.echo(f"\n✅ Test completed successfully!")
+                typer.echo("\n✅ Test completed successfully!")
                 typer.echo(f"📤 Output: {result.output if hasattr(result, 'output') else str(result)}")
                 
                 if verbose:
-                    typer.echo(f"\n📊 Details:")
+                    typer.echo("\n📊 Details:")
                     typer.echo(f"   Agent ID: {agent_id}")
                     typer.echo(f"   Blueprint: {blueprint_id}")
             else:

@@ -1,0 +1,37 @@
+{
+  "pcap_version": "1.0.0",
+  "session_id": "arena-b2ab4bc92d43",
+  "captured_frames": 1,
+  "start_time": 1792022466.141732,
+  "end_time": 1792022466.1434402,
+  "total_tokens": 1368,
+  "diagnostics": [],
+  "frames": [
+    {
+      "id": "f-0001",
+      "ts": 1792022466.1431332,
+      "type": "system",
+      "src": "arena",
+      "dst": "reasoning_frontier",
+      "hash": "36f35c29a4492b25",
+      "tokens": 1368,
+      "latency_ms": 0.375,
+      "payload": {
+        "passed": true,
+        "pass_rate": 1.0,
+        "details": {
+          "mcts_score": 0.825,
+          "greedy_baseline_score": 0.58,
+          "quality_lift_percent": 42.24,
+          "nodes_explored": 57,
+          "trials": 1,
+          "mode": "deterministic",
+          "pass_rate_confidence_95": [
+            0.2065,
+            1.0
+          ]
+        }
+      }
+    }
+  ]
+}

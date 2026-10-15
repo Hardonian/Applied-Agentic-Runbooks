@@ -2,9 +2,9 @@
 CLI commands for documentation generation.
 """
 
-import typer
 from pathlib import Path
-from typing import Optional
+
+import typer
 
 app = typer.Typer(name="docs", help="Documentation generation")
 
@@ -19,7 +19,7 @@ def generate(
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
     
-    typer.echo(f"📚 Generating documentation...\n")
+    typer.echo("📚 Generating documentation...\n")
     
     # Generate API documentation
     typer.echo("📖 Generating API documentation...")

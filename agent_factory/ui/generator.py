@@ -3,7 +3,7 @@ Generate UI from agent schemas - Complete implementation with React templates.
 """
 
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Any
 
 from agent_factory.agents.agent import Agent
 from agent_factory.ui.schema_inference import infer_ui_schema
@@ -47,7 +47,7 @@ def generate_ui(
         raise ValueError(f"Unsupported template: {template}")
 
 
-def _generate_html_ui(output_path: Path, agent: Agent, schema: Dict[str, Any]) -> None:
+def _generate_html_ui(output_path: Path, agent: Agent, schema: dict[str, Any]) -> None:
     """Generate simple HTML UI."""
     html_content = f"""<!DOCTYPE html>
 <html lang="en">
@@ -183,7 +183,7 @@ def _generate_html_ui(output_path: Path, agent: Agent, schema: Dict[str, Any]) -
     (output_path / "index.html").write_text(html_content)
 
 
-def _generate_react_ui(output_path: Path, agent: Agent, schema: Dict[str, Any]) -> None:
+def _generate_react_ui(output_path: Path, agent: Agent, schema: dict[str, Any]) -> None:
     """Generate React UI."""
     # Create package.json
     package_json = """{

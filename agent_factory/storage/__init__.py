@@ -11,16 +11,16 @@ from agent_factory.storage.s3 import S3Storage
 try:
     from agent_factory.storage.supabase import SupabaseStorage
     __all__ = [
-        "StorageBackend",
-        "StorageFile",
         "LocalStorage",
         "S3Storage",
+        "StorageBackend",
+        "StorageFile",
         "SupabaseStorage",
     ]
 except ImportError:
     __all__ = [
-        "StorageBackend",
-        "StorageFile",
         "LocalStorage",
         "S3Storage",
+        "StorageBackend",
+        "StorageFile",
     ]

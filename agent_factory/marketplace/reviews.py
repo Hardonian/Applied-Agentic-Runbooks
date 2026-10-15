@@ -1,14 +1,14 @@
 """Blueprint reviews and ratings."""
 
-from typing import List, Dict, Any, Optional
-from sqlalchemy import func
+from typing import Any
+
 from agent_factory.database.models import Blueprint as BlueprintModel
 from agent_factory.database.session import get_db
 
 
 class Review:
     """Review model."""
-    def __init__(self, user_id: str, blueprint_id: str, rating: int, comment: Optional[str] = None):
+    def __init__(self, user_id: str, blueprint_id: str, rating: int, comment: str | None = None):
         self.user_id = user_id
         self.blueprint_id = blueprint_id
         self.rating = rating
@@ -19,8 +19,8 @@ def create_review(
     blueprint_id: str,
     user_id: str,
     rating: int,
-    comment: Optional[str] = None
-) -> Dict[str, Any]:
+    comment: str | None = None
+) -> dict[str, Any]:
     """
     Create a review for a blueprint.
     
@@ -64,7 +64,7 @@ def create_review(
         from agent_factory.cache import get_cache
         cache = get_cache()
         cache.delete(f"blueprint_details:{blueprint_id}")
-        cache.clear(f"blueprint_search:*")
+        cache.clear("blueprint_search:*")
         
         return {
             "blueprint_id": blueprint_id,
@@ -72,14 +72,14 @@ def create_review(
             "comment": comment,
             "status": "created"
         }
-    except Exception as e:
+    except Exception:
         db.rollback()
         raise
     finally:
         db.close()
 
 
-def get_reviews(blueprint_id: str, limit: int = 10, offset: int = 0) -> Dict[str, Any]:
+def get_reviews(blueprint_id: str, limit: int = 10, offset: int = 0) -> dict[str, Any]:
     """
     Get reviews for a blueprint.
     
@@ -112,7 +112,7 @@ def get_reviews(blueprint_id: str, limit: int = 10, offset: int = 0) -> Dict[str
         db.close()
 
 
-def update_rating(blueprint_id: str) -> Dict[str, Any]:
+def update_rating(blueprint_id: str) -> dict[str, Any]:
     """
     Update blueprint rating based on reviews.
     

@@ -1,13 +1,15 @@
 """Compliance features (SOC2, GDPR)."""
 
-from typing import Dict, Any, List, Optional
 from datetime import datetime, timedelta
-from agent_factory.database.models import AuditLog as AuditLogModel, User, Execution
+from typing import Any
+
+from agent_factory.database.models import AuditLog as AuditLogModel
+from agent_factory.database.models import Execution, User
 from agent_factory.database.session import get_db
 from agent_factory.security.audit import audit_log
 
 
-def enable_audit_trail(tenant_id: str) -> Dict[str, Any]:
+def enable_audit_trail(tenant_id: str) -> dict[str, Any]:
     """
     Enable audit trail for tenant.
     
@@ -84,7 +86,7 @@ def enforce_data_retention(tenant_id: str, retention_days: int = 90):
         db.close()
 
 
-def export_user_data(user_id: str) -> Dict[str, Any]:
+def export_user_data(user_id: str) -> dict[str, Any]:
     """
     Export user data for GDPR compliance.
     
@@ -144,7 +146,7 @@ def export_user_data(user_id: str) -> Dict[str, Any]:
         db.close()
 
 
-def delete_user_data(user_id: str) -> Dict[str, Any]:
+def delete_user_data(user_id: str) -> dict[str, Any]:
     """
     Delete user data for GDPR right to be forgotten.
     

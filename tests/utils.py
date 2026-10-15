@@ -1,6 +1,5 @@
 """Test utilities and helpers."""
 
-from typing import Dict, Any, List, Optional
 from agent_factory.agents.agent import Agent
 from agent_factory.tools.base import Tool
 from agent_factory.workflows.model import Workflow, WorkflowStep
@@ -62,8 +61,8 @@ def create_test_tool(
 def create_test_workflow(
     workflow_id: str = "test-workflow",
     name: str = "Test Workflow",
-    agent_ids: Optional[List[str]] = None,
-    agents_registry: Optional[Dict[str, Agent]] = None,
+    agent_ids: list[str] | None = None,
+    agents_registry: dict[str, Agent] | None = None,
 ) -> Workflow:
     """
     Create a test workflow.

@@ -2,24 +2,23 @@
 CLI command for system diagnostics and health checks.
 """
 
-import typer
 import sys
 from pathlib import Path
-from typing import List, Tuple
+
+import typer
 
 app = typer.Typer(name="doctor", help="System diagnostics and health checks")
 
 
-def check_python_version() -> Tuple[bool, str]:
+def check_python_version() -> tuple[bool, str]:
     """Check Python version."""
-    import sys
     version = sys.version_info
     if version.major == 3 and version.minor >= 8:
         return True, f"Python {version.major}.{version.minor}.{version.micro}"
     return False, f"Python {version.major}.{version.minor}.{version.micro} (requires 3.8+)"
 
 
-def check_dependencies() -> List[Tuple[str, bool, str]]:
+def check_dependencies() -> list[tuple[str, bool, str]]:
     """Check required dependencies."""
     results = []
     required = [
@@ -45,7 +44,7 @@ def check_dependencies() -> List[Tuple[str, bool, str]]:
     return results
 
 
-def check_env_vars() -> List[Tuple[str, bool, str]]:
+def check_env_vars() -> list[tuple[str, bool, str]]:
     """Check environment variables."""
     import os
     results = []
@@ -69,7 +68,7 @@ def check_env_vars() -> List[Tuple[str, bool, str]]:
     return results
 
 
-def check_registry() -> Tuple[bool, str]:
+def check_registry() -> tuple[bool, str]:
     """Check registry directory."""
     try:
         from agent_factory.utils.config import Config
@@ -85,7 +84,7 @@ def check_registry() -> Tuple[bool, str]:
         return False, f"Registry check failed: {e}"
 
 
-def check_blueprints() -> Tuple[bool, str, int]:
+def check_blueprints() -> tuple[bool, str, int]:
     """Check installed blueprints."""
     try:
         from agent_factory.registry.local_registry import LocalRegistry

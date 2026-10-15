@@ -2,13 +2,13 @@
 Memory and session management for agents.
 """
 
-from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass
-import sqlite3
 import json
 import os
+import sqlite3
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from datetime import datetime
+from typing import Any
 
 
 @dataclass
@@ -18,7 +18,7 @@ class Interaction:
     input_text: str
     output_text: str
     timestamp: datetime
-    metadata: Dict[str, Any]
+    metadata: dict[str, Any]
 
 
 class MemoryStore(ABC):
@@ -30,25 +30,21 @@ class MemoryStore(ABC):
         session_id: str,
         input_text: str,
         output_text: str,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """Save an interaction to memory."""
-        pass
     
     @abstractmethod
-    def get_context(self, session_id: str, limit: int = 10) -> Dict[str, Any]:
+    def get_context(self, session_id: str, limit: int = 10) -> dict[str, Any]:
         """Get conversation context for a session."""
-        pass
     
     @abstractmethod
-    def get_history(self, session_id: str, limit: int = 50) -> List[Interaction]:
+    def get_history(self, session_id: str, limit: int = 50) -> list[Interaction]:
         """Get interaction history for a session."""
-        pass
     
     @abstractmethod
     def clear_session(self, session_id: str) -> None:
         """Clear all interactions for a session."""
-        pass
 
 
 class SQLiteMemoryStore(MemoryStore):
@@ -91,7 +87,7 @@ class SQLiteMemoryStore(MemoryStore):
         session_id: str,
         input_text: str,
         output_text: str,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """Save an interaction to memory."""
         conn = sqlite3.connect(self.db_path)
@@ -111,7 +107,7 @@ class SQLiteMemoryStore(MemoryStore):
         conn.commit()
         conn.close()
     
-    def get_context(self, session_id: str, limit: int = 10) -> Dict[str, Any]:
+    def get_context(self, session_id: str, limit: int = 10) -> dict[str, Any]:
         """Get conversation context for a session."""
         history = self.get_history(session_id, limit)
         
@@ -127,7 +123,7 @@ class SQLiteMemoryStore(MemoryStore):
         
         return context
     
-    def get_history(self, session_id: str, limit: int = 50) -> List[Interaction]:
+    def get_history(self, session_id: str, limit: int = 50) -> list[Interaction]:
         """Get interaction history for a session."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -204,11 +200,11 @@ class RedisMemoryStore(MemoryStore):
         session_id: str,
         input_text: str,
         output_text: str,
-        metadata: Optional[Dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """Save an interaction to memory."""
-        import uuid
         import time
+        import uuid
         
         interaction_id = str(uuid.uuid4())
         interaction_key = self._get_interaction_key(session_id, interaction_id)
@@ -233,7 +229,7 @@ class RedisMemoryStore(MemoryStore):
         self.redis.expire(session_key, 30 * 24 * 60 * 60)
         self.redis.expire(interaction_key, 30 * 24 * 60 * 60)
     
-    def get_context(self, session_id: str, limit: int = 10) -> Dict[str, Any]:
+    def get_context(self, session_id: str, limit: int = 10) -> dict[str, Any]:
         """Get conversation context for a session."""
         history = self.get_history(session_id, limit)
         
@@ -249,7 +245,7 @@ class RedisMemoryStore(MemoryStore):
         
         return context
     
-    def get_history(self, session_id: str, limit: int = 50) -> List[Interaction]:
+    def get_history(self, session_id: str, limit: int = 50) -> list[Interaction]:
         """Get interaction history for a session."""
         session_key = self._get_session_key(session_id)
         

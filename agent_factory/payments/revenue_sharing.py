@@ -1,16 +1,17 @@
 """Revenue sharing for blueprint creators."""
 
-from typing import Dict, Any
-from agent_factory.database.models import Blueprint as BlueprintModel, User
-from agent_factory.database.session import get_db
+from typing import Any
 
+from agent_factory.database.models import Blueprint as BlueprintModel
+from agent_factory.database.models import User
+from agent_factory.database.session import get_db
 
 # Platform fee percentage (e.g., 30% platform, 70% creator)
 PLATFORM_FEE_PERCENTAGE = 0.30
 CREATOR_FEE_PERCENTAGE = 0.70
 
 
-def calculate_revenue_share(amount: float) -> Dict[str, float]:
+def calculate_revenue_share(amount: float) -> dict[str, float]:
     """
     Calculate revenue share between platform and creator.
     
@@ -36,7 +37,7 @@ def distribute_payment(
     blueprint_id: str,
     amount: float,
     payment_intent_id: str
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Distribute payment to blueprint creator.
     

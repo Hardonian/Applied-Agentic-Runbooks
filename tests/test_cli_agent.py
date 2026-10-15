@@ -1,8 +1,10 @@
 """Tests for Agent CLI commands."""
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 from typer.testing import CliRunner
+
 from agent_factory.cli.commands.agent import app
 
 

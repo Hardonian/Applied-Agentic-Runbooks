@@ -1,15 +1,15 @@
 """Configuration management."""
 
 import os
-from typing import Optional
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 
 class Config:
     """Configuration manager for Agent Factory Platform."""
     
-    def __init__(self, env_file: Optional[str] = None):
+    def __init__(self, env_file: str | None = None):
         """
         Initialize configuration.
         
@@ -27,12 +27,12 @@ class Config:
                     break
     
     @property
-    def openai_api_key(self) -> Optional[str]:
+    def openai_api_key(self) -> str | None:
         """Get OpenAI API key."""
         return os.getenv("OPENAI_API_KEY")
     
     @property
-    def anthropic_api_key(self) -> Optional[str]:
+    def anthropic_api_key(self) -> str | None:
         """Get Anthropic API key."""
         return os.getenv("ANTHROPIC_API_KEY")
     

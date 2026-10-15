@@ -5,18 +5,18 @@ Multi-agent orchestration executor.
 import json
 import time
 import uuid
-from typing import Dict, Any, Optional
+from typing import Any
 
 from agent_factory.orchestration.graph import AgentGraph
 from agent_factory.orchestration.router import AgentRouter
-from agent_factory.promptlog import SQLiteStorage, Run
+from agent_factory.promptlog import SQLiteStorage
 from agent_factory.promptlog.model import Run as RunModel
 
 
 class OrchestrationExecutor:
     """Execute multi-agent orchestration flows."""
     
-    def __init__(self, storage: Optional[SQLiteStorage] = None):
+    def __init__(self, storage: SQLiteStorage | None = None):
         """
         Initialize executor.
         
@@ -29,9 +29,9 @@ class OrchestrationExecutor:
     def execute(
         self,
         graph: AgentGraph,
-        inputs: Dict[str, Any],
+        inputs: dict[str, Any],
         max_steps: int = 10,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Execute multi-agent flow.
         

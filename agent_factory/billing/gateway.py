@@ -8,12 +8,10 @@ Provides:
 - Automated overage calculation and webhook handlers
 """
 
-from enum import Enum
-from typing import Dict, Any, Optional, List
-from dataclasses import dataclass, field
-from decimal import Decimal
 import time
-import uuid
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any
 
 
 class PlanTier(str, Enum):
@@ -38,10 +36,10 @@ class SubscriptionPlan:
     monthly_token_allowance: int
     included_agents: int
     overage_per_100k_tokens_usd: float
-    features: List[str]
+    features: list[str]
 
 
-PLAN_CATALOG: Dict[PlanTier, SubscriptionPlan] = {
+PLAN_CATALOG: dict[PlanTier, SubscriptionPlan] = {
     PlanTier.FREE: SubscriptionPlan(
         tier=PlanTier.FREE,
         name="Free Community",
@@ -90,8 +88,8 @@ class CustomerAccount:
     wallet_balance_usd: float = 0.0
     tokens_used_this_billing_cycle: int = 0
     billing_provider: BillingProvider = BillingProvider.SANDBOX_MOCK
-    stripe_customer_id: Optional[str] = None
-    lemonsqueezy_customer_id: Optional[str] = None
+    stripe_customer_id: str | None = None
+    lemonsqueezy_customer_id: str | None = None
 
 
 class MonetizationBillingGateway:
@@ -101,7 +99,7 @@ class MonetizationBillingGateway:
 
     def __init__(self, default_provider: BillingProvider = BillingProvider.SANDBOX_MOCK):
         self.default_provider = default_provider
-        self.accounts: Dict[str, CustomerAccount] = {}
+        self.accounts: dict[str, CustomerAccount] = {}
 
     def get_or_create_account(self, customer_id: str, tenant_id: str = "default") -> CustomerAccount:
         """Fetch or initialize customer account."""
@@ -115,7 +113,7 @@ class MonetizationBillingGateway:
             )
         return self.accounts[customer_id]
 
-    def upgrade_plan(self, customer_id: str, tier: PlanTier, provider: Optional[BillingProvider] = None) -> CustomerAccount:
+    def upgrade_plan(self, customer_id: str, tier: PlanTier, provider: BillingProvider | None = None) -> CustomerAccount:
         """Upgrade customer subscription tier."""
         account = self.get_or_create_account(customer_id)
         account.plan = tier
@@ -129,7 +127,7 @@ class MonetizationBillingGateway:
         account.wallet_balance_usd += round(amount_usd, 2)
         return account.wallet_balance_usd
 
-    def record_usage(self, customer_id: str, tokens: int, cost_usd: float = 0.0) -> Dict[str, Any]:
+    def record_usage(self, customer_id: str, tokens: int, cost_usd: float = 0.0) -> dict[str, Any]:
         """
         Record agent execution usage, deduct wallet credit if applicable,
         and calculate overage.
@@ -155,7 +153,7 @@ class MonetizationBillingGateway:
             "wallet_balance_usd": round(account.wallet_balance_usd, 2),
         }
 
-    def process_webhook(self, provider: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def process_webhook(self, provider: str, payload: dict[str, Any]) -> dict[str, Any]:
         """Process external webhook notifications."""
         event_type = payload.get("type") or payload.get("meta", {}).get("event_name", "unknown")
         return {

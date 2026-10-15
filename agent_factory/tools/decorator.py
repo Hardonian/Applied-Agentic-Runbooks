@@ -2,13 +2,14 @@
 Tool decorator - Convert Python functions to Tools.
 """
 
-from typing import Optional, Callable
+from collections.abc import Callable
+
 from agent_factory.tools.base import Tool
 
 
 def function_tool(
-    name: Optional[str] = None,
-    description: Optional[str] = None,
+    name: str | None = None,
+    description: str | None = None,
     **tool_kwargs
 ):
     """

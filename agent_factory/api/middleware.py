@@ -2,12 +2,14 @@
 Enhanced API middleware for security and observability.
 """
 
+import os
 import time
-from typing import Callable
+from collections.abc import Callable
+
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
+
 from agent_factory.monitoring import setup_structured_logging
-import os
 
 logger = setup_structured_logging(os.getenv("LOG_LEVEL", "INFO"))
 

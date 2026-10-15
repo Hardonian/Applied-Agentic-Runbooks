@@ -2,9 +2,8 @@
 Compare runs and generate diffs.
 """
 
-from typing import Dict, Any
+from typing import Any
 
-from agent_factory.promptlog.model import Run
 from agent_factory.promptlog.storage import PromptLogStorage
 
 
@@ -12,7 +11,7 @@ def diff_runs(
     run_id_1: str,
     run_id_2: str,
     storage: PromptLogStorage,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Compare two runs and generate diff.
     
@@ -63,7 +62,7 @@ def diff_runs(
     }
 
 
-def _text_diff(text1: str, text2: str) -> Dict[str, Any]:
+def _text_diff(text1: str, text2: str) -> dict[str, Any]:
     """Simple textual diff (placeholder for full diff implementation)."""
     return {
         "similarity": _simple_similarity(text1, text2),

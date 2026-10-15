@@ -6,10 +6,11 @@ are unavailable or experiencing issues.
 """
 
 import time
+from collections.abc import Callable
+from dataclasses import dataclass
 from enum import Enum
-from typing import Callable, Any, Optional, Dict
-from dataclasses import dataclass, field
 from threading import Lock
+from typing import Any
 
 
 class CircuitState(str, Enum):
@@ -34,7 +35,7 @@ class CircuitBreakerStats:
     failures: int = 0
     successes: int = 0
     state: CircuitState = CircuitState.CLOSED
-    last_failure_time: Optional[float] = None
+    last_failure_time: float | None = None
     total_calls: int = 0
     total_failures: int = 0
     total_successes: int = 0
@@ -52,7 +53,7 @@ class CircuitBreaker:
     def __init__(
         self,
         name: str,
-        config: Optional[CircuitBreakerConfig] = None,
+        config: CircuitBreakerConfig | None = None,
     ):
         """
         Initialize circuit breaker.
@@ -96,7 +97,7 @@ class CircuitBreaker:
             result = func(*args, **kwargs)
             self._on_success()
             return result
-        except self.config.expected_exception as e:
+        except self.config.expected_exception:
             self._on_failure()
             raise
     
@@ -156,7 +157,7 @@ class CircuitBreaker:
                 if self.stats.failures >= self.config.failure_threshold:
                     self.stats.state = CircuitState.OPEN
     
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """Get circuit breaker statistics."""
         with self._lock:
             return {
@@ -180,10 +181,10 @@ class CircuitBreaker:
 
 
 # Global circuit breakers
-_breakers: Dict[str, CircuitBreaker] = {}
+_breakers: dict[str, CircuitBreaker] = {}
 
 
-def get_circuit_breaker(name: str, config: Optional[CircuitBreakerConfig] = None) -> CircuitBreaker:
+def get_circuit_breaker(name: str, config: CircuitBreakerConfig | None = None) -> CircuitBreaker:
     """
     Get or create a circuit breaker.
     

@@ -1,8 +1,10 @@
 """Tests for Agent class."""
 
+from unittest.mock import Mock, patch
+
 import pytest
-from unittest.mock import patch, Mock
-from agent_factory.agents.agent import Agent, AgentConfig, AgentStatus
+
+from agent_factory.agents.agent import Agent, AgentStatus
 
 
 @pytest.mark.unit

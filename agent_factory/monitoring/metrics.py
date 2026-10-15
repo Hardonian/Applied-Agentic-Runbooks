@@ -1,12 +1,10 @@
 """Prometheus metrics collection."""
 
 import time
-from typing import Optional
-from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
-from fastapi import Request, Response
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import Response as StarletteResponse
 
+from fastapi import Request, Response
+from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, generate_latest
+from starlette.middleware.base import BaseHTTPMiddleware
 
 # Metrics
 http_requests_total = Counter(
@@ -67,6 +65,41 @@ cache_misses_total = Counter(
     ["cache_type"]
 )
 
+arena_runs_total = Counter(
+    "agent_factory_arena_runs_total",
+    "Durable Arena runs by terminal status and mode",
+    ["status", "mode"],
+)
+arena_run_duration_seconds = Histogram(
+    "agent_factory_arena_run_duration_seconds",
+    "Arena run wall-clock duration",
+    ["mode"],
+    buckets=(0.01, 0.05, 0.1, 0.5, 1, 5, 15, 60, 300, 900),
+)
+arena_cost_usd = Histogram(
+    "agent_factory_arena_cost_usd",
+    "Arena estimated run cost in USD",
+    buckets=(0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000),
+)
+arena_pass_rate = Gauge(
+    "agent_factory_arena_last_pass_rate",
+    "Pass rate of the most recently completed Arena run",
+    ["mode"],
+)
+websocket_subscribers = Gauge(
+    "agent_factory_websocket_subscribers",
+    "Current WebSocket event subscriptions",
+)
+websocket_dropped_events_total = Counter(
+    "agent_factory_websocket_dropped_events_total",
+    "Events dropped for lagging WebSocket consumers",
+)
+mcpwall_approval_total = Counter(
+    "agent_factory_mcpwall_approval_total",
+    "MCPWall operator decisions",
+    ["decision"],
+)
+
 
 class MetricsCollector:
     """Metrics collector for Agent Factory Platform."""
@@ -102,6 +135,25 @@ class MetricsCollector:
     def set_active_executions(count: int):
         """Set active executions count."""
         active_executions.set(count)
+
+    @staticmethod
+    def record_arena_run(status: str, mode: str, duration: float, cost: float, pass_rate: float):
+        arena_runs_total.labels(status=status, mode=mode).inc()
+        arena_run_duration_seconds.labels(mode=mode).observe(duration)
+        arena_cost_usd.observe(cost)
+        arena_pass_rate.labels(mode=mode).set(pass_rate)
+
+    @staticmethod
+    def set_websocket_subscribers(count: int):
+        websocket_subscribers.set(count)
+
+    @staticmethod
+    def record_websocket_drop():
+        websocket_dropped_events_total.inc()
+
+    @staticmethod
+    def record_approval(decision: str):
+        mcpwall_approval_total.labels(decision=decision).inc()
 
 
 class MetricsMiddleware(BaseHTTPMiddleware):

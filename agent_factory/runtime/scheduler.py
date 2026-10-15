@@ -2,11 +2,13 @@
 Scheduler for running agents and workflows on a schedule.
 """
 
-from typing import Callable, Optional, Dict, Any
-from datetime import datetime
-import schedule
 import threading
 import time
+from collections.abc import Callable
+from datetime import datetime
+from typing import Any
+
+import schedule
 
 
 class Scheduler:
@@ -21,20 +23,20 @@ class Scheduler:
     
     def __init__(self):
         """Initialize scheduler."""
-        self.jobs: Dict[str, Callable] = {}
-        self._scheduled_jobs: Dict[str, schedule.Job] = {}
+        self.jobs: dict[str, Callable] = {}
+        self._scheduled_jobs: dict[str, schedule.Job] = {}
         # Do not use schedule's process-global default scheduler: stopping one
         # tenant/application scheduler must not clear another scheduler's jobs.
         self._scheduler = schedule.Scheduler()
         self.running = False
-        self.thread: Optional[threading.Thread] = None
+        self.thread: threading.Thread | None = None
     
     def schedule_agent(
         self,
         agent_id: str,
         input_text: str,
         schedule_str: str = "daily",
-        run_func: Optional[Callable] = None,
+        run_func: Callable | None = None,
     ) -> str:
         """
         Schedule an agent to run on a schedule.
@@ -59,9 +61,9 @@ class Scheduler:
     def schedule_workflow(
         self,
         workflow_id: str,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         schedule_str: str = "daily",
-        run_func: Optional[Callable] = None,
+        run_func: Callable | None = None,
     ) -> str:
         """
         Schedule a workflow to run on a schedule.

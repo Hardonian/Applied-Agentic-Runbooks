@@ -1,21 +1,23 @@
 """Blueprint search and discovery."""
 
-from typing import List, Dict, Any, Optional
-from sqlalchemy import or_, func
+from typing import Any
+
+from sqlalchemy import or_
+
+from agent_factory.cache import get_cache
 from agent_factory.database.models import Blueprint as BlueprintModel
 from agent_factory.database.session import get_db
-from agent_factory.cache import get_cache
 
 
 def search_blueprints(
-    query: Optional[str] = None,
-    category: Optional[str] = None,
-    pricing_model: Optional[str] = None,
-    min_rating: Optional[float] = None,
+    query: str | None = None,
+    category: str | None = None,
+    pricing_model: str | None = None,
+    min_rating: float | None = None,
     sort_by: str = "popularity",
     limit: int = 20,
     offset: int = 0
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Search blueprints in marketplace.
     
@@ -106,7 +108,7 @@ def search_blueprints(
         db.close()
 
 
-def get_blueprint_details(blueprint_id: str) -> Optional[Dict[str, Any]]:
+def get_blueprint_details(blueprint_id: str) -> dict[str, Any] | None:
     """
     Get detailed blueprint information.
     

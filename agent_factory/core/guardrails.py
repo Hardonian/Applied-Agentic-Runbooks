@@ -2,19 +2,19 @@
 Guardrails for agent safety and validation.
 """
 
-from dataclasses import dataclass
-from typing import List, Optional, Dict, Any
-from abc import ABC, abstractmethod
 import re
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
 class GuardrailResult:
     """Result from guardrail validation."""
     allowed: bool
-    reason: Optional[str] = None
-    modified_output: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    reason: str | None = None
+    modified_output: str | None = None
+    metadata: dict[str, Any] | None = None
 
 
 class Guardrail(ABC):
@@ -23,7 +23,6 @@ class Guardrail(ABC):
     @abstractmethod
     def check(self, text: str) -> GuardrailResult:
         """Check if text passes the guardrail."""
-        pass
 
 
 class Guardrails:
@@ -39,8 +38,8 @@ class Guardrails:
     
     def __init__(self):
         """Initialize guardrails collection."""
-        self.input_guardrails: List[Guardrail] = []
-        self.output_guardrails: List[Guardrail] = []
+        self.input_guardrails: list[Guardrail] = []
+        self.output_guardrails: list[Guardrail] = []
     
     def add_input_guardrail(self, guardrail: Guardrail) -> None:
         """Add a guardrail for input validation."""
@@ -100,7 +99,7 @@ class Guardrails:
 class ProfanityGuardrail(Guardrail):
     """Guardrail to detect and block profanity."""
     
-    def __init__(self, profanity_list: Optional[List[str]] = None):
+    def __init__(self, profanity_list: list[str] | None = None):
         """
         Initialize profanity guardrail.
         
@@ -153,7 +152,7 @@ class SQLInjectionGuardrail(Guardrail):
                     if re.search(pattern, text_upper, re.IGNORECASE):
                         return GuardrailResult(
                             allowed=False,
-                            reason=f"Potential SQL injection detected",
+                            reason="Potential SQL injection detected",
                         )
         
         return GuardrailResult(allowed=True)

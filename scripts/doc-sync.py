@@ -16,19 +16,17 @@ Options:
     --fix: Automatically fix inconsistencies where possible
 """
 
-import os
-import sys
 import re
-from pathlib import Path
-from typing import List, Dict, Tuple
+import sys
 from collections import defaultdict
+from pathlib import Path
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 
-def check_api_docs() -> List[str]:
+def check_api_docs() -> list[str]:
     """Check if API documentation matches actual endpoints."""
     issues = []
     
@@ -76,7 +74,7 @@ def check_api_docs() -> List[str]:
     return issues
 
 
-def check_env_docs() -> List[str]:
+def check_env_docs() -> list[str]:
     """Check if environment variable documentation matches .env.example."""
     issues = []
     
@@ -115,7 +113,7 @@ def check_env_docs() -> List[str]:
     return issues
 
 
-def check_schema_docs() -> List[str]:
+def check_schema_docs() -> list[str]:
     """Check if schema documentation matches database models."""
     issues = []
     
@@ -159,7 +157,7 @@ def check_schema_docs() -> List[str]:
     return issues
 
 
-def check_ci_docs() -> List[str]:
+def check_ci_docs() -> list[str]:
     """Check if CI/CD documentation matches workflows."""
     issues = []
     

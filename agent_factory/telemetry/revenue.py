@@ -4,11 +4,10 @@ Revenue tracking and analytics.
 Provides methods to track and analyze revenue metrics.
 """
 
-from typing import Dict, Optional, Any
 from datetime import datetime, timedelta
 
 from agent_factory.telemetry.collector import TelemetryCollector, get_collector
-from agent_factory.telemetry.model import RevenueEvent, EventType
+from agent_factory.telemetry.model import EventType, RevenueEvent
 
 
 class RevenueTracker:
@@ -21,7 +20,7 @@ class RevenueTracker:
         >>> arr = tracker.get_arr()
     """
     
-    def __init__(self, collector: Optional[TelemetryCollector] = None):
+    def __init__(self, collector: TelemetryCollector | None = None):
         """
         Initialize revenue tracker.
         
@@ -34,12 +33,12 @@ class RevenueTracker:
         self,
         amount: float,
         tenant_id: str,
-        user_id: Optional[str] = None,
+        user_id: str | None = None,
         revenue_type: str = "subscription",
-        plan_id: Optional[str] = None,
-        subscription_id: Optional[str] = None,
-        period_start: Optional[datetime] = None,
-        period_end: Optional[datetime] = None,
+        plan_id: str | None = None,
+        subscription_id: str | None = None,
+        period_start: datetime | None = None,
+        period_end: datetime | None = None,
     ) -> None:
         """
         Track a revenue event.
@@ -73,7 +72,7 @@ class RevenueTracker:
     
     def get_mrr(
         self,
-        date: Optional[datetime] = None,
+        date: datetime | None = None,
     ) -> float:
         """
         Get Monthly Recurring Revenue (MRR).
@@ -118,9 +117,9 @@ class RevenueTracker:
     
     def get_revenue_by_type(
         self,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-    ) -> Dict[str, float]:
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+    ) -> dict[str, float]:
         """
         Get revenue breakdown by type.
         
@@ -154,9 +153,9 @@ class RevenueTracker:
     
     def get_revenue_by_plan(
         self,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-    ) -> Dict[str, float]:
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+    ) -> dict[str, float]:
         """
         Get revenue breakdown by plan.
         
@@ -190,7 +189,7 @@ class RevenueTracker:
 
 
 # Global revenue tracker instance
-_revenue_tracker: Optional[RevenueTracker] = None
+_revenue_tracker: RevenueTracker | None = None
 
 
 def get_revenue_tracker() -> RevenueTracker:

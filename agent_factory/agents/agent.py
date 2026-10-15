@@ -2,18 +2,17 @@
 Agent class - Core primitive for creating and running AI agents.
 """
 
-from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any
-from enum import Enum
-
-from agent_factory.tools.base import Tool
-from agent_factory.runtime.memory import MemoryStore
-from agent_factory.core.guardrails import Guardrails
-from agent_factory.promptlog.model import Run
-from agent_factory.promptlog.storage import SQLiteStorage
-from agent_factory.knowledge import KnowledgePack
-import uuid
 import time
+import uuid
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
+
+from agent_factory.core.guardrails import Guardrails
+from agent_factory.knowledge import KnowledgePack
+from agent_factory.promptlog.storage import SQLiteStorage
+from agent_factory.runtime.memory import MemoryStore
+from agent_factory.tools.base import Tool
 
 
 class AgentStatus(str, Enum):
@@ -43,21 +42,21 @@ class AgentResult:
     status: AgentStatus
     tokens_used: int = 0
     execution_time: float = 0.0
-    tool_calls: List[Dict[str, Any]] = field(default_factory=list)
-    reasoning_content: Optional[str] = None
+    tool_calls: list[dict[str, Any]] = field(default_factory=list)
+    reasoning_content: str | None = None
     estimated_cost_usd: float = 0.0
-    provider: Optional[str] = None
-    error: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    run_id: Optional[str] = None
+    provider: str | None = None
+    error: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
+    run_id: str | None = None
 
 
 @dataclass
 class Handoff:
     """Represents a handoff to another agent."""
     to: "Agent"
-    context: Dict[str, Any] = field(default_factory=dict)
-    reason: Optional[str] = None
+    context: dict[str, Any] = field(default_factory=dict)
+    reason: str | None = None
 
 
 class Agent:
@@ -80,14 +79,14 @@ class Agent:
         id: str,
         name: str,
         instructions: str,
-        tools: Optional[List[Tool]] = None,
+        tools: list[Tool] | None = None,
         model: str = "gpt-4o",
-        memory: Optional[MemoryStore] = None,
-        guardrails: Optional[Guardrails] = None,
-        config: Optional[AgentConfig] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-        knowledge_packs: Optional[List[KnowledgePack]] = None,
-        prompt_log_storage: Optional[SQLiteStorage] = None,
+        memory: MemoryStore | None = None,
+        guardrails: Guardrails | None = None,
+        config: AgentConfig | None = None,
+        metadata: dict[str, Any] | None = None,
+        knowledge_packs: list[KnowledgePack] | None = None,
+        prompt_log_storage: SQLiteStorage | None = None,
     ):
         """
         Initialize an Agent.
@@ -139,8 +138,8 @@ class Agent:
     def run(
         self,
         input_text: str,
-        session_id: Optional[str] = None,
-        context: Optional[Dict[str, Any]] = None,
+        session_id: str | None = None,
+        context: dict[str, Any] | None = None,
     ) -> AgentResult:
         """
         Run the agent with given input.
@@ -230,7 +229,7 @@ class Agent:
             self._log_run(run_id, input_text, result, start_time)
             return result
     
-    def _get_knowledge_context(self, query: str) -> Dict[str, Any]:
+    def _get_knowledge_context(self, query: str) -> dict[str, Any]:
         """Get context from knowledge packs using RAG retrieval."""
         context = {}
         
@@ -272,7 +271,7 @@ class Agent:
                 # Log error but don't fail
                 import logging
                 logging.warning(f"Failed to retrieve from knowledge pack {pack.id}: {e}")
-                context[f"{pack.id}_context"] = f"Error retrieving from {pack.name}: {str(e)}"
+                context[f"{pack.id}_context"] = f"Error retrieving from {pack.name}: {e!s}"
         
         return context
     
@@ -305,7 +304,7 @@ class Agent:
             # Silently fail if logging fails
             pass
     
-    def _execute_agent(self, input_text: str, context: Dict[str, Any]) -> str:
+    def _execute_agent(self, input_text: str, context: dict[str, Any]) -> str:
         """
         Execute the agent using the underlying LLM SDK.
         
@@ -354,14 +353,14 @@ class Agent:
                 max_tokens=self.config.max_tokens,
             )
             return res.content if res.content else f"[{self.name} processed: {input_text}]"
-        except Exception as e:
+        except Exception:
             return f"[{self.name} processed: {input_text}]"
     
     def handoff(
         self,
         to: "Agent",
-        context: Optional[Dict[str, Any]] = None,
-        reason: Optional[str] = None,
+        context: dict[str, Any] | None = None,
+        reason: str | None = None,
     ) -> Handoff:
         """
         Create a handoff to another agent.
@@ -380,7 +379,7 @@ class Agent:
             reason=reason,
         )
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize agent to dictionary."""
         return {
             "id": self.id,
@@ -397,7 +396,7 @@ class Agent:
         }
     
     @classmethod
-    def from_dict(cls, data: Dict[str, Any], tools_registry: Optional[Dict[str, Tool]] = None) -> "Agent":
+    def from_dict(cls, data: dict[str, Any], tools_registry: dict[str, Tool] | None = None) -> "Agent":
         """Deserialize agent from dictionary."""
         tools = []
         if tools_registry:

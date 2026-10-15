@@ -2,14 +2,15 @@
 Multi-Agent Swarm Orchestration & Enterprise Compliance API Routes.
 """
 
-from typing import List, Optional, Dict, Any
+from typing import Any
+
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
 
 from agent_factory.agents.agent import Agent, AgentConfig
+from agent_factory.compliance.certification import AgentCertificationGenerator
 from agent_factory.core.guardrails import Guardrails, SQLInjectionGuardrail
 from agent_factory.orchestration.swarm import SwarmOrchestrator, SwarmPattern, SwarmResult
-from agent_factory.compliance.certification import AgentCertificationGenerator
 
 router = APIRouter()
 compliance_router = APIRouter()
@@ -17,29 +18,29 @@ compliance_router = APIRouter()
 
 class SwarmAgentSpec(BaseModel):
     id: str
-    name: Optional[str] = None
-    instructions: Optional[str] = None
+    name: str | None = None
+    instructions: str | None = None
     model: str = "gpt-4o"
 
 
 class SwarmExecuteRequest(BaseModel):
     task: str = Field(..., description="Objective for multi-agent swarm")
     pattern: str = Field("hierarchical", description="Swarm topology: hierarchical, peer_debate, voting_consensus, dynamic_router")
-    agents: Optional[List[SwarmAgentSpec]] = None
-    supervisor: Optional[SwarmAgentSpec] = None
+    agents: list[SwarmAgentSpec] | None = None
+    supervisor: SwarmAgentSpec | None = None
     max_rounds: int = Field(4, ge=1, le=10)
-    context: Optional[Dict[str, Any]] = None
+    context: dict[str, Any] | None = None
 
 
 class AgentCertifyRequest(BaseModel):
     agent_id: str = Field(..., description="Agent unique identifier")
-    name: Optional[str] = None
+    name: str | None = None
     instructions: str = Field("Enterprise Autonomous Agent", description="System prompt instructions")
     model: str = Field("gpt-4o", description="Target foundation model")
     enable_guardrails: bool = Field(True, description="Attach enterprise safety guardrails")
 
 
-@router.post("/execute", response_model=Dict[str, Any])
+@router.post("/execute", response_model=dict[str, Any])
 def execute_swarm(request: SwarmExecuteRequest):
     """
     Execute a collaborative multi-agent swarm.
@@ -117,7 +118,7 @@ def execute_swarm(request: SwarmExecuteRequest):
     }
 
 
-@compliance_router.post("/certify", response_model=Dict[str, Any])
+@compliance_router.post("/certify", response_model=dict[str, Any])
 def certify_agent(request: AgentCertifyRequest):
     """
     Generate an enterprise compliance certificate (SOC 2, HIPAA, EU AI Act, OWASP Top 10) for an agent.

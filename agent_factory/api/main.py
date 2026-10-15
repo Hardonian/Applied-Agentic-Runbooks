@@ -30,7 +30,7 @@ from agent_factory.api.routes import (
     tools,
     workflows,
 )
-from agent_factory.api.ws import router as websocket_router
+from agent_factory.api.ws.routes import router as websocket_router
 from agent_factory.cache import get_cache
 from agent_factory.database import init_db
 from agent_factory.monitoring import setup_metrics, setup_structured_logging, setup_tracing

@@ -1,9 +1,11 @@
 """Role-based access control (RBAC) and enterprise permission management."""
 
+from collections.abc import Callable
 from enum import Enum
-from typing import List, Callable, Optional, Union, Dict, Any
 from functools import wraps
-from fastapi import HTTPException, status, Request
+from typing import Any
+
+from fastapi import HTTPException, Request, status
 
 
 class Permission(str, Enum):
@@ -33,7 +35,7 @@ class Role(str, Enum):
 
 
 # Role to permissions mapping
-ROLE_PERMISSIONS: Dict[Role, List[Permission]] = {
+ROLE_PERMISSIONS: dict[Role, list[Permission]] = {
     Role.VIEWER: [
         Permission.READ_AGENTS,
         Permission.READ_WORKFLOWS,
@@ -80,7 +82,7 @@ ROLE_PERMISSIONS: Dict[Role, List[Permission]] = {
 }
 
 
-def get_user_permissions(request: Request) -> List[Permission]:
+def get_user_permissions(request: Request) -> list[Permission]:
     """
     Get user permissions from request state.
     
@@ -105,7 +107,7 @@ def get_user_permissions(request: Request) -> List[Permission]:
     return list(set(permissions))
 
 
-def check_permission(user: Union[Dict[str, Any], Any], permission: Union[Permission, str], resource_id: Optional[str] = None) -> bool:
+def check_permission(user: dict[str, Any] | Any, permission: Permission | str, resource_id: str | None = None) -> bool:
     """
     Check if user has a specific permission.
     
@@ -124,7 +126,7 @@ def check_permission(user: Union[Dict[str, Any], Any], permission: Union[Permiss
         user_roles = getattr(user, "roles", [Role.USER])
         explicit_permissions = getattr(user, "permissions", [])
         
-    user_perms: List[Permission] = []
+    user_perms: list[Permission] = []
     for role in user_roles:
         if isinstance(role, str):
             try:
@@ -150,7 +152,7 @@ def check_permission(user: Union[Dict[str, Any], Any], permission: Union[Permiss
     return target_perm in user_perms
 
 
-def require_user_permission(user: Union[Dict[str, Any], Any], permission: Permission) -> None:
+def require_user_permission(user: dict[str, Any] | Any, permission: Permission) -> None:
     """Raise a 403 unless an authenticated user holds ``permission``.
 
     Route handlers use this helper after resolving the authenticated user. The

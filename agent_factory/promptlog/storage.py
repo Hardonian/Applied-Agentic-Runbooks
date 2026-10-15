@@ -5,11 +5,11 @@ Storage backends for prompt logging.
 import json
 import sqlite3
 from abc import ABC, abstractmethod
-from pathlib import Path
-from typing import Dict, List, Optional, Any
 from datetime import datetime
+from pathlib import Path
+from typing import Any
 
-from agent_factory.promptlog.model import Run, PromptLogEntry
+from agent_factory.promptlog.model import PromptLogEntry, Run
 
 
 class PromptLogStorage(ABC):
@@ -18,27 +18,22 @@ class PromptLogStorage(ABC):
     @abstractmethod
     def save_run(self, run: Run) -> None:
         """Save a run record."""
-        pass
     
     @abstractmethod
-    def get_run(self, run_id: str) -> Optional[Run]:
+    def get_run(self, run_id: str) -> Run | None:
         """Get a run by ID."""
-        pass
     
     @abstractmethod
-    def list_runs(self, filters: Optional[Dict[str, Any]] = None, limit: int = 100) -> List[Run]:
+    def list_runs(self, filters: dict[str, Any] | None = None, limit: int = 100) -> list[Run]:
         """List runs with optional filters."""
-        pass
     
     @abstractmethod
     def save_prompt_entry(self, entry: PromptLogEntry) -> None:
         """Save a prompt log entry."""
-        pass
     
     @abstractmethod
-    def get_prompt_entries(self, run_id: str) -> List[PromptLogEntry]:
+    def get_prompt_entries(self, run_id: str) -> list[PromptLogEntry]:
         """Get all prompt entries for a run."""
-        pass
 
 
 class SQLiteStorage(PromptLogStorage):
@@ -124,7 +119,7 @@ class SQLiteStorage(PromptLogStorage):
         conn.commit()
         conn.close()
     
-    def get_run(self, run_id: str) -> Optional[Run]:
+    def get_run(self, run_id: str) -> Run | None:
         """Get a run by ID."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -151,7 +146,7 @@ class SQLiteStorage(PromptLogStorage):
             metadata=json.loads(row[11]),
         )
     
-    def list_runs(self, filters: Optional[Dict[str, Any]] = None, limit: int = 100) -> List[Run]:
+    def list_runs(self, filters: dict[str, Any] | None = None, limit: int = 100) -> list[Run]:
         """List runs with optional filters."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -218,7 +213,7 @@ class SQLiteStorage(PromptLogStorage):
         conn.commit()
         conn.close()
     
-    def get_prompt_entries(self, run_id: str) -> List[PromptLogEntry]:
+    def get_prompt_entries(self, run_id: str) -> list[PromptLogEntry]:
         """Get all prompt entries for a run."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()

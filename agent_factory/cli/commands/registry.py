@@ -1,14 +1,13 @@
 """Registry CLI commands."""
 
-import typer
-from typing import Optional
 from pathlib import Path
 
-from agent_factory.registry.local_registry import LocalRegistry
+import typer
+
 from agent_factory.agents.agent import Agent
-from agent_factory.tools.base import Tool
-from agent_factory.workflows.model import Workflow
 from agent_factory.blueprints.model import Blueprint
+from agent_factory.registry.local_registry import LocalRegistry
+from agent_factory.tools.base import Tool
 
 app = typer.Typer(name="registry", help="Manage registry")
 
@@ -16,7 +15,7 @@ app = typer.Typer(name="registry", help="Manage registry")
 @app.command()
 def search(
     query: str = typer.Argument(..., help="Search query"),
-    category: Optional[str] = typer.Option(None, "--category", "-c", help="Category filter"),
+    category: str | None = typer.Option(None, "--category", "-c", help="Category filter"),
 ):
     """Search the registry."""
     registry = LocalRegistry()
@@ -65,7 +64,7 @@ def search(
 def install(
     resource_type: str = typer.Argument(..., help="Resource type: agent, tool, workflow, blueprint"),
     resource_id: str = typer.Argument(..., help="Resource ID"),
-    source_path: Optional[str] = typer.Option(None, "--source", "-s", help="Source path for installation"),
+    source_path: str | None = typer.Option(None, "--source", "-s", help="Source path for installation"),
 ):
     """Install a resource from registry."""
     registry = LocalRegistry()
@@ -101,7 +100,7 @@ def install(
     elif resource_type == "workflow":
         if source_path:
             import json
-            workflow_data = json.loads(Path(source_path).read_text())
+            json.loads(Path(source_path).read_text())
             workflow = registry.get_workflow(resource_id)
             if not workflow:
                 typer.echo("❌ Workflow reconstruction requires agents registry")
@@ -197,7 +196,7 @@ def update(
         typer.echo(f"✅ Updated tool: {resource_id}")
     elif resource_type == "workflow":
         import json
-        workflow_data = json.loads(Path(source_path).read_text())
+        json.loads(Path(source_path).read_text())
         workflow = registry.get_workflow(resource_id)
         if workflow:
             registry.register_workflow(workflow)

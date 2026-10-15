@@ -8,13 +8,11 @@ Features:
 - Prompt log viewer
 """
 
-import streamlit as st
-import json
-import yaml
-from pathlib import Path
-from typing import Optional, Dict, Any
-import pandas as pd
 from datetime import datetime
+from typing import Any
+
+import pandas as pd
+import streamlit as st
 
 # Configure page
 st.set_page_config(
@@ -43,7 +41,7 @@ def load_blueprints() -> list:
         return []
 
 
-def run_agent(agent_id: str, input_text: str) -> Optional[Dict[str, Any]]:
+def run_agent(agent_id: str, input_text: str) -> dict[str, Any] | None:
     """Run an agent with given input."""
     try:
         from agent_factory.agents.agent import Agent
@@ -83,10 +81,9 @@ def run_agent(agent_id: str, input_text: str) -> Optional[Dict[str, Any]]:
         }
 
 
-def get_workflow_mermaid(workflow_id: str) -> Optional[str]:
+def get_workflow_mermaid(workflow_id: str) -> str | None:
     """Generate Mermaid diagram for a workflow."""
     try:
-        from agent_factory.workflows.model import Workflow
         from agent_factory.registry.local_registry import LocalRegistry
         
         registry = LocalRegistry()

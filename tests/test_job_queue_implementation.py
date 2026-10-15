@@ -2,12 +2,10 @@
 Tests for job queue implementation.
 """
 
-import pytest
-import time
 from agent_factory.jobs.queue import (
+    InMemoryJobQueue,
     Job,
     JobStatus,
-    InMemoryJobQueue,
     JobWorker,
     get_job_queue,
 )

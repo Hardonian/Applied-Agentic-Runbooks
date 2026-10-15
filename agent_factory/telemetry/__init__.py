@@ -82,4 +82,4 @@ __all__ = [
 ]
 from agent_factory.telemetry.otel_exporter import OpenTelemetryBridge, OTelExporter
 
-__all__ = ["OpenTelemetryBridge", "OTelExporter"]
+__all__ = ["OTelExporter", "OpenTelemetryBridge"]

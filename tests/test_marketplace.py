@@ -1,10 +1,10 @@
 """Tests for marketplace functionality."""
 
-import pytest
 from unittest.mock import Mock, patch
 
-from agent_factory.marketplace import search_blueprints, get_blueprint_details, publish_blueprint
-from agent_factory.blueprints.model import Blueprint
+import pytest
+
+from agent_factory.marketplace import get_blueprint_details, search_blueprints
 
 
 @pytest.mark.unit

@@ -1,16 +1,17 @@
 """Tests for role-based access control."""
 
-import pytest
 from unittest.mock import Mock
 
+import pytest
+
 from agent_factory.security.rbac import (
+    ROLE_PERMISSIONS,
     Permission,
     Role,
-    ROLE_PERMISSIONS,
+    check_permission,
     get_user_permissions,
     require_permission,
     require_role,
-    check_permission,
 )
 
 

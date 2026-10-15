@@ -2,16 +2,17 @@
 Workflow service - Business logic for workflow operations.
 """
 
-from typing import Dict, List, Optional, Any
-from agent_factory.workflows.model import Workflow
+from typing import Any
+
 from agent_factory.registry.local_registry import LocalRegistry
 from agent_factory.runtime.engine import RuntimeEngine
+from agent_factory.workflows.model import Workflow
 
 
 class WorkflowService:
     """Service for workflow operations."""
     
-    def __init__(self, registry: Optional[LocalRegistry] = None, runtime: Optional[RuntimeEngine] = None):
+    def __init__(self, registry: LocalRegistry | None = None, runtime: RuntimeEngine | None = None):
         """
         Initialize workflow service.
         
@@ -22,7 +23,7 @@ class WorkflowService:
         self.registry = registry or LocalRegistry()
         self.runtime = runtime or RuntimeEngine()
     
-    def create_workflow(self, workflow_data: Dict[str, Any]) -> Workflow:
+    def create_workflow(self, workflow_data: dict[str, Any]) -> Workflow:
         """
         Create a new workflow.
         
@@ -37,7 +38,7 @@ class WorkflowService:
         self.runtime.register_workflow(workflow)
         return workflow
     
-    def get_workflow(self, workflow_id: str) -> Optional[Workflow]:
+    def get_workflow(self, workflow_id: str) -> Workflow | None:
         """
         Get workflow by ID.
         
@@ -49,7 +50,7 @@ class WorkflowService:
         """
         return self.registry.get_workflow(workflow_id)
     
-    def list_workflows(self, tenant_id: Optional[str] = None) -> List[str]:
+    def list_workflows(self, tenant_id: str | None = None) -> list[str]:
         """
         List all workflow IDs.
         
@@ -61,7 +62,7 @@ class WorkflowService:
         """
         return self.registry.list_workflows()
     
-    def update_workflow(self, workflow_id: str, updates: Dict[str, Any]) -> Optional[Workflow]:
+    def update_workflow(self, workflow_id: str, updates: dict[str, Any]) -> Workflow | None:
         """
         Update a workflow.
         
@@ -98,7 +99,7 @@ class WorkflowService:
         """
         return self.registry.delete_workflow(workflow_id)
     
-    def run_workflow(self, workflow_id: str, context: Dict[str, Any]) -> str:
+    def run_workflow(self, workflow_id: str, context: dict[str, Any]) -> str:
         """
         Run a workflow.
         

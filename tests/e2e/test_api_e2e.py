@@ -1,8 +1,8 @@
 """End-to-end API tests."""
-import pytest
-import httpx
-from typing import Dict, Any
 import time
+
+import httpx
+import pytest
 
 
 @pytest.mark.e2e

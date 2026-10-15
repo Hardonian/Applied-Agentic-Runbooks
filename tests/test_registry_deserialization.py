@@ -1,13 +1,11 @@
 """Tests for registry deserialization."""
 
-import pytest
 import json
-from pathlib import Path
-from unittest.mock import Mock, patch
+
+import pytest
 
 from agent_factory.registry.local_registry import LocalRegistry
 from agent_factory.tools.base import Tool
-from agent_factory.workflows.model import Workflow, WorkflowStep
 
 
 @pytest.mark.unit

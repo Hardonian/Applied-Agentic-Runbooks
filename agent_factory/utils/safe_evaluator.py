@@ -6,7 +6,7 @@ Replaces unsafe eval() usage with AST-based evaluation.
 
 import ast
 import operator
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class SafeEvaluator:
@@ -86,7 +86,7 @@ class SafeEvaluator:
         "e": 2.718281828459045,
     }
     
-    def __init__(self, additional_functions: Optional[Dict[str, Any]] = None):
+    def __init__(self, additional_functions: dict[str, Any] | None = None):
         """
         Initialize safe evaluator.
         
@@ -97,7 +97,7 @@ class SafeEvaluator:
         if additional_functions:
             self.functions.update(additional_functions)
     
-    def evaluate(self, expression: str, context: Optional[Dict[str, Any]] = None) -> Any:
+    def evaluate(self, expression: str, context: dict[str, Any] | None = None) -> Any:
         """
         Safely evaluate an expression.
         
@@ -124,7 +124,7 @@ class SafeEvaluator:
         context = context or {}
         return self._eval_node(tree.body, context)
     
-    def _eval_node(self, node: ast.AST, context: Dict[str, Any]) -> Any:
+    def _eval_node(self, node: ast.AST, context: dict[str, Any]) -> Any:
         """Recursively evaluate AST node."""
         if isinstance(node, ast.Constant):
             return node.value
@@ -256,7 +256,7 @@ class SafeEvaluator:
 _default_evaluator = SafeEvaluator()
 
 
-def safe_evaluate(expression: str, context: Optional[Dict[str, Any]] = None) -> Any:
+def safe_evaluate(expression: str, context: dict[str, Any] | None = None) -> Any:
     """
     Convenience function for safe expression evaluation.
     

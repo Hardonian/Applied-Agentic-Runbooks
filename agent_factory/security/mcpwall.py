@@ -34,6 +34,8 @@ class HumanApprovalTicket:
     expires_at: float
     consumed: bool = False
     approved_by: str | None = None
+    tenant_id: str = "public"
+    decision: str = "pending"
 
 
 @dataclass
@@ -60,6 +62,7 @@ class MCPWall:
         path_roots: list[str] | None = None,
         max_request_bytes: int = 65536,
         approval_ttl_seconds: int = 300,
+        ticket_store: Any | None = None,
     ):
         self.allowed_tools = allowed_tools  # None means all non-denied allowed
         self.denied_tools = denied_tools or {"delete_database", "drop_table", "shell_exec_raw"}
@@ -68,6 +71,7 @@ class MCPWall:
         self.max_request_bytes = max_request_bytes
         self.approval_ttl_seconds = approval_ttl_seconds
         self.pending_approvals: dict[str, HumanApprovalTicket] = {}
+        self.ticket_store = ticket_store
 
     def compute_request_hash(self, tool_name: str, arguments: dict[str, Any]) -> str:
         """Calculate canonical SHA-256 hash of tool call payload."""
@@ -78,11 +82,26 @@ class MCPWall:
         serialized = json.dumps(payload, sort_keys=True).encode("utf-8")
         return hashlib.sha256(serialized).hexdigest()
 
-    def request_approval(self, tool_name: str, arguments: dict[str, Any]) -> HumanApprovalTicket:
+    def request_approval(
+        self,
+        tool_name: str,
+        arguments: dict[str, Any],
+        tenant_id: str = "public",
+        requested_by: str | None = None,
+    ) -> HumanApprovalTicket:
         """Create a cryptographic challenge for human gate confirmation."""
         req_hash = self.compute_request_hash(tool_name, arguments)
-        ticket_id = f"mcp-gate-{uuid.uuid4().hex[:12]}"
         now = time.time()
+        if self.ticket_store is not None:
+            return self.ticket_store.create(
+                tool_name,
+                arguments,
+                req_hash,
+                now + self.approval_ttl_seconds,
+                tenant_id=tenant_id,
+                requested_by=requested_by,
+            )
+        ticket_id = f"mcp-gate-{uuid.uuid4().hex[:12]}"
         ticket = HumanApprovalTicket(
             ticket_id=ticket_id,
             tool_name=tool_name,
@@ -106,6 +125,8 @@ class MCPWall:
         tool_name: str,
         arguments: dict[str, Any],
         approval_ticket_id: str | None = None,
+        tenant_id: str = "public",
+        requested_by: str | None = None,
     ) -> MCPWallVerdict:
         """
         Evaluate tool invocation against security boundary rules.
@@ -152,7 +173,7 @@ class MCPWall:
         # 5. Destructive tool human approval gate
         if tool_name in self.destructive_tools:
             if not approval_ticket_id:
-                ticket = self.request_approval(tool_name, arguments)
+                ticket = self.request_approval(tool_name, arguments, tenant_id, requested_by)
                 return MCPWallVerdict(
                     allowed=False,
                     requires_approval=True,
@@ -160,7 +181,11 @@ class MCPWall:
                     reason=f"Destructive tool '{tool_name}' requires human approval. Ticket: {ticket.ticket_id}",
                 )
 
-            ticket = self.pending_approvals.get(approval_ticket_id)
+            ticket = (
+                self.ticket_store.get(approval_ticket_id, tenant_id)
+                if self.ticket_store is not None
+                else self.pending_approvals.get(approval_ticket_id)
+            )
             if not ticket:
                 return MCPWallVerdict(allowed=False, reason="Invalid approval ticket.")
             if ticket.consumed:
@@ -179,7 +204,11 @@ class MCPWall:
                 )
 
             # Consume ticket (single-use invariant)
-            ticket.consumed = True
+            if self.ticket_store is not None:
+                if not self.ticket_store.consume(approval_ticket_id, tenant_id):
+                    return MCPWallVerdict(allowed=False, reason="Approval ticket replay blocked.")
+            else:
+                ticket.consumed = True
 
         return MCPWallVerdict(
             allowed=True,

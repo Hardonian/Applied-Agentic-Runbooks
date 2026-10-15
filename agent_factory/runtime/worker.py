@@ -2,13 +2,12 @@
 Worker for processing jobs from the queue.
 """
 
-import time
 import threading
-from typing import Optional, Callable
+import time
 from datetime import datetime
 
-from agent_factory.runtime.jobs import Job, JobQueue, JobStatus, JobType, get_job_queue
 from agent_factory.runtime.engine import RuntimeEngine
+from agent_factory.runtime.jobs import Job, JobQueue, JobStatus, JobType, get_job_queue
 from agent_factory.telemetry.collector import get_collector
 
 
@@ -26,7 +25,7 @@ class Worker:
     def __init__(
         self,
         runtime_engine: RuntimeEngine,
-        job_queue: Optional[JobQueue] = None,
+        job_queue: JobQueue | None = None,
         poll_interval: float = 1.0,
     ):
         """
@@ -41,7 +40,7 @@ class Worker:
         self.job_queue = job_queue or get_job_queue()
         self.poll_interval = poll_interval
         self.running = False
-        self.thread: Optional[threading.Thread] = None
+        self.thread: threading.Thread | None = None
     
     def start(self) -> None:
         """Start worker in background thread."""

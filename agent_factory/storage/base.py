@@ -3,9 +3,9 @@ Base storage backend interface.
 """
 
 from abc import ABC, abstractmethod
-from typing import BinaryIO, Optional, List
 from dataclasses import dataclass
 from datetime import datetime
+from typing import BinaryIO
 
 
 @dataclass
@@ -13,16 +13,16 @@ class StorageFile:
     """Represents a file in storage."""
     path: str
     size: int
-    content_type: Optional[str] = None
-    last_modified: Optional[datetime] = None
-    metadata: Optional[dict] = None
+    content_type: str | None = None
+    last_modified: datetime | None = None
+    metadata: dict | None = None
 
 
 class StorageBackend(ABC):
     """Abstract storage backend interface."""
     
     @abstractmethod
-    def upload(self, path: str, file_obj: BinaryIO, content_type: Optional[str] = None) -> str:
+    def upload(self, path: str, file_obj: BinaryIO, content_type: str | None = None) -> str:
         """
         Upload a file.
         
@@ -34,7 +34,6 @@ class StorageBackend(ABC):
         Returns:
             Storage URL or path
         """
-        pass
     
     @abstractmethod
     def download(self, path: str) -> BinaryIO:
@@ -47,7 +46,6 @@ class StorageBackend(ABC):
         Returns:
             File-like object
         """
-        pass
     
     @abstractmethod
     def delete(self, path: str) -> bool:
@@ -60,7 +58,6 @@ class StorageBackend(ABC):
         Returns:
             True if deleted, False if not found
         """
-        pass
     
     @abstractmethod
     def exists(self, path: str) -> bool:
@@ -73,10 +70,9 @@ class StorageBackend(ABC):
         Returns:
             True if exists, False otherwise
         """
-        pass
     
     @abstractmethod
-    def list_files(self, prefix: str = "", limit: int = 1000) -> List[StorageFile]:
+    def list_files(self, prefix: str = "", limit: int = 1000) -> list[StorageFile]:
         """
         List files.
         
@@ -87,10 +83,9 @@ class StorageBackend(ABC):
         Returns:
             List of storage files
         """
-        pass
     
     @abstractmethod
-    def get_url(self, path: str, expires_in: Optional[int] = None) -> str:
+    def get_url(self, path: str, expires_in: int | None = None) -> str:
         """
         Get URL for file access.
         
@@ -101,4 +96,3 @@ class StorageBackend(ABC):
         Returns:
             URL string
         """
-        pass

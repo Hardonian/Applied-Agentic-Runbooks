@@ -4,16 +4,15 @@ Referral system API routes.
 Handles referral code generation, tracking, and rewards.
 """
 
-from typing import Optional
-from datetime import datetime
 import uuid
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
-from agent_factory.telemetry import get_collector, ReferralEvent
-from agent_factory.security.auth import get_current_user, User
+from agent_factory.security.auth import User, get_current_user
 from agent_factory.security.rbac import Permission, require_user_permission
+from agent_factory.telemetry import ReferralEvent, get_collector
 
 router = APIRouter(prefix="/api/v1/referrals", tags=["referrals"])
 _referral_owners = {}
@@ -38,8 +37,8 @@ class ReferralStatsResponse(BaseModel):
 class SendReferralRequest(BaseModel):
     """Request to send a referral."""
     referral_code: str
-    recipient_email: Optional[str] = None
-    recipient_name: Optional[str] = None
+    recipient_email: str | None = None
+    recipient_name: str | None = None
 
 
 @router.post("/generate", response_model=ReferralCodeResponse)

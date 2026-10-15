@@ -2,12 +2,13 @@
 Blueprint system for packaging and distributing agent configurations.
 """
 
-from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Any
-from enum import Enum
-import yaml
 import json
+from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
+from typing import Any
+
+import yaml
 
 from agent_factory.agents.agent import Agent
 from agent_factory.core.tool import Tool
@@ -28,17 +29,17 @@ class PricingInfo:
     model: PricingModel
     price: float = 0.0
     currency: str = "USD"
-    period: Optional[str] = None  # "monthly", "yearly" for subscriptions
-    usage_unit: Optional[str] = None  # For usage-based pricing
+    period: str | None = None  # "monthly", "yearly" for subscriptions
+    usage_unit: str | None = None  # For usage-based pricing
 
 
 @dataclass
 class BlueprintConfig:
     """Configuration for a blueprint."""
-    dependencies: List[str] = field(default_factory=list)
-    environment_variables: Dict[str, str] = field(default_factory=dict)
-    required_tools: List[str] = field(default_factory=list)
-    required_agents: List[str] = field(default_factory=list)
+    dependencies: list[str] = field(default_factory=list)
+    environment_variables: dict[str, str] = field(default_factory=dict)
+    required_tools: list[str] = field(default_factory=list)
+    required_agents: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -56,12 +57,12 @@ class Blueprint:
     version: str
     description: str
     author: str
-    agents: List[Agent] = field(default_factory=list)
-    tools: List[Tool] = field(default_factory=list)
-    workflows: List[Workflow] = field(default_factory=list)
+    agents: list[Agent] = field(default_factory=list)
+    tools: list[Tool] = field(default_factory=list)
+    workflows: list[Workflow] = field(default_factory=list)
     config: BlueprintConfig = field(default_factory=BlueprintConfig)
     pricing: PricingInfo = field(default_factory=lambda: PricingInfo(model=PricingModel.FREE))
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     
     def __post_init__(self):
         """Validate blueprint after initialization."""
@@ -177,7 +178,7 @@ class Blueprint:
             print(f"Installation failed: {e}")
             return False
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize blueprint to dictionary."""
         return {
             "id": self.id,
@@ -227,7 +228,7 @@ class Blueprint:
         return cls.from_dict(data, yaml_file.parent)
     
     @classmethod
-    def from_dict(cls, data: Dict[str, Any], base_path: Optional[Path] = None) -> "Blueprint":
+    def from_dict(cls, data: dict[str, Any], base_path: Path | None = None) -> "Blueprint":
         """
         Create blueprint from dictionary.
         
@@ -297,7 +298,7 @@ class Blueprint:
                     try:
                         workflow_data = json.loads(workflow_file.read_text())
                         # Reconstruct workflow steps
-                        from agent_factory.core.workflow import WorkflowStep, Condition
+                        from agent_factory.core.workflow import Condition, WorkflowStep
                         
                         steps = []
                         for step_data in workflow_data.get("steps", []):
@@ -333,7 +334,7 @@ class Blueprint:
         if "workflows" in data and isinstance(data["workflows"], list):
             for workflow_data in data["workflows"]:
                 try:
-                    from agent_factory.core.workflow import WorkflowStep, Condition
+                    from agent_factory.core.workflow import Condition, WorkflowStep
                     
                     steps = []
                     for step_data in workflow_data.get("steps", []):

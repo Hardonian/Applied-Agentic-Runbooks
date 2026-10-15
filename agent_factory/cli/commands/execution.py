@@ -1,7 +1,7 @@
 """Execution CLI commands."""
 
+
 import typer
-from typing import Optional
 
 from agent_factory.runtime.engine import RuntimeEngine
 
@@ -31,8 +31,8 @@ def get(execution_id: str = typer.Argument(..., help="Execution ID")):
 
 @app.command()
 def list(
-    entity_id: Optional[str] = typer.Option(None, "--entity", "-e", help="Filter by entity ID"),
-    status: Optional[str] = typer.Option(None, "--status", "-s", help="Filter by status"),
+    entity_id: str | None = typer.Option(None, "--entity", "-e", help="Filter by entity ID"),
+    status: str | None = typer.Option(None, "--status", "-s", help="Filter by status"),
     limit: int = typer.Option(10, "--limit", "-l", help="Results limit"),
 ):
     """List executions."""

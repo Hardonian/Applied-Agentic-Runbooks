@@ -1,12 +1,12 @@
 """Workflow CLI commands."""
 
-import typer
 import json
-from typing import Optional
 
-from agent_factory.workflows.model import Workflow, WorkflowStep
+import typer
+
 from agent_factory.registry.local_registry import LocalRegistry
 from agent_factory.runtime.engine import RuntimeEngine
+from agent_factory.workflows.model import Workflow, WorkflowStep
 
 app = typer.Typer(name="workflow", help="Manage workflows")
 
@@ -69,7 +69,7 @@ def list():
 @app.command()
 def run(
     workflow_id: str = typer.Argument(..., help="Workflow ID"),
-    context_file: Optional[str] = typer.Option(None, "--context", "-c", help="Path to context JSON file"),
+    context_file: str | None = typer.Option(None, "--context", "-c", help="Path to context JSON file"),
 ):
     """Run a workflow."""
     import json
@@ -101,8 +101,8 @@ def run(
 @app.command()
 def update(
     workflow_id: str = typer.Argument(..., help="Workflow ID"),
-    name: Optional[str] = typer.Option(None, "--name", "-n", help="Workflow name"),
-    steps_file: Optional[str] = typer.Option(None, "--steps", "-s", help="Path to steps JSON file"),
+    name: str | None = typer.Option(None, "--name", "-n", help="Workflow name"),
+    steps_file: str | None = typer.Option(None, "--steps", "-s", help="Path to steps JSON file"),
 ):
     """Update a workflow."""
     registry = LocalRegistry()
@@ -119,7 +119,7 @@ def update(
         with open(steps_file) as f:
             steps_data = json.load(f)
         
-        from agent_factory.workflows.model import WorkflowStep, Condition
+        from agent_factory.workflows.model import Condition, WorkflowStep
         
         steps = []
         for step_data in steps_data:
@@ -185,7 +185,7 @@ def status(
     
     typer.echo(f"Workflow: {workflow.name} ({workflow_id})")
     typer.echo(f"Steps: {len(workflow.steps)}")
-    typer.echo(f"\nRecent Executions:")
+    typer.echo("\nRecent Executions:")
     
     if not executions:
         typer.echo("  No executions found.")
@@ -198,7 +198,7 @@ def status(
 @app.command()
 def trigger(
     workflow_id: str = typer.Argument(..., help="Workflow ID"),
-    context_file: Optional[str] = typer.Option(None, "--context", "-c", help="Path to context JSON file"),
+    context_file: str | None = typer.Option(None, "--context", "-c", help="Path to context JSON file"),
 ):
     """Trigger a workflow manually."""
     import json
@@ -229,7 +229,7 @@ def trigger(
 def visualize(
     workflow_id: str = typer.Argument(..., help="Workflow ID"),
     format: str = typer.Option("mermaid", "--format", "-f", help="Output format (mermaid or graphviz)"),
-    output: Optional[str] = typer.Option(None, "--output", "-o", help="Output file path"),
+    output: str | None = typer.Option(None, "--output", "-o", help="Output file path"),
 ):
     """Visualize a workflow as a diagram."""
     from agent_factory.workflows.visualizer import visualize as visualize_workflow

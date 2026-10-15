@@ -2,13 +2,12 @@
 Tests for notebook converter.
 """
 
-import pytest
-from pathlib import Path
 import json
+from pathlib import Path
 
 from agent_factory.notebook_converter import NotebookConverter
-from agent_factory.notebook_converter.parser import NotebookParser
 from agent_factory.notebook_converter.detector import AgentDetector, ToolDetector
+from agent_factory.notebook_converter.parser import NotebookParser
 
 
 def test_notebook_parser():

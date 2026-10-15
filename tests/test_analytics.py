@@ -1,18 +1,18 @@
 """Tests for analytics engine."""
 
+from datetime import datetime
+from unittest.mock import Mock
+
 import pytest
-from datetime import datetime, timedelta
-from unittest.mock import Mock, patch
 
 from agent_factory.telemetry.analytics import AnalyticsEngine, get_analytics
+from agent_factory.telemetry.collector import TelemetryCollector
 from agent_factory.telemetry.model import (
     AgentRunEvent,
-    WorkflowRunEvent,
     BlueprintInstallEvent,
     ErrorEvent,
     EventType,
 )
-from agent_factory.telemetry.collector import TelemetryCollector
 
 
 @pytest.mark.unit

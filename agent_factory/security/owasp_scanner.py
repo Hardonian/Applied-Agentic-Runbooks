@@ -14,8 +14,8 @@ Audits agents, tools, and prompts against:
 - LLM10: Model Theft / Extraction (system prompt shields)
 """
 
-from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
+
 from agent_factory.agents.agent import Agent
 
 
@@ -26,7 +26,7 @@ class OWASPCheckResult:
     name: str
     status: str  # PASS, WARNING, FAIL
     details: str
-    recommendation: Optional[str] = None
+    recommendation: str | None = None
 
 
 @dataclass
@@ -35,7 +35,7 @@ class OWASPAuditReport:
     agent_id: str
     score: int  # 0 to 100
     overall_status: str  # COMPLIANT, NEEDS_REVIEW, NON_COMPLIANT
-    checks: List[OWASPCheckResult] = field(default_factory=list)
+    checks: list[OWASPCheckResult] = field(default_factory=list)
 
 
 class OWASPSecurityScanner:
@@ -46,7 +46,7 @@ class OWASPSecurityScanner:
     @staticmethod
     def audit_agent(agent: Agent) -> OWASPAuditReport:
         """Run comprehensive OWASP security scan on target agent."""
-        checks: List[OWASPCheckResult] = []
+        checks: list[OWASPCheckResult] = []
         score = 100
 
         # LLM01: Prompt Injection Guard

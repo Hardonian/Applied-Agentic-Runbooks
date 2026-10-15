@@ -2,8 +2,8 @@
 CLI commands for notebook conversion.
 """
 
+
 import typer
-from pathlib import Path
 
 from agent_factory.notebook_converter import NotebookConverter
 
@@ -29,7 +29,7 @@ def convert(
             interactive=interactive,
         )
         
-        typer.echo(f"✅ Conversion complete!")
+        typer.echo("✅ Conversion complete!")
         typer.echo(f"   Agents created: {len(result.agents_created)}")
         typer.echo(f"   Tools created: {len(result.tools_created)}")
         typer.echo(f"   Workflows created: {len(result.workflows_created)}")
@@ -38,7 +38,7 @@ def convert(
             typer.echo(f"   Blueprint created: {result.blueprint_created}")
         
         if result.errors:
-            typer.echo(f"\n⚠️  Errors:")
+            typer.echo("\n⚠️  Errors:")
             for error in result.errors:
                 typer.echo(f"   - {error}")
     except Exception as e:

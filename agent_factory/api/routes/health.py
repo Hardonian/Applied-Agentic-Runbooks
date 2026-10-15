@@ -4,6 +4,7 @@ Enhanced health check endpoints with circuit breaker status.
 
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
+
 from agent_factory.security.circuit_breaker import _breakers
 
 router = APIRouter()

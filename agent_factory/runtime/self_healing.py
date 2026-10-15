@@ -7,19 +7,22 @@ and resilience safeguards for mission-critical production agent deployments.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from enum import Enum
 import json
 import logging
 import time
-from typing import Any, Callable, Dict, List, Optional
-
-from typing import TYPE_CHECKING
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from enum import Enum
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from agent_factory.agents.agent import Agent, AgentResult, AgentStatus
-from agent_factory.security.circuit_breaker import CircuitBreaker, CircuitBreakerConfig, CircuitState
+    from agent_factory.agents.agent import Agent, AgentResult
+from agent_factory.security.circuit_breaker import (
+    CircuitBreaker,
+    CircuitBreakerConfig,
+    CircuitState,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -65,11 +68,11 @@ class SelfHealingResult:
     status: Any
     healed: bool = False
     total_attempts: int = 1
-    healing_history: List[HealingAction] = field(default_factory=list)
+    healing_history: list[HealingAction] = field(default_factory=list)
     execution_time: float = 0.0
     tokens_used: int = 0
-    error: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    error: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class SelfHealingAgentExecutor:
@@ -84,8 +87,8 @@ class SelfHealingAgentExecutor:
         max_retries: int = 3,
         initial_backoff: float = 0.2,
         backoff_multiplier: float = 2.0,
-        circuit_breaker: Optional[CircuitBreaker] = None,
-        fallback_tools: Optional[Dict[str, Callable]] = None,
+        circuit_breaker: CircuitBreaker | None = None,
+        fallback_tools: dict[str, Callable] | None = None,
     ):
         self.agent = agent
         self.max_retries = max(1, max_retries)
@@ -97,7 +100,7 @@ class SelfHealingAgentExecutor:
         )
         self.fallback_tools = fallback_tools or {}
 
-    def classify_failure(self, error_message: str, error_obj: Optional[Exception] = None) -> FailureCategory:
+    def classify_failure(self, error_message: str, error_obj: Exception | None = None) -> FailureCategory:
         """Categorize failure mode from error messages or exceptions."""
         err_lower = (error_message or "").lower()
         if "circuit breaker" in err_lower or "circuit open" in err_lower:
@@ -118,18 +121,18 @@ class SelfHealingAgentExecutor:
     def execute(
         self,
         prompt: str,
-        context: Optional[Dict[str, Any]] = None,
-        expected_schema: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
+        expected_schema: dict[str, Any] | None = None,
     ) -> SelfHealingResult:
         """
         Execute agent with autonomous self-healing and error recovery.
         """
-        from agent_factory.agents.agent import AgentResult, AgentStatus
+        from agent_factory.agents.agent import AgentStatus
 
         start_time = time.perf_counter()
         current_prompt = prompt
         current_context = dict(context or {})
-        history: List[HealingAction] = []
+        history: list[HealingAction] = []
         tokens_accumulated = 0
         backoff = self.initial_backoff
 
@@ -291,7 +294,7 @@ class SelfHealingAgentExecutor:
         original_prompt: str,
         previous_output: str,
         error_message: str,
-        expected_schema: Optional[Dict[str, Any]] = None,
+        expected_schema: dict[str, Any] | None = None,
     ) -> tuple[RecoveryStrategy, str]:
         """Generate targeted reflection guidance to guide subsequent execution."""
         if category == FailureCategory.VALIDATION_ERROR or expected_schema:

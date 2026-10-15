@@ -2,14 +2,13 @@
 Usage tracker for billing and quota management.
 """
 
-import uuid
-from typing import Dict, Optional, Any
-from datetime import datetime, timedelta
+from datetime import datetime
+from typing import Any
 
+from agent_factory.database.models import Tenant
+from agent_factory.database.session import get_db
 from agent_factory.telemetry.collector import get_collector
 from agent_factory.telemetry.model import BillingUsageEvent
-from agent_factory.database.session import get_db
-from agent_factory.database.models import UsageRecord as UsageRecordModel, Tenant
 
 
 class UsageTracker:
@@ -33,7 +32,7 @@ class UsageTracker:
         tenant_id: str,
         tokens_used: int = 0,
         cost_estimate: float = 0.0,
-        project_id: Optional[str] = None,
+        project_id: str | None = None,
     ) -> None:
         """
         Record an agent run for billing.
@@ -69,7 +68,7 @@ class UsageTracker:
         tenant_id: str,
         tokens_used: int = 0,
         cost_estimate: float = 0.0,
-        project_id: Optional[str] = None,
+        project_id: str | None = None,
     ) -> None:
         """
         Record a workflow run for billing.
@@ -101,9 +100,9 @@ class UsageTracker:
     def get_usage_summary(
         self,
         tenant_id: str,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-    ) -> Dict[str, Any]:
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+    ) -> dict[str, Any]:
         """
         Get usage summary for a tenant.
         
@@ -162,7 +161,7 @@ class UsageTracker:
     def get_billing_summary(
         self,
         tenant_id: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get comprehensive billing summary for a tenant.
         
@@ -183,7 +182,7 @@ class UsageTracker:
                 return {"error": "Tenant not found"}
             
             # Get subscription (if exists)
-            from agent_factory.database.models import Subscription, Plan
+            from agent_factory.database.models import Plan, Subscription
             
             subscription = db.query(Subscription).filter(
                 Subscription.tenant_id == tenant_id,
@@ -223,7 +222,7 @@ class UsageTracker:
 
 
 # Global usage tracker instance
-_usage_tracker: Optional[UsageTracker] = None
+_usage_tracker: UsageTracker | None = None
 
 
 def get_usage_tracker() -> UsageTracker:

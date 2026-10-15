@@ -1,0 +1,42 @@
+{{- if .Values.worker.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "agent-factory.fullname" . }}-worker
+  labels: {{- include "agent-factory.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.worker.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "agent-factory.labels" . | nindent 6 }}
+      app.kubernetes.io/component: worker
+  template:
+    metadata:
+      labels:
+        {{- include "agent-factory.labels" . | nindent 8 }}
+        app.kubernetes.io/component: worker
+    spec:
+      serviceAccountName: {{ include "agent-factory.fullname" . }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: arena-worker
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["agent-factory", "arena", "worker"]
+          securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
+          env:
+            {{- range $key, $value := .Values.env }}
+            - {name: {{ $key }}, value: {{ $value | quote }}}
+            {{- end }}
+          envFrom:
+            - secretRef: {name: {{ .Values.existingSecret }}}
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - {name: arena-artifacts, mountPath: /var/lib/agent-factory/arena}
+            - {name: tmp, mountPath: /tmp}
+      volumes:
+        - name: arena-artifacts
+          persistentVolumeClaim: {claimName: {{ include "agent-factory.fullname" . }}-artifacts}
+        - name: tmp
+          emptyDir: {}
+{{- end }}

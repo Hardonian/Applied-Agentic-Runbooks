@@ -1,10 +1,11 @@
 """Database session management."""
 
 import os
+from collections.abc import Generator
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
-from typing import Generator
+from sqlalchemy.orm import Session, sessionmaker
 
 # Database URL from environment
 DATABASE_URL = os.getenv("DATABASE_URL")

@@ -16,7 +16,12 @@
   <main>
     <section class="hero">
       <div><p class="eyebrow">Autonomous Arena</p><h1>Live gauntlet operations</h1><p>Verifiable benchmarks, streaming evidence, and human-gated execution in one view.</p></div>
-      <button id="run-arena" class="primary">Run all five suites</button>
+      <div class="run-controls">
+        <label>Mode<select id="run-mode"><option value="deterministic">Deterministic CI</option><option value="reality">Reality / concurrency</option></select></label>
+        <label>Trials<input id="run-trials" type="number" min="1" max="100" value="3"></label>
+        <button id="run-arena" class="primary">Queue all suites</button>
+        <button id="cancel-arena" class="danger" disabled>Cancel</button>
+      </div>
     </section>
 
     <section class="metric-grid" aria-label="Arena metrics">
@@ -28,7 +33,7 @@
 
     <section class="workspace">
       <article class="panel arena-panel">
-        <div class="panel-head"><div><p class="eyebrow">Benchmark feed</p><h2>Suite progress</h2></div><span id="arena-status" class="pill">Idle</span></div>
+        <div class="panel-head"><div><p class="eyebrow">Benchmark feed</p><h2>Suite progress</h2></div><div class="panel-actions"><a id="download-pcap" class="button-link disabled" href="#">.apcap</a><a id="download-proof" class="button-link disabled" href="#">Proof</a><a id="download-manifest" class="button-link disabled" href="#">Manifest</a><span id="arena-status" class="pill">Idle</span></div></div>
         <div id="suite-list" class="suite-list"></div>
         <div id="event-log" class="terminal" role="log" aria-live="polite"></div>
       </article>
@@ -39,10 +44,22 @@
       </article>
     </section>
 
+    <section class="workspace history-workspace">
+      <article class="panel">
+        <div class="panel-head"><div><p class="eyebrow">Durable operations</p><h2>Run history</h2></div><div class="panel-actions"><select id="history-status" aria-label="Filter run status"><option value="">All statuses</option><option>queued</option><option>running</option><option>passed</option><option>failed</option><option>cancelled</option></select><button id="refresh-history" class="secondary">Refresh</button></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Compare</th><th>Run</th><th>Mode</th><th>Status</th><th>Created</th></tr></thead><tbody id="run-history"></tbody></table></div>
+      </article>
+      <article class="panel">
+        <div class="panel-head"><div><p class="eyebrow">Relative performance</p><h2>Run comparison</h2></div><button id="compare-runs" class="secondary">Compare selected</button></div>
+        <div id="comparison-chart" class="comparison-chart"><p>Select two or more historical runs.</p></div>
+      </article>
+    </section>
+
     <section class="workspace lower">
       <article class="panel">
-        <div class="panel-head"><div><p class="eyebrow">AgentPCAP</p><h2>Frame player</h2></div><span id="anomaly-count" class="pill safe">0 anomalies</span></div>
+        <div class="panel-head"><div><p class="eyebrow">AgentPCAP</p><h2>Frame player</h2></div><div class="panel-actions"><select id="frame-filter" aria-label="Filter packet type"><option value="">All frames</option><option value="a2a">A2A</option><option value="tool">Tool</option><option value="model">Model</option><option value="system">System</option></select><span id="anomaly-count" class="pill safe">0 anomalies</span></div></div>
         <input id="frame-scrubber" class="scrubber" type="range" min="0" max="0" value="0" aria-label="Packet frame">
+        <div class="player-actions"><button id="previous-frame" class="secondary">Previous</button><span id="frame-position">0 / 0</span><button id="next-frame" class="secondary">Next</button></div>
         <div id="frame-inspector" class="frame-inspector">No capture loaded.</div>
       </article>
 
@@ -59,6 +76,7 @@
       <p class="eyebrow">MCPWall human gate</p><h2>Dangerous operation intercepted</h2>
       <p id="approval-message">Review the SHA-256-bound capability request.</p>
       <code id="approval-hash"></code>
+      <label class="reason-label">Decision reason<textarea id="approval-reason" rows="3" placeholder="Required operational context"></textarea></label>
       <div class="modal-actions"><button id="deny-operation" class="danger" value="deny">Deny</button><button id="approve-operation" class="primary" value="approve">Approve once</button></div>
     </form>
   </dialog>

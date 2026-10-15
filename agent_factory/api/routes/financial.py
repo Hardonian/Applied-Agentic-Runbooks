@@ -2,17 +2,17 @@
 Financial management API endpoints.
 """
 
-from fastapi import APIRouter, HTTPException, status
-from fastapi.responses import JSONResponse
-from typing import Optional
 from datetime import datetime
 from decimal import Decimal
-from agent_factory.financial.cost_tracker import (
-    get_cost_tracker,
-    CostType,
-    CostRecord,
-)
+
+from fastapi import APIRouter, HTTPException, status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+
+from agent_factory.financial.cost_tracker import (
+    CostType,
+    get_cost_tracker,
+)
 
 router = APIRouter()
 
@@ -23,7 +23,7 @@ class CostRecordRequest(BaseModel):
     amount: float
     entity_type: str
     entity_id: str
-    metadata: Optional[dict] = None
+    metadata: dict | None = None
 
 
 class BudgetRequest(BaseModel):
@@ -66,8 +66,8 @@ async def record_cost(request: CostRecordRequest):
 async def get_costs(
     entity_type: str,
     entity_id: str,
-    start_date: Optional[str] = None,
-    end_date: Optional[str] = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
 ):
     """Get costs for an entity."""
     tracker = get_cost_tracker()

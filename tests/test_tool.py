@@ -1,6 +1,7 @@
 """Tests for Tool class."""
 
 import pytest
+
 from agent_factory.tools.base import Tool, ToolValidationError
 from agent_factory.tools.decorator import function_tool
 

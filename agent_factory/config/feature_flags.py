@@ -1,8 +1,6 @@
 """Feature flag system for Agent Factory."""
 
 import os
-from typing import Dict, Optional
-from functools import lru_cache
 
 
 class FeatureFlags:
@@ -48,7 +46,7 @@ class FeatureFlags:
     }
     
     @classmethod
-    def is_enabled(cls, flag_name: str, default: Optional[bool] = None) -> bool:
+    def is_enabled(cls, flag_name: str, default: bool | None = None) -> bool:
         """
         Check if a feature flag is enabled.
         
@@ -77,7 +75,7 @@ class FeatureFlags:
         return default if default is not None else default_value
     
     @classmethod
-    def get_all_flags(cls) -> Dict[str, bool]:
+    def get_all_flags(cls) -> dict[str, bool]:
         """
         Get all feature flags and their current values.
         
@@ -86,11 +84,11 @@ class FeatureFlags:
         """
         return {
             flag_name: cls.is_enabled(flag_name)
-            for flag_name in cls.FLAGS.keys()
+            for flag_name in cls.FLAGS
         }
     
     @classmethod
-    def get_flag_info(cls, flag_name: str) -> Optional[Dict]:
+    def get_flag_info(cls, flag_name: str) -> dict | None:
         """
         Get information about a feature flag.
         
@@ -109,7 +107,7 @@ class FeatureFlags:
 
 
 # Convenience functions
-def is_feature_enabled(flag_name: str, default: Optional[bool] = None) -> bool:
+def is_feature_enabled(flag_name: str, default: bool | None = None) -> bool:
     """
     Check if a feature flag is enabled.
     
@@ -123,7 +121,7 @@ def is_feature_enabled(flag_name: str, default: Optional[bool] = None) -> bool:
     return FeatureFlags.is_enabled(flag_name, default)
 
 
-def get_all_features() -> Dict[str, bool]:
+def get_all_features() -> dict[str, bool]:
     """
     Get all feature flags and their current values.
     

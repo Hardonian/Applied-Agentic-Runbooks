@@ -1,11 +1,10 @@
 """Rate limiting middleware."""
 
 import time
-from typing import Dict, Tuple
 from collections import defaultdict
-from fastapi import Request, HTTPException, status
+
+from fastapi import HTTPException, Request, status
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import Response
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
@@ -23,8 +22,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.requests_per_minute = requests_per_minute
         self.requests_per_hour = requests_per_hour
-        self.minute_requests: Dict[str, list] = defaultdict(list)
-        self.hour_requests: Dict[str, list] = defaultdict(list)
+        self.minute_requests: dict[str, list] = defaultdict(list)
+        self.hour_requests: dict[str, list] = defaultdict(list)
     
     def get_client_ip(self, request: Request) -> str:
         """Get client IP address."""

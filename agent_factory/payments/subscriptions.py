@@ -1,6 +1,7 @@
 """Subscription management."""
 
-from typing import Dict, Any, Optional
+from typing import Any
+
 from agent_factory.payments.stripe_client import StripeClient
 
 
@@ -8,7 +9,7 @@ def create_subscription(
     customer_id: str,
     blueprint_id: str,
     price_id: str
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Create subscription for blueprint.
     
@@ -35,7 +36,7 @@ def create_subscription(
     }
 
 
-def cancel_subscription(subscription_id: str) -> Dict[str, Any]:
+def cancel_subscription(subscription_id: str) -> dict[str, Any]:
     """
     Cancel subscription.
     
@@ -59,7 +60,7 @@ def cancel_subscription(subscription_id: str) -> Dict[str, Any]:
     }
 
 
-def get_subscription(subscription_id: str) -> Optional[Dict[str, Any]]:
+def get_subscription(subscription_id: str) -> dict[str, Any] | None:
     """
     Get subscription details.
     

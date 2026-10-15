@@ -3,12 +3,11 @@ Telemetry collector for capturing and storing telemetry events.
 """
 
 import uuid
-from typing import Optional, List
 from datetime import datetime
 
-from agent_factory.telemetry.model import EventType, TelemetryEvent
 from agent_factory.telemetry.backends.base import TelemetryBackend
 from agent_factory.telemetry.backends.sqlite import SQLiteTelemetryBackend
+from agent_factory.telemetry.model import EventType, TelemetryEvent
 
 
 class TelemetryCollector:
@@ -33,7 +32,7 @@ class TelemetryCollector:
         ... )
     """
     
-    def __init__(self, backend: Optional[TelemetryBackend] = None):
+    def __init__(self, backend: TelemetryBackend | None = None):
         """
         Initialize telemetry collector.
         
@@ -62,18 +61,18 @@ class TelemetryCollector:
     def record_agent_run(
         self,
         agent_id: str,
-        tenant_id: Optional[str] = None,
-        user_id: Optional[str] = None,
-        project_id: Optional[str] = None,
-        agent_name: Optional[str] = None,
-        session_id: Optional[str] = None,
+        tenant_id: str | None = None,
+        user_id: str | None = None,
+        project_id: str | None = None,
+        agent_name: str | None = None,
+        session_id: str | None = None,
         status: str = "completed",
         execution_time: float = 0.0,
         tokens_used: int = 0,
         cost_estimate: float = 0.0,
         input_length: int = 0,
         output_length: int = 0,
-        metadata: Optional[dict] = None,
+        metadata: dict | None = None,
     ) -> None:
         """
         Record an agent run event.
@@ -118,17 +117,17 @@ class TelemetryCollector:
     def record_workflow_run(
         self,
         workflow_id: str,
-        tenant_id: Optional[str] = None,
-        user_id: Optional[str] = None,
-        project_id: Optional[str] = None,
-        workflow_name: Optional[str] = None,
+        tenant_id: str | None = None,
+        user_id: str | None = None,
+        project_id: str | None = None,
+        workflow_name: str | None = None,
         status: str = "completed",
         execution_time: float = 0.0,
         steps_completed: int = 0,
         steps_total: int = 0,
         tokens_used: int = 0,
         cost_estimate: float = 0.0,
-        metadata: Optional[dict] = None,
+        metadata: dict | None = None,
     ) -> None:
         """
         Record a workflow run event.
@@ -171,13 +170,13 @@ class TelemetryCollector:
     def record_blueprint_install(
         self,
         blueprint_id: str,
-        tenant_id: Optional[str] = None,
-        user_id: Optional[str] = None,
-        project_id: Optional[str] = None,
-        blueprint_name: Optional[str] = None,
-        blueprint_version: Optional[str] = None,
+        tenant_id: str | None = None,
+        user_id: str | None = None,
+        project_id: str | None = None,
+        blueprint_name: str | None = None,
+        blueprint_version: str | None = None,
         install_type: str = "install",
-        metadata: Optional[dict] = None,
+        metadata: dict | None = None,
     ) -> None:
         """
         Record a blueprint installation event.
@@ -217,13 +216,13 @@ class TelemetryCollector:
         self,
         error_type: str,
         error_message: str,
-        tenant_id: Optional[str] = None,
-        user_id: Optional[str] = None,
-        project_id: Optional[str] = None,
-        resource_type: Optional[str] = None,
-        resource_id: Optional[str] = None,
-        stack_trace: Optional[str] = None,
-        metadata: Optional[dict] = None,
+        tenant_id: str | None = None,
+        user_id: str | None = None,
+        project_id: str | None = None,
+        resource_type: str | None = None,
+        resource_id: str | None = None,
+        stack_trace: str | None = None,
+        metadata: dict | None = None,
     ) -> None:
         """
         Record an error event.
@@ -261,15 +260,15 @@ class TelemetryCollector:
         self,
         billing_unit: str,
         quantity: float,
-        tenant_id: Optional[str] = None,
-        user_id: Optional[str] = None,
-        project_id: Optional[str] = None,
+        tenant_id: str | None = None,
+        user_id: str | None = None,
+        project_id: str | None = None,
         unit_price: float = 0.0,
         total_cost: float = 0.0,
         currency: str = "USD",
-        period_start: Optional[datetime] = None,
-        period_end: Optional[datetime] = None,
-        metadata: Optional[dict] = None,
+        period_start: datetime | None = None,
+        period_end: datetime | None = None,
+        metadata: dict | None = None,
     ) -> None:
         """
         Record a billing usage event.
@@ -309,14 +308,14 @@ class TelemetryCollector:
     
     def query_events(
         self,
-        event_type: Optional[str] = None,
-        tenant_id: Optional[str] = None,
-        user_id: Optional[str] = None,
-        project_id: Optional[str] = None,
-        start_time: Optional[datetime] = None,
-        end_time: Optional[datetime] = None,
+        event_type: str | None = None,
+        tenant_id: str | None = None,
+        user_id: str | None = None,
+        project_id: str | None = None,
+        start_time: datetime | None = None,
+        end_time: datetime | None = None,
         limit: int = 100,
-    ) -> List[TelemetryEvent]:
+    ) -> list[TelemetryEvent]:
         """
         Query telemetry events.
         
@@ -344,7 +343,7 @@ class TelemetryCollector:
 
 
 # Global collector instance
-_collector: Optional[TelemetryCollector] = None
+_collector: TelemetryCollector | None = None
 
 
 def get_collector() -> TelemetryCollector:

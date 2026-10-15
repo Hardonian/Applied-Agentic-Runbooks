@@ -7,8 +7,6 @@ Generates standalone container microservices for any agent or workflow, includin
 - Production FastAPI REST & WebSocket streaming microservice entrypoint
 """
 
-from typing import Dict, Any, Optional
-from pathlib import Path
 from agent_factory.agents.agent import Agent
 
 

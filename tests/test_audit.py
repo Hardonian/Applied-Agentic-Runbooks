@@ -1,8 +1,8 @@
 """Tests for audit logging."""
 
-import pytest
 from unittest.mock import Mock, patch
-from datetime import datetime
+
+import pytest
 
 from agent_factory.security.audit import AuditLogger, audit_log
 
@@ -63,7 +63,7 @@ def test_audit_logger_log_event_with_details(mock_logger_class):
 @patch('agent_factory.security.audit._audit_logger')
 def test_audit_log_function(mock_audit_logger):
     """Test audit_log convenience function."""
-    mock_logger = Mock()
+    Mock()
     mock_audit_logger.log_event = Mock()
     
     audit_log(

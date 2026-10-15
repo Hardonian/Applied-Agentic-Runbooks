@@ -6,13 +6,13 @@ Provides versioned database schema migrations using Alembic.
 
 import os
 from pathlib import Path
-from typing import Optional
+
+from alembic.runtime import migration
+
+from agent_factory.core.exceptions import DatabaseError
+from agent_factory.database.session import engine
 from alembic import config as alembic_config
 from alembic import script
-from alembic.runtime import migration
-from sqlalchemy import create_engine, text
-from agent_factory.database.session import engine, Base
-from agent_factory.core.exceptions import DatabaseError
 
 
 class MigrationManager:
@@ -25,7 +25,7 @@ class MigrationManager:
         >>> manager.current_revision()
     """
     
-    def __init__(self, alembic_ini_path: Optional[str] = None):
+    def __init__(self, alembic_ini_path: str | None = None):
         """
         Initialize migration manager.
         
@@ -127,7 +127,7 @@ datefmt = %H:%M:%S
         except Exception as e:
             raise DatabaseError(f"Migration downgrade failed: {e}") from e
     
-    def current_revision(self) -> Optional[str]:
+    def current_revision(self) -> str | None:
         """
         Get current database revision.
         
@@ -135,7 +135,7 @@ datefmt = %H:%M:%S
             Current revision or None if no migrations applied
         """
         try:
-            cfg = alembic_config.Config(self.alembic_ini_path)
+            alembic_config.Config(self.alembic_ini_path)
             with self.engine.connect() as connection:
                 context = migration.MigrationContext.configure(connection)
                 return context.get_current_revision()

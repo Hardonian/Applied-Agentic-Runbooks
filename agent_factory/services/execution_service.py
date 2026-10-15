@@ -2,14 +2,13 @@
 Execution service - Business logic for execution operations.
 """
 
-from typing import Dict, List, Optional, Any
-from agent_factory.runtime.engine import RuntimeEngine, Execution
+from agent_factory.runtime.engine import Execution, RuntimeEngine
 
 
 class ExecutionService:
     """Service for execution operations."""
     
-    def __init__(self, runtime: Optional[RuntimeEngine] = None):
+    def __init__(self, runtime: RuntimeEngine | None = None):
         """
         Initialize execution service.
         
@@ -18,7 +17,7 @@ class ExecutionService:
         """
         self.runtime = runtime or RuntimeEngine()
     
-    def get_execution(self, execution_id: str) -> Optional[Execution]:
+    def get_execution(self, execution_id: str) -> Execution | None:
         """
         Get execution by ID.
         
@@ -32,10 +31,10 @@ class ExecutionService:
     
     def list_executions(
         self,
-        entity_id: Optional[str] = None,
-        status: Optional[str] = None,
+        entity_id: str | None = None,
+        status: str | None = None,
         limit: int = 100,
-    ) -> List[Execution]:
+    ) -> list[Execution]:
         """
         List executions with filters.
         

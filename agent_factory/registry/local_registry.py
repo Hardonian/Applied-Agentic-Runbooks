@@ -2,17 +2,17 @@
 Local file-based registry for agents, tools, workflows, and blueprints.
 """
 
-from pathlib import Path
-from typing import Callable, Dict, List, Optional, Any
 import json
-import yaml
 import os
+from collections.abc import Callable
+from pathlib import Path
+from typing import Any
 
 from agent_factory.agents.agent import Agent
-from agent_factory.tools.base import Tool
-from agent_factory.workflows.model import Workflow
 from agent_factory.blueprints.model import Blueprint
 from agent_factory.cache import get_cache
+from agent_factory.tools.base import Tool
+from agent_factory.workflows.model import Workflow
 
 
 class LocalRegistry:
@@ -28,7 +28,7 @@ class LocalRegistry:
     def __init__(
         self,
         base_path: str = "~/.agent_factory",
-        tool_implementations: Optional[Dict[str, Callable[..., Any]]] = None,
+        tool_implementations: dict[str, Callable[..., Any]] | None = None,
     ):
         """
         Initialize local registry.
@@ -68,7 +68,7 @@ class LocalRegistry:
         self.cache.delete(f"agent:{agent.id}")
         self.cache.delete("agents:list")
     
-    def get_agent(self, agent_id: str) -> Optional[Agent]:
+    def get_agent(self, agent_id: str) -> Agent | None:
         """Get an agent by ID with caching."""
         cache_key = f"agent:{agent_id}"
         
@@ -90,7 +90,7 @@ class LocalRegistry:
         
         return agent
     
-    def list_agents(self) -> List[str]:
+    def list_agents(self) -> list[str]:
         """List all registered agent IDs with caching."""
         cache_key = "agents:list"
         
@@ -130,7 +130,7 @@ class LocalRegistry:
         self.cache.delete("tools:list")
         self.tool_implementations[tool.id] = tool._implementation
     
-    def get_tool(self, tool_id: str) -> Optional[Tool]:
+    def get_tool(self, tool_id: str) -> Tool | None:
         """
         Get a tool by ID with caching.
         
@@ -163,7 +163,7 @@ class LocalRegistry:
             logging.warning(f"Failed to load tool {tool_id}: {e}")
             return None
 
-    def _deserialize_tool(self, tool_id: str, data: Dict[str, Any]) -> Tool:
+    def _deserialize_tool(self, tool_id: str, data: dict[str, Any]) -> Tool:
         """Rebuild a persisted tool definition and attach a trusted callable."""
         from agent_factory.tools.base import ParameterSchema, ToolMetadata
 
@@ -213,7 +213,7 @@ class LocalRegistry:
             parameters=parameters_schema,
         )
     
-    def list_tools(self) -> List[str]:
+    def list_tools(self) -> list[str]:
         """List all registered tool IDs with caching."""
         cache_key = "tools:list"
         
@@ -241,7 +241,7 @@ class LocalRegistry:
         self.cache.delete(f"workflow:{workflow.id}")
         self.cache.delete("workflows:list")
     
-    def get_workflow(self, workflow_id: str) -> Optional[Workflow]:
+    def get_workflow(self, workflow_id: str) -> Workflow | None:
         """
         Get a workflow by ID with caching.
         
@@ -270,7 +270,7 @@ class LocalRegistry:
         try:
             
             # Reconstruct workflow steps
-            from agent_factory.workflows.model import WorkflowStep, Trigger, TriggerType, Condition
+            from agent_factory.workflows.model import Condition, Trigger, TriggerType, WorkflowStep
             
             steps = []
             for step_data in data.get("steps", []):
@@ -339,7 +339,7 @@ class LocalRegistry:
             logging.warning(f"Failed to load workflow {workflow_id}: {e}")
             return None
     
-    def list_workflows(self) -> List[str]:
+    def list_workflows(self) -> list[str]:
         """List all registered workflow IDs with caching."""
         cache_key = "workflows:list"
         
@@ -370,7 +370,7 @@ class LocalRegistry:
         self.cache.delete(f"blueprint:{blueprint.id}")
         self.cache.delete("blueprints:list")
     
-    def get_blueprint(self, blueprint_id: str) -> Optional[Blueprint]:
+    def get_blueprint(self, blueprint_id: str) -> Blueprint | None:
         """Get a blueprint by ID with caching."""
         cache_key = f"blueprint:{blueprint_id}"
         
@@ -394,7 +394,7 @@ class LocalRegistry:
         
         return blueprint
     
-    def list_blueprints(self) -> List[str]:
+    def list_blueprints(self) -> list[str]:
         """List all registered blueprint IDs with caching."""
         cache_key = "blueprints:list"
         
@@ -412,7 +412,7 @@ class LocalRegistry:
         
         return blueprint_list
     
-    def search(self, query: str, category: Optional[str] = None) -> Dict[str, List[str]]:
+    def search(self, query: str, category: str | None = None) -> dict[str, list[str]]:
         """
         Search registry for agents, tools, workflows, and blueprints.
         

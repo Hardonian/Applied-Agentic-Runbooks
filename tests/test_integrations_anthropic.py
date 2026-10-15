@@ -1,8 +1,9 @@
 """Tests for Anthropic client integration."""
 
-import pytest
-from unittest.mock import Mock, patch
 import os
+from unittest.mock import Mock, patch
+
+import pytest
 
 from agent_factory.integrations.anthropic_client import AnthropicAgentClient
 

@@ -1,9 +1,11 @@
 """Integration tests for workflows with agents."""
 
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
+
+from agent_factory.agents.agent import Agent
 from agent_factory.workflows.model import Workflow, WorkflowStep
-from agent_factory.agents.agent import Agent, AgentStatus
 
 
 @pytest.mark.integration

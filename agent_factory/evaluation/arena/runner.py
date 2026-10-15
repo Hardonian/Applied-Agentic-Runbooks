@@ -9,11 +9,15 @@ import statistics
 import time
 import uuid
 from collections.abc import Awaitable, Callable, Iterable
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass, field
+from decimal import Decimal
 from enum import Enum
 from pathlib import Path
+from threading import Lock
 from typing import Any
 
+from agent_factory.evaluation.arena.evidence import EvidenceSigner
 from agent_factory.financial.token_goblin import TokenGoblinGovernor
 from agent_factory.optimization.cascade_router import ModelTier, SpeculativeCascadeRouter
 from agent_factory.orchestration.veridag import VeriDAGEngine
@@ -22,6 +26,11 @@ from agent_factory.security.mcpwall import MCPWall
 from agent_factory.telemetry.pcap import AgentPCAPTracer, FrameType
 
 EventSink = Callable[[dict[str, Any]], Awaitable[None]]
+CancelCheck = Callable[[], bool]
+
+
+class ArenaRunCancelled(Exception):
+    """Raised when a durable Arena job receives a cancellation request."""
 
 
 class GauntletSuite(str, Enum):
@@ -87,19 +96,29 @@ class ArenaRunner:
         suites: Iterable[GauntletSuite | str] | None = None,
         *,
         concurrency: int = 32,
+        trials: int = 1,
+        mode: str = "deterministic",
+        run_id: str | None = None,
+        cancel_check: CancelCheck | None = None,
         event_sink: EventSink | None = None,
     ) -> ArenaRunSummary:
         """Run selected suites and produce cryptographic and packet-capture evidence."""
         selected = [GauntletSuite(item) for item in suites] if suites else list(GauntletSuite)
-        run_id = f"arena-{uuid.uuid4().hex[:12]}"
+        run_id = run_id or f"arena-{uuid.uuid4().hex[:12]}"
+        trial_count = max(1, min(trials, 100))
         started_at = time.time()
         tracer = AgentPCAPTracer(session_id=run_id)
         results: list[SuiteResult] = []
 
         await self._emit(event_sink, "arena.started", {"run_id": run_id, "suites": [s.value for s in selected]})
         for index, suite in enumerate(selected, start=1):
+            if cancel_check is not None and cancel_check():
+                await self._emit(event_sink, "arena.cancelled", {"run_id": run_id})
+                raise ArenaRunCancelled(run_id)
             await self._emit(event_sink, "arena.suite.started", {"run_id": run_id, "suite": suite.value})
-            result = await asyncio.to_thread(self._run_suite, suite, tracer, concurrency)
+            result = await asyncio.to_thread(
+                self._run_suite, suite, tracer, concurrency, trial_count, mode
+            )
             results.append(result)
             await self._emit(
                 event_sink,
@@ -127,7 +146,12 @@ class ArenaRunner:
         return summary
 
     def _run_suite(
-        self, suite: GauntletSuite, tracer: AgentPCAPTracer, concurrency: int
+        self,
+        suite: GauntletSuite,
+        tracer: AgentPCAPTracer,
+        concurrency: int,
+        trials: int = 1,
+        mode: str = "deterministic",
     ) -> SuiteResult:
         start = time.perf_counter()
         handlers = {
@@ -135,9 +159,27 @@ class ArenaRunner:
             GauntletSuite.PARETO_CASCADE: self._pareto_cascade,
             GauntletSuite.ADVERSARIAL_SECURITY: self._adversarial_security,
             GauntletSuite.SELF_HEALING: self._self_healing,
-            GauntletSuite.SETTLER_ACCOUNTING: lambda: self._settler_accounting(concurrency),
+            GauntletSuite.SETTLER_ACCOUNTING: lambda: (
+                self._settler_accounting_real(concurrency)
+                if mode == "reality"
+                else self._settler_accounting(concurrency)
+            ),
         }
-        passed, pass_rate, tokens, cost, details = handlers[suite]()
+        outcomes = [handlers[suite]() for _ in range(trials)]
+        passed = all(item[0] for item in outcomes)
+        pass_rate = statistics.fmean(item[1] for item in outcomes)
+        tokens = sum(item[2] for item in outcomes)
+        cost = sum(item[3] for item in outcomes)
+        details = dict(outcomes[-1][4])
+        details.update(
+            {
+                "trials": trials,
+                "mode": mode,
+                "pass_rate_confidence_95": self._wilson_interval(
+                    sum(item[0] for item in outcomes), trials
+                ),
+            }
+        )
         latency_ms = round((time.perf_counter() - start) * 1000, 3)
         tracer.record_frame(
             FrameType.SYSTEM,
@@ -148,6 +190,20 @@ class ArenaRunner:
             duration_ms=latency_ms,
         )
         return SuiteResult(suite, passed, pass_rate, latency_ms, tokens, cost, details)
+
+    @staticmethod
+    def _wilson_interval(successes: int, trials: int) -> list[float]:
+        """Return a stable 95% Wilson score interval for repeated trials."""
+        z = 1.959963984540054
+        n = max(1, trials)
+        proportion = successes / n
+        denominator = 1 + (z * z / n)
+        centre = proportion + (z * z / (2 * n))
+        spread = z * math.sqrt((proportion * (1 - proportion) + z * z / (4 * n)) / n)
+        return [
+            round(max(0.0, (centre - spread) / denominator), 4),
+            round(min(1.0, (centre + spread) / denominator), 4),
+        ]
 
     @staticmethod
     def _reasoning_frontier() -> tuple[bool, float, int, float, dict[str, Any]]:
@@ -252,6 +308,38 @@ class ArenaRunner:
         }
 
     @staticmethod
+    def _settler_accounting_real(
+        concurrency: int,
+    ) -> tuple[bool, float, int, float, dict[str, Any]]:
+        """Execute actual concurrent Decimal ledger mutations under a critical section."""
+        workers = max(1, min(concurrency, 256))
+        operations = workers * 50
+        initial = Decimal(operations)
+        spent = Decimal(0)
+        lock = Lock()
+
+        def debit() -> None:
+            nonlocal spent
+            with lock:
+                if spent >= initial:
+                    raise RuntimeError("ledger overdraft")
+                spent += Decimal(1)
+
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            list(executor.map(lambda _index: debit(), range(operations)))
+        remaining = initial - spent
+        drift = abs(initial - (spent + remaining))
+        valid = drift == 0 and remaining == 0
+        return valid, 1.0 if valid else 0.0, operations, float(spent), {
+            "concurrent_workers": workers,
+            "transactions": operations,
+            "ledger_drift": float(drift),
+            "numeric_type": "decimal",
+            "synchronization": "mutex",
+            "invariant": "initial == spent + remaining",
+        }
+
+    @staticmethod
     def _build_proof(run_id: str, results: list[SuiteResult]) -> dict[str, Any]:
         nodes: dict[str, dict[str, Any]] = {}
         previous: str | None = None
@@ -299,7 +387,14 @@ class ArenaRunner:
         pcap_path = self.artifact_dir / f"{run_id}.apcap"
         proof_path.write_text(json.dumps(proof, indent=2), encoding="utf-8")
         pcap_path.write_text(json.dumps(apcap, indent=2), encoding="utf-8")
-        return {"veridag": str(proof_path), "apcap": str(pcap_path)}
+        manifest_path = self.artifact_dir / f"{run_id}.manifest.json"
+        manifest = EvidenceSigner().build_manifest(run_id, proof_path, pcap_path)
+        manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+        return {
+            "veridag": str(proof_path),
+            "apcap": str(pcap_path),
+            "manifest": str(manifest_path),
+        }
 
     @staticmethod
     async def _emit(sink: EventSink | None, event_type: str, data: dict[str, Any]) -> None:

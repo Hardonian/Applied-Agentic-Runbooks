@@ -1,0 +1,37 @@
+{
+  "pcap_version": "1.0.0",
+  "session_id": "arena-24c8190e100d",
+  "captured_frames": 1,
+  "start_time": 1792022229.326314,
+  "end_time": 1792022229.3282568,
+  "total_tokens": 200,
+  "diagnostics": [],
+  "frames": [
+    {
+      "id": "f-0001",
+      "ts": 1792022229.3277574,
+      "type": "system",
+      "src": "arena",
+      "dst": "settler_accounting",
+      "hash": "be7b5381c0b24beb",
+      "tokens": 200,
+      "latency_ms": 0.575,
+      "payload": {
+        "passed": true,
+        "pass_rate": 1.0,
+        "details": {
+          "concurrent_workers": 4,
+          "transactions": 100,
+          "ledger_drift": 0.0,
+          "invariant": "initial == spent + reserved + remaining",
+          "trials": 2,
+          "mode": "deterministic",
+          "pass_rate_confidence_95": [
+            0.3424,
+            1.0
+          ]
+        }
+      }
+    }
+  ]
+}

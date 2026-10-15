@@ -2,17 +2,17 @@
 Runtime engine for executing agents and workflows with prompt logging.
 """
 
-from typing import Dict, Optional, Any, List
+import uuid
 from dataclasses import dataclass
 from datetime import datetime
-import uuid
+from typing import Any
 
 from agent_factory.agents.agent import Agent, AgentResult
-from agent_factory.workflows.model import Workflow, WorkflowResult
-from agent_factory.promptlog.storage import SQLiteStorage
 from agent_factory.promptlog.model import Run as RunModel
+from agent_factory.promptlog.storage import SQLiteStorage
 from agent_factory.telemetry.collector import get_collector
-from agent_factory.telemetry.model import UserActivatedEvent, UserSignupEvent, UserLoginEvent
+from agent_factory.telemetry.model import UserActivatedEvent, UserSignupEvent
+from agent_factory.workflows.model import Workflow, WorkflowResult
 
 
 @dataclass
@@ -23,10 +23,10 @@ class Execution:
     entity_id: str
     status: str
     created_at: datetime
-    completed_at: Optional[datetime] = None
-    result: Optional[Any] = None
-    error: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    completed_at: datetime | None = None
+    result: Any | None = None
+    error: str | None = None
+    metadata: dict[str, Any] | None = None
 
 
 class RuntimeEngine:
@@ -41,10 +41,10 @@ class RuntimeEngine:
     
     def __init__(
         self,
-        prompt_log_storage: Optional[SQLiteStorage] = None,
-        tenant_id: Optional[str] = None,
-        user_id: Optional[str] = None,
-        project_id: Optional[str] = None,
+        prompt_log_storage: SQLiteStorage | None = None,
+        tenant_id: str | None = None,
+        user_id: str | None = None,
+        project_id: str | None = None,
     ):
         """
         Initialize runtime engine.
@@ -55,9 +55,9 @@ class RuntimeEngine:
             user_id: Optional user ID for telemetry
             project_id: Optional project ID for telemetry
         """
-        self.executions: Dict[str, Execution] = {}
-        self.agents_registry: Dict[str, Agent] = {}
-        self.workflows_registry: Dict[str, Workflow] = {}
+        self.executions: dict[str, Execution] = {}
+        self.agents_registry: dict[str, Agent] = {}
+        self.workflows_registry: dict[str, Workflow] = {}
         self.prompt_log_storage = prompt_log_storage or SQLiteStorage()
         self.tenant_id = tenant_id
         self.user_id = user_id
@@ -86,8 +86,8 @@ class RuntimeEngine:
         self,
         agent_id: str,
         input_text: str,
-        session_id: Optional[str] = None,
-        context: Optional[Dict[str, Any]] = None,
+        session_id: str | None = None,
+        context: dict[str, Any] | None = None,
     ) -> str:
         """
         Run an agent and return execution ID.
@@ -157,8 +157,8 @@ class RuntimeEngine:
     def run_workflow(
         self,
         workflow_id: str,
-        context: Dict[str, Any],
-        start_step: Optional[str] = None,
+        context: dict[str, Any],
+        start_step: str | None = None,
     ) -> str:
         """
         Run a workflow and return execution ID.
@@ -249,7 +249,7 @@ class RuntimeEngine:
         self,
         execution_id: str,
         workflow_id: str,
-        context: Dict[str, Any],
+        context: dict[str, Any],
         result: WorkflowResult,
     ) -> None:
         """Log workflow execution to prompt log."""
@@ -320,16 +320,16 @@ class RuntimeEngine:
             # Don't fail execution if activation tracking fails
             pass
     
-    def get_execution(self, execution_id: str) -> Optional[Execution]:
+    def get_execution(self, execution_id: str) -> Execution | None:
         """Get execution by ID."""
         return self.executions.get(execution_id)
     
     def list_executions(
         self,
-        entity_id: Optional[str] = None,
-        status: Optional[str] = None,
+        entity_id: str | None = None,
+        status: str | None = None,
         limit: int = 100,
-    ) -> List[Execution]:
+    ) -> list[Execution]:
         """
         List executions with optional filters.
         

@@ -1,8 +1,8 @@
 """Input/output sanitization."""
 
-import re
 import html
-from typing import Any, Dict, List
+import re
+from typing import Any
 
 
 def sanitize_input(text: str, allow_html: bool = False) -> str:

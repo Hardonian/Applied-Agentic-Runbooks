@@ -4,7 +4,7 @@ Prompt log data models.
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Optional, Any
+from typing import Any
 
 
 @dataclass
@@ -23,17 +23,17 @@ class Run:
         ... )
     """
     run_id: str
-    agent_id: Optional[str] = None
-    workflow_id: Optional[str] = None
-    step_id: Optional[str] = None
-    inputs: Dict[str, Any] = field(default_factory=dict)
-    outputs: Dict[str, Any] = field(default_factory=dict)
+    agent_id: str | None = None
+    workflow_id: str | None = None
+    step_id: str | None = None
+    inputs: dict[str, Any] = field(default_factory=dict)
+    outputs: dict[str, Any] = field(default_factory=dict)
     status: str = "success"  # "success", "error", "timeout"
     execution_time: float = 0.0
     tokens_used: int = 0
     cost_estimate: float = 0.0
     timestamp: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -54,6 +54,6 @@ class PromptLogEntry:
     step: int
     prompt: str
     response: str
-    tool_calls: List[Dict[str, Any]] = field(default_factory=list)
+    tool_calls: list[dict[str, Any]] = field(default_factory=list)
     timestamp: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)

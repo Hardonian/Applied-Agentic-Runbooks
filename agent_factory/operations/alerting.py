@@ -4,11 +4,12 @@ Alerting system for Agent Factory Platform.
 Supports multiple alert channels and alert rules.
 """
 
+import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Callable, Any
 from datetime import datetime
 from enum import Enum
-import logging
+from typing import Any
 
 
 class AlertSeverity(str, Enum):
@@ -34,12 +35,12 @@ class AlertRule:
     """Alert rule definition."""
     id: str
     name: str
-    condition: Callable[[Dict[str, Any]], bool]
+    condition: Callable[[dict[str, Any]], bool]
     severity: AlertSeverity
-    channels: List[AlertChannel]
+    channels: list[AlertChannel]
     enabled: bool = True
     cooldown_seconds: int = 300  # Prevent spam
-    last_triggered: Optional[datetime] = None
+    last_triggered: datetime | None = None
 
 
 @dataclass
@@ -49,7 +50,7 @@ class Alert:
     rule_id: str
     severity: AlertSeverity
     message: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.utcnow)
     acknowledged: bool = False
     resolved: bool = False
@@ -72,16 +73,16 @@ class AlertManager:
     
     def __init__(self):
         """Initialize alert manager."""
-        self.rules: Dict[str, AlertRule] = {}
-        self.alerts: List[Alert] = []
+        self.rules: dict[str, AlertRule] = {}
+        self.alerts: list[Alert] = []
         self.logger = logging.getLogger(__name__)
     
     def create_rule(
         self,
         name: str,
-        condition: Callable[[Dict[str, Any]], bool],
+        condition: Callable[[dict[str, Any]], bool],
         severity: AlertSeverity,
-        channels: List[AlertChannel],
+        channels: list[AlertChannel],
         cooldown_seconds: int = 300,
     ) -> AlertRule:
         """
@@ -112,7 +113,7 @@ class AlertManager:
         self.rules[rule_id] = rule
         return rule
     
-    def check_alerts(self, metrics: Dict[str, Any]) -> List[Alert]:
+    def check_alerts(self, metrics: dict[str, Any]) -> list[Alert]:
         """
         Check metrics against alert rules and trigger alerts.
         
@@ -145,7 +146,7 @@ class AlertManager:
         
         return triggered_alerts
     
-    def _trigger_alert(self, rule: AlertRule, metrics: Dict[str, Any]) -> Alert:
+    def _trigger_alert(self, rule: AlertRule, metrics: dict[str, Any]) -> Alert:
         """Trigger an alert."""
         import uuid
         alert_id = str(uuid.uuid4())
@@ -211,8 +212,8 @@ class AlertManager:
     
     def get_active_alerts(
         self,
-        severity: Optional[AlertSeverity] = None,
-    ) -> List[Alert]:
+        severity: AlertSeverity | None = None,
+    ) -> list[Alert]:
         """
         Get active (unresolved) alerts.
         
@@ -265,7 +266,7 @@ class AlertManager:
 
 
 # Global instance
-_alert_manager: Optional[AlertManager] = None
+_alert_manager: AlertManager | None = None
 
 
 def get_alert_manager() -> AlertManager:

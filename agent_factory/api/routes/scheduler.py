@@ -1,14 +1,15 @@
 """Scheduler API routes."""
 
-from fastapi import APIRouter, HTTPException, Depends
-from typing import List, Dict, Any, Optional
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from agent_factory.runtime.scheduler import Scheduler
-from agent_factory.security.auth import get_current_user
-from agent_factory.security.rbac import require_user_permission, Permission
 from agent_factory.api.runtime import runtime
 from agent_factory.registry.local_registry import LocalRegistry
+from agent_factory.runtime.scheduler import Scheduler
+from agent_factory.security.auth import get_current_user
+from agent_factory.security.rbac import Permission, require_user_permission
 
 router = APIRouter()
 scheduler = Scheduler()
@@ -25,11 +26,11 @@ class ScheduleAgentRequest(BaseModel):
 class ScheduleWorkflowRequest(BaseModel):
     """Schedule workflow request."""
     workflow_id: str
-    context: Dict[str, Any]
+    context: dict[str, Any]
     schedule_str: str = "daily"
 
 
-@router.post("/agent", response_model=Dict[str, Any])
+@router.post("/agent", response_model=dict[str, Any])
 async def schedule_agent(
     request: ScheduleAgentRequest,
     user=Depends(get_current_user)
@@ -54,7 +55,7 @@ async def schedule_agent(
     return {"job_id": job_id, "status": "scheduled"}
 
 
-@router.post("/workflow", response_model=Dict[str, Any])
+@router.post("/workflow", response_model=dict[str, Any])
 async def schedule_workflow(
     request: ScheduleWorkflowRequest,
     user=Depends(get_current_user)
@@ -66,7 +67,7 @@ async def schedule_workflow(
         raise HTTPException(status_code=404, detail="Workflow not found")
     runtime.register_workflow(workflow)
     
-    def run_func(workflow_id: str, context: Dict[str, Any]):
+    def run_func(workflow_id: str, context: dict[str, Any]):
         runtime.run_workflow(workflow_id, context)
     
     job_id = scheduler.schedule_workflow(
@@ -79,14 +80,14 @@ async def schedule_workflow(
     return {"job_id": job_id, "status": "scheduled"}
 
 
-@router.get("/jobs", response_model=List[str])
+@router.get("/jobs", response_model=list[str])
 def list_scheduled_jobs(user=Depends(get_current_user)):
     """List all scheduled jobs."""
     require_user_permission(user, Permission.READ_WORKFLOWS)
     return list(scheduler.jobs.keys())
 
 
-@router.delete("/jobs/{job_id}", response_model=Dict[str, Any])
+@router.delete("/jobs/{job_id}", response_model=dict[str, Any])
 def cancel_scheduled_job(job_id: str, user=Depends(get_current_user)):
     """Cancel a scheduled job without stopping the scheduler service."""
     require_user_permission(user, Permission.ADMIN)

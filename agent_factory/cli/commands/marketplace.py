@@ -1,9 +1,9 @@
 """Marketplace CLI commands."""
 
+
 import typer
-from typing import Optional
-from agent_factory.blueprints.model import Blueprint
-from agent_factory.marketplace import publish_blueprint, search_blueprints, get_blueprint_details
+
+from agent_factory.marketplace import get_blueprint_details, publish_blueprint, search_blueprints
 from agent_factory.registry.local_registry import LocalRegistry
 
 app = typer.Typer()
@@ -40,8 +40,8 @@ def publish(
 
 @app.command()
 def search(
-    query: Optional[str] = typer.Option(None, "--query", "-q", help="Search query"),
-    category: Optional[str] = typer.Option(None, "--category", "-c", help="Category filter"),
+    query: str | None = typer.Option(None, "--query", "-q", help="Search query"),
+    category: str | None = typer.Option(None, "--category", "-c", help="Category filter"),
     limit: int = typer.Option(20, "--limit", "-l", help="Results limit"),
 ):
     """Search blueprints in marketplace."""

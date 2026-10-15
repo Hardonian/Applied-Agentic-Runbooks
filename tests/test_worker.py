@@ -1,13 +1,13 @@
 """Tests for worker system."""
 
-import pytest
 import time
 from unittest.mock import Mock, patch
-from datetime import datetime
 
-from agent_factory.runtime.worker import Worker
-from agent_factory.runtime.jobs import Job, JobStatus, JobType, InMemoryJobQueue
+import pytest
+
 from agent_factory.runtime.engine import RuntimeEngine
+from agent_factory.runtime.jobs import InMemoryJobQueue, Job, JobStatus, JobType
+from agent_factory.runtime.worker import Worker
 
 
 @pytest.mark.unit

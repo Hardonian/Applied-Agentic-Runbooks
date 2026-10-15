@@ -1,8 +1,9 @@
 """Calculator tool for mathematical operations."""
 
+import math
+
 from agent_factory.tools.decorator import function_tool
 from agent_factory.utils.safe_evaluator import safe_evaluate
-import math
 
 
 @function_tool(
@@ -33,9 +34,9 @@ def calculator(expression: str) -> float:
         result = safe_evaluate(expression, context=math_functions)
         return float(result)
     except ValueError as e:
-        raise ValueError(f"Invalid expression: {str(e)}")
+        raise ValueError(f"Invalid expression: {e!s}")
     except Exception as e:
-        raise ValueError(f"Error evaluating expression: {str(e)}")
+        raise ValueError(f"Error evaluating expression: {e!s}")
 
 
 # The decorator returns a Tool instance, so calculator is already a Tool

@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Enterprise Arena Hardening**: Durable PostgreSQL run history, asynchronous `202` jobs, status/cancel/history/compare/artifact APIs, retention, repeated-trial confidence intervals, reality-mode concurrent accounting, and an operational soak harness.
+- **Distributed Live Operations**: Versioned cursor-based event replay, bounded lag metrics, optional Redis Streams cross-pod fan-out, authenticated WebSockets, and origin enforcement.
+- **Authoritative Human Gates**: Tenant-bound MCPWall tickets with RBAC, separation of duty, TTL/replay enforcement, persistent audit records, and signed operator receipts.
+- **Portable Audit Evidence**: Signed evidence manifests and `agent-factory arena verify` for offline checksum, AgentPCAP frame, and VeriDAG Merkle verification.
+- **Production Hardening**: Non-root multi-stage image, migrations, PDB, NetworkPolicy, ServiceAccount, security contexts, artifact PVC, topology spreading, ServiceMonitor, Prometheus alerts, Jaeger, SBOM generation, image scanning, and quality-debt ratchets.
 - **Enterprise Platform Trinity**: Added the five-suite Autonomous Arena and red-team gauntlet, proof-backed leaderboards, `/api/v1/arena` REST endpoints, and `agent-factory arena run`.
 - **Real-Time Streaming Studio 2.0**: Added bounded bi-directional WebSocket channels at `/api/v1/ws/stream` and `/api/v1/ws/arena`, live token/tree/capture/velocity event contracts, MCPWall operator decisions, a dynamic arena dashboard, and an AgentPCAP frame player with zero inline CSS.
 - **Cloud-Native OTel & Helm Substrate**: Added a dependency-free AgentPCAP/VeriDAG OTLP bridge, Prometheus exposition, a production PostgreSQL/Redis/Prometheus/Grafana Compose stack, a production Helm chart with HPA/probes/ingress/secret mounts, and an air-gapped Ollama profile.

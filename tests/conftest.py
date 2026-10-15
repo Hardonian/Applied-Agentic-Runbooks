@@ -1,17 +1,18 @@
 """Pytest configuration and shared fixtures."""
 
 import os
+
 os.environ["TESTING"] = "true"
 
-import pytest
-from unittest.mock import Mock, MagicMock
-from typing import Dict, Any
+from unittest.mock import Mock
 
-from agent_factory.agents.agent import Agent, AgentConfig
+import pytest
+
+from agent_factory.agents.agent import Agent
+from agent_factory.core.guardrails import Guardrails
+from agent_factory.core.memory import MemoryStore
 from agent_factory.tools.base import Tool
 from agent_factory.workflows.model import Workflow, WorkflowStep
-from agent_factory.core.memory import MemoryStore
-from agent_factory.core.guardrails import Guardrails
 
 
 @pytest.fixture

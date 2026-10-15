@@ -2,13 +2,12 @@
 Integration tests for runtime with prompt logging.
 """
 
-import pytest
 import tempfile
 from pathlib import Path
 
-from agent_factory.runtime.engine import RuntimeEngine
 from agent_factory.agents.agent import Agent
 from agent_factory.promptlog import SQLiteStorage
+from agent_factory.runtime.engine import RuntimeEngine
 
 
 def test_runtime_with_prompt_logging():

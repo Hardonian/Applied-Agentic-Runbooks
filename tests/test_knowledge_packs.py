@@ -2,13 +2,15 @@
 Tests for knowledge packs.
 """
 
-import pytest
-import tempfile
-from pathlib import Path
 import yaml
 
 from agent_factory.knowledge import KnowledgePackLoader
-from agent_factory.knowledge.model import KnowledgePack, DataSource, EmbeddingConfig, RetrieverConfig
+from agent_factory.knowledge.model import (
+    DataSource,
+    EmbeddingConfig,
+    KnowledgePack,
+    RetrieverConfig,
+)
 
 
 def test_knowledge_pack_model():

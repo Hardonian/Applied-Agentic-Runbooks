@@ -1,12 +1,12 @@
 """Tool CLI commands."""
 
-import typer
 import json
 from pathlib import Path
-from typing import Optional
 
-from agent_factory.tools.base import Tool
+import typer
+
 from agent_factory.registry.local_registry import LocalRegistry
+from agent_factory.tools.base import Tool
 
 app = typer.Typer(name="tool", help="Manage tools")
 
@@ -35,7 +35,7 @@ def create(
     tool_id: str = typer.Argument(..., help="Tool ID"),
     name: str = typer.Option(..., "--name", "-n", help="Tool name"),
     description: str = typer.Option(..., "--description", "-d", help="Tool description"),
-    implementation_file: Optional[str] = typer.Option(None, "--impl", "-i", help="Path to implementation file"),
+    implementation_file: str | None = typer.Option(None, "--impl", "-i", help="Path to implementation file"),
 ):
     """Create a new tool."""
     registry = LocalRegistry()
@@ -61,7 +61,7 @@ def create(
     
     registry.register_tool(tool)
     typer.echo(f"✅ Created tool: {tool_id}")
-    typer.echo(f"💡 Note: Tool needs implementation function. Use 'tool update' to add it.")
+    typer.echo("💡 Note: Tool needs implementation function. Use 'tool update' to add it.")
 
 
 @app.command()
@@ -98,14 +98,14 @@ def register(
     
     registry.register_tool(tool)
     typer.echo(f"✅ Registered tool: {tool_id}")
-    typer.echo(f"💡 Note: Implementation function needs to be provided separately.")
+    typer.echo("💡 Note: Implementation function needs to be provided separately.")
 
 
 @app.command()
 def update(
     tool_id: str = typer.Argument(..., help="Tool ID"),
-    name: Optional[str] = typer.Option(None, "--name", "-n", help="Tool name"),
-    description: Optional[str] = typer.Option(None, "--description", "-d", help="Tool description"),
+    name: str | None = typer.Option(None, "--name", "-n", help="Tool name"),
+    description: str | None = typer.Option(None, "--description", "-d", help="Tool description"),
 ):
     """Update a tool."""
     registry = LocalRegistry()

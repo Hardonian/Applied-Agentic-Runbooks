@@ -2,7 +2,8 @@
 Remote registry client for accessing Agent Factory marketplace.
 """
 
-from typing import Dict, List, Optional, Any
+from typing import Any
+
 import httpx
 
 
@@ -15,7 +16,7 @@ class RemoteRegistry:
         >>> blueprints = registry.search_blueprints("support")
     """
     
-    def __init__(self, api_key: Optional[str] = None, base_url: str = "https://api.agentfactory.io"):
+    def __init__(self, api_key: str | None = None, base_url: str = "https://api.agentfactory.io"):
         """
         Initialize remote registry client.
         
@@ -34,9 +35,9 @@ class RemoteRegistry:
     def search_blueprints(
         self,
         query: str,
-        category: Optional[str] = None,
+        category: str | None = None,
         limit: int = 20,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Search for blueprints in the marketplace.
         
@@ -59,7 +60,7 @@ class RemoteRegistry:
         response.raise_for_status()
         return response.json().get("results", [])
     
-    def get_blueprint(self, blueprint_id: str) -> Optional[Dict[str, Any]]:
+    def get_blueprint(self, blueprint_id: str) -> dict[str, Any] | None:
         """Get blueprint details by ID."""
         response = self.client.get(f"/v1/blueprints/{blueprint_id}")
         if response.status_code == 404:
@@ -90,7 +91,7 @@ class RemoteRegistry:
         # For now, just return success
         return True
     
-    def publish_blueprint(self, blueprint_path: str) -> Dict[str, Any]:
+    def publish_blueprint(self, blueprint_path: str) -> dict[str, Any]:
         """
         Publish a blueprint to the marketplace.
         

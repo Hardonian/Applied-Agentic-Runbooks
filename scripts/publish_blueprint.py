@@ -6,16 +6,18 @@ Helps publish blueprints to the marketplace with versioning, hashing, and signin
 """
 
 import argparse
-import json
 import hashlib
-import yaml
-from pathlib import Path
-from typing import Dict, Any
-from datetime import datetime
+import json
 import sys
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+import yaml
+
 
 # Placeholder for signing (implement with actual signing library)
-def generate_signature(content: str, private_key: str = None) -> str:
+def generate_signature(content: str, private_key: str | None = None) -> str:
     """
     Generate signature for blueprint content.
     
@@ -34,7 +36,7 @@ def calculate_hash(content: str) -> str:
     return f"sha256:{hashlib.sha256(content.encode()).hexdigest()}"
 
 
-def load_blueprint(blueprint_path: Path) -> Dict[str, Any]:
+def load_blueprint(blueprint_path: Path) -> dict[str, Any]:
     """Load blueprint from YAML file."""
     with open(blueprint_path, 'r') as f:
         return yaml.safe_load(f)
@@ -43,9 +45,9 @@ def load_blueprint(blueprint_path: Path) -> Dict[str, Any]:
 def update_blueprints_index(
     blueprint_path: Path,
     index_path: Path,
-    version: str = None,
-    private_key: str = None
-) -> Dict[str, Any]:
+    version: str | None = None,
+    private_key: str | None = None
+) -> dict[str, Any]:
     """
     Update blueprints_index.json with new blueprint.
     
@@ -199,7 +201,7 @@ def main():
             private_key=private_key
         )
         
-        print(f"\n📦 Blueprint published:")
+        print("\n📦 Blueprint published:")
         print(f"   ID: {entry['id']}")
         print(f"   Version: {entry['version']}")
         print(f"   Hash: {entry['hash']}")

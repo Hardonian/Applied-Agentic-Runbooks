@@ -2,12 +2,10 @@
 Tests for storage abstraction layer.
 """
 
-import pytest
 import tempfile
-import os
 from io import BytesIO
+
 from agent_factory.storage.local import LocalStorage
-from agent_factory.storage.base import StorageBackend
 
 
 def test_local_storage_upload():

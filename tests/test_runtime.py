@@ -1,10 +1,12 @@
 """Tests for Runtime Engine."""
 
+from unittest.mock import Mock, patch
+
 import pytest
-from unittest.mock import patch, Mock
-from agent_factory.runtime.engine import RuntimeEngine, Execution
+
 from agent_factory.agents.agent import Agent
-from agent_factory.workflows.model import Workflow, WorkflowStep
+from agent_factory.runtime.engine import RuntimeEngine
+from agent_factory.workflows.model import Workflow
 
 
 @pytest.mark.unit

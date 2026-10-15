@@ -2,12 +2,12 @@
 Infer UI schema from agent/tool definitions.
 """
 
-from typing import Dict, Any, List
+from typing import Any
 
 from agent_factory.agents.agent import Agent
 
 
-def infer_ui_schema(agent: Agent) -> Dict[str, Any]:
+def infer_ui_schema(agent: Agent) -> dict[str, Any]:
     """
     Infer UI schema from agent definition.
     
@@ -35,7 +35,7 @@ def infer_ui_schema(agent: Agent) -> Dict[str, Any]:
     return schema
 
 
-def _infer_input_schema(agent: Agent) -> List[Dict[str, Any]]:
+def _infer_input_schema(agent: Agent) -> list[dict[str, Any]]:
     """
     Infer input schema from agent tools.
     
@@ -83,7 +83,7 @@ def _infer_input_schema(agent: Agent) -> List[Dict[str, Any]]:
     return inputs
 
 
-def _infer_output_schema(agent: Agent) -> List[Dict[str, Any]]:
+def _infer_output_schema(agent: Agent) -> list[dict[str, Any]]:
     """
     Infer output schema from agent response format.
     

@@ -1,12 +1,13 @@
 """Supabase client configuration and utilities."""
 
 import os
-from typing import Optional
-from supabase import create_client, Client
+
 from supabase.lib.client_options import ClientOptions
 
+from supabase import Client, create_client
 
-def get_supabase_client() -> Optional[Client]:
+
+def get_supabase_client() -> Client | None:
     """
     Get Supabase client instance.
     
@@ -32,7 +33,7 @@ def get_supabase_client() -> Optional[Client]:
     return create_client(supabase_url, key, options=options)
 
 
-def get_supabase_anon_client() -> Optional[Client]:
+def get_supabase_anon_client() -> Client | None:
     """
     Get Supabase client with anon key (respects RLS).
     
@@ -67,7 +68,7 @@ def is_supabase_configured() -> bool:
     return bool(supabase_url and has_key)
 
 
-def get_supabase_storage_bucket(bucket_name: str = "agent-factory") -> Optional[object]:
+def get_supabase_storage_bucket(bucket_name: str = "agent-factory") -> object | None:
     """
     Get Supabase storage bucket.
     

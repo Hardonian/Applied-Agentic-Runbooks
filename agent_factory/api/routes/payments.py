@@ -3,15 +3,20 @@
 import os
 import uuid
 from datetime import datetime, timedelta
-from fastapi import APIRouter, HTTPException, Depends, Request
-from typing import Dict, Any, Optional
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
+from agent_factory.payments.revenue_sharing import calculate_revenue_share
 from agent_factory.payments.stripe_client import create_checkout_session, handle_webhook
-from agent_factory.payments.subscriptions import create_subscription, cancel_subscription, get_subscription
-from agent_factory.payments.revenue_sharing import calculate_revenue_share, distribute_payment
+from agent_factory.payments.subscriptions import (
+    cancel_subscription,
+    create_subscription,
+    get_subscription,
+)
 from agent_factory.security.auth import get_current_user
-from agent_factory.security.rbac import require_user_permission, Permission
+from agent_factory.security.rbac import Permission, require_user_permission
 
 router = APIRouter()
 
@@ -30,7 +35,7 @@ class SubscriptionRequest(BaseModel):
     price_id: str
 
 
-@router.post("/checkout", response_model=Dict[str, Any])
+@router.post("/checkout", response_model=dict[str, Any])
 async def create_checkout(
     request: CheckoutRequest,
     user=Depends(get_current_user)
@@ -68,7 +73,7 @@ async def stripe_webhook(request: Request):
     return result
 
 
-@router.post("/subscription", response_model=Dict[str, Any])
+@router.post("/subscription", response_model=dict[str, Any])
 async def create_subscription_endpoint(
     request: SubscriptionRequest,
     user=Depends(get_current_user)
@@ -85,7 +90,7 @@ async def create_subscription_endpoint(
     return subscription
 
 
-@router.post("/subscription/{subscription_id}/cancel", response_model=Dict[str, Any])
+@router.post("/subscription/{subscription_id}/cancel", response_model=dict[str, Any])
 async def cancel_subscription_endpoint(
     subscription_id: str,
     user=Depends(get_current_user)
@@ -97,7 +102,7 @@ async def cancel_subscription_endpoint(
     return result
 
 
-@router.get("/subscription/{subscription_id}", response_model=Dict[str, Any])
+@router.get("/subscription/{subscription_id}", response_model=dict[str, Any])
 async def get_subscription_endpoint(
     subscription_id: str,
     user=Depends(get_current_user)
@@ -112,7 +117,7 @@ async def get_subscription_endpoint(
     return subscription
 
 
-@router.get("/revenue-share/{blueprint_id}", response_model=Dict[str, Any])
+@router.get("/revenue-share/{blueprint_id}", response_model=dict[str, Any])
 async def get_revenue_share(
     blueprint_id: str,
     amount: float,
@@ -125,7 +130,7 @@ async def get_revenue_share(
     return revenue_share
 
 
-@router.post("/upgrade", response_model=Dict[str, Any])
+@router.post("/upgrade", response_model=dict[str, Any])
 async def upgrade_to_pro(
     request: Request,
     user=Depends(get_current_user)
@@ -136,8 +141,9 @@ async def upgrade_to_pro(
     PRODUCT ENDPOINT: Upgrade from free to paid tier.
     Creates Stripe checkout session for Pro subscription ($29/month).
     """
+    from agent_factory.database.models import Plan, Tenant
+    from agent_factory.database.models import User as UserModel
     from agent_factory.database.session import get_db
-    from agent_factory.database.models import User as UserModel, Tenant, Plan
     from agent_factory.payments.stripe_client import StripeClient
     
     db = next(get_db())
@@ -226,7 +232,7 @@ async def upgrade_to_pro(
                     email=user_model.email,
                     name=user_model.email
                 )
-        except Exception as e:
+        except Exception:
             # If Stripe not configured, return test mode response
             if not os.getenv("STRIPE_SECRET_KEY"):
                 tenant.plan = "pro"
@@ -279,13 +285,13 @@ async def upgrade_to_pro(
         db.rollback()
         raise HTTPException(
             status_code=500,
-            detail=f"Upgrade failed: {str(e)}"
+            detail=f"Upgrade failed: {e!s}"
         )
     finally:
         db.close()
 
 
-@router.get("/upgrade/success", response_model=Dict[str, Any])
+@router.get("/upgrade/success", response_model=dict[str, Any])
 async def upgrade_success(
     session_id: str,
     request: Request
@@ -296,8 +302,9 @@ async def upgrade_success(
     PRODUCT ENDPOINT: Complete upgrade after Stripe payment.
     """
     import stripe
+
+    from agent_factory.database.models import Subscription, Tenant
     from agent_factory.database.session import get_db
-    from agent_factory.database.models import Tenant, Subscription, Plan
     
     stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "")
     
@@ -352,5 +359,5 @@ async def upgrade_success(
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to process upgrade: {str(e)}"
+            detail=f"Failed to process upgrade: {e!s}"
         )

@@ -1,9 +1,8 @@
 """Sentry error tracking integration."""
 import os
-from typing import Optional
 
 
-def setup_sentry() -> Optional[object]:
+def setup_sentry() -> object | None:
     """
     Setup Sentry error tracking.
     
@@ -42,7 +41,7 @@ def setup_sentry() -> Optional[object]:
         return None
 
 
-def before_send_handler(event: dict, hint: dict) -> Optional[dict]:
+def before_send_handler(event: dict, hint: dict) -> dict | None:
     """
     Filter events before sending to Sentry.
     

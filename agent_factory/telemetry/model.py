@@ -4,8 +4,8 @@ Telemetry data models for tracking platform usage and growth.
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, Optional, Any
 from enum import Enum
+from typing import Any
 
 
 class EventType(str, Enum):
@@ -41,12 +41,12 @@ class TelemetryEvent:
     event_id: str
     event_type: EventType
     timestamp: datetime = field(default_factory=datetime.utcnow)
-    tenant_id: Optional[str] = None
-    user_id: Optional[str] = None
-    project_id: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    tenant_id: str | None = None
+    user_id: str | None = None
+    project_id: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert event to dictionary."""
         return {
             "event_id": self.event_id,
@@ -63,8 +63,8 @@ class TelemetryEvent:
 class AgentRunEvent(TelemetryEvent):
     """Telemetry event for agent execution."""
     agent_id: str  # Required field
-    agent_name: Optional[str] = None
-    session_id: Optional[str] = None
+    agent_name: str | None = None
+    session_id: str | None = None
     status: str = "completed"  # completed, failed, timeout
     execution_time: float = 0.0
     tokens_used: int = 0
@@ -76,7 +76,7 @@ class AgentRunEvent(TelemetryEvent):
         """Set event type."""
         self.event_type = EventType.AGENT_RUN
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         base = super().to_dict()
         base.update({
@@ -97,7 +97,7 @@ class AgentRunEvent(TelemetryEvent):
 class WorkflowRunEvent(TelemetryEvent):
     """Telemetry event for workflow execution."""
     workflow_id: str  # Required field
-    workflow_name: Optional[str] = None
+    workflow_name: str | None = None
     status: str = "completed"  # completed, failed, timeout
     execution_time: float = 0.0
     steps_completed: int = 0
@@ -109,7 +109,7 @@ class WorkflowRunEvent(TelemetryEvent):
         """Set event type."""
         self.event_type = EventType.WORKFLOW_RUN
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         base = super().to_dict()
         base.update({
@@ -129,15 +129,15 @@ class WorkflowRunEvent(TelemetryEvent):
 class BlueprintInstallEvent(TelemetryEvent):
     """Telemetry event for blueprint installation."""
     blueprint_id: str  # Required field
-    blueprint_name: Optional[str] = None
-    blueprint_version: Optional[str] = None
+    blueprint_name: str | None = None
+    blueprint_version: str | None = None
     install_type: str = "install"  # install, uninstall
     
     def __post_init__(self):
         """Set event type."""
         self.event_type = EventType.BLUEPRINT_INSTALL if self.install_type == "install" else EventType.BLUEPRINT_UNINSTALL
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         base = super().to_dict()
         base.update({
@@ -154,15 +154,15 @@ class ErrorEvent(TelemetryEvent):
     """Telemetry event for errors."""
     error_type: str  # Required field
     error_message: str  # Required field
-    resource_type: Optional[str] = None  # agent, workflow, blueprint, etc.
-    resource_id: Optional[str] = None
-    stack_trace: Optional[str] = None
+    resource_type: str | None = None  # agent, workflow, blueprint, etc.
+    resource_id: str | None = None
+    stack_trace: str | None = None
     
     def __post_init__(self):
         """Set event type."""
         self.event_type = EventType.ERROR
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         base = super().to_dict()
         base.update({
@@ -183,8 +183,8 @@ class BillingUsageEvent(TelemetryEvent):
     unit_price: float = 0.0
     total_cost: float = 0.0
     currency: str = "USD"
-    period_start: Optional[datetime] = None
-    period_end: Optional[datetime] = None
+    period_start: datetime | None = None
+    period_end: datetime | None = None
     
     def __post_init__(self):
         """Set event type."""
@@ -192,7 +192,7 @@ class BillingUsageEvent(TelemetryEvent):
         if self.total_cost == 0.0 and self.quantity > 0:
             self.total_cost = self.quantity * self.unit_price
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         base = super().to_dict()
         base.update({
@@ -210,16 +210,16 @@ class BillingUsageEvent(TelemetryEvent):
 @dataclass
 class TenantEvent(TelemetryEvent):
     """Telemetry event for tenant lifecycle."""
-    tenant_name: Optional[str] = None
-    tenant_slug: Optional[str] = None
-    plan: Optional[str] = None
+    tenant_name: str | None = None
+    tenant_slug: str | None = None
+    plan: str | None = None
     action: str = "created"  # created, updated, deleted
     # Channel attribution
-    signup_source: Optional[str] = None  # organic, paid, referral, partnership, etc.
-    utm_source: Optional[str] = None
-    utm_medium: Optional[str] = None
-    utm_campaign: Optional[str] = None
-    referral_code: Optional[str] = None  # If signed up via referral
+    signup_source: str | None = None  # organic, paid, referral, partnership, etc.
+    utm_source: str | None = None
+    utm_medium: str | None = None
+    utm_campaign: str | None = None
+    referral_code: str | None = None  # If signed up via referral
     
     def __post_init__(self):
         """Set event type."""
@@ -228,7 +228,7 @@ class TenantEvent(TelemetryEvent):
         elif self.action == "updated":
             self.event_type = EventType.TENANT_UPDATED
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         base = super().to_dict()
         base.update({
@@ -248,8 +248,8 @@ class TenantEvent(TelemetryEvent):
 @dataclass
 class ProjectEvent(TelemetryEvent):
     """Telemetry event for project/app lifecycle."""
-    project_name: Optional[str] = None
-    project_type: Optional[str] = None  # saas_app, blueprint_deployment, etc.
+    project_name: str | None = None
+    project_type: str | None = None  # saas_app, blueprint_deployment, etc.
     action: str = "created"  # created, updated, deleted
     
     def __post_init__(self):
@@ -259,7 +259,7 @@ class ProjectEvent(TelemetryEvent):
         elif self.action == "updated":
             self.event_type = EventType.PROJECT_UPDATED
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         base = super().to_dict()
         base.update({
@@ -274,13 +274,13 @@ class ProjectEvent(TelemetryEvent):
 class UserActivatedEvent(TelemetryEvent):
     """Telemetry event for user activation."""
     activation_criteria: str  # first_agent_run, first_blueprint_install, etc.
-    days_to_activation: Optional[int] = None  # Days from signup to activation
+    days_to_activation: int | None = None  # Days from signup to activation
     
     def __post_init__(self):
         """Set event type."""
         self.event_type = EventType.USER_ACTIVATED
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         base = super().to_dict()
         base.update({
@@ -295,7 +295,7 @@ class ReferralEvent(TelemetryEvent):
     """Telemetry event for referrals."""
     referral_code: str  # Required field
     referral_type: str  # sent, converted
-    referred_user_id: Optional[str] = None  # If converted, who was referred
+    referred_user_id: str | None = None  # If converted, who was referred
     reward_granted: bool = False
     
     def __post_init__(self):
@@ -305,7 +305,7 @@ class ReferralEvent(TelemetryEvent):
         elif self.referral_type == "converted":
             self.event_type = EventType.REFERRAL_CONVERTED
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         base = super().to_dict()
         base.update({
@@ -323,16 +323,16 @@ class RevenueEvent(TelemetryEvent):
     amount: float  # Required field
     currency: str = "USD"
     revenue_type: str  # subscription, marketplace, services, enterprise
-    plan_id: Optional[str] = None
-    subscription_id: Optional[str] = None
-    period_start: Optional[datetime] = None
-    period_end: Optional[datetime] = None
+    plan_id: str | None = None
+    subscription_id: str | None = None
+    period_start: datetime | None = None
+    period_end: datetime | None = None
     
     def __post_init__(self):
         """Set event type."""
         self.event_type = EventType.REVENUE
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         base = super().to_dict()
         base.update({
@@ -350,18 +350,18 @@ class RevenueEvent(TelemetryEvent):
 @dataclass(kw_only=True)
 class UserSignupEvent(TelemetryEvent):
     """Telemetry event for user signup."""
-    email: Optional[str] = None
-    signup_source: Optional[str] = None  # organic, paid, referral, partnership, etc.
-    utm_source: Optional[str] = None
-    utm_medium: Optional[str] = None
-    utm_campaign: Optional[str] = None
-    referral_code: Optional[str] = None
+    email: str | None = None
+    signup_source: str | None = None  # organic, paid, referral, partnership, etc.
+    utm_source: str | None = None
+    utm_medium: str | None = None
+    utm_campaign: str | None = None
+    referral_code: str | None = None
     
     def __post_init__(self):
         """Set event type."""
         self.event_type = EventType.USER_SIGNUP
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         base = super().to_dict()
         base.update({
@@ -378,13 +378,13 @@ class UserSignupEvent(TelemetryEvent):
 @dataclass(kw_only=True)
 class UserLoginEvent(TelemetryEvent):
     """Telemetry event for user login."""
-    login_method: Optional[str] = None  # email, oauth, api_key, etc.
+    login_method: str | None = None  # email, oauth, api_key, etc.
     
     def __post_init__(self):
         """Set event type."""
         self.event_type = EventType.USER_LOGIN
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
         base = super().to_dict()
         base.update({

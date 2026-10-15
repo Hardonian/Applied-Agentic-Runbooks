@@ -1,13 +1,14 @@
 """Tests for AgentComplianceCertification generator."""
 
 import pytest
+
 from agent_factory.agents.agent import Agent, AgentConfig
-from agent_factory.core.guardrails import Guardrails, SQLInjectionGuardrail
 from agent_factory.compliance.certification import (
     AgentCertificationGenerator,
     CertificationGrade,
     RiskTier,
 )
+from agent_factory.core.guardrails import Guardrails, SQLInjectionGuardrail
 
 
 @pytest.mark.unit

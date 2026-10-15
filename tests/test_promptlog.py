@@ -2,12 +2,12 @@
 Tests for prompt logging.
 """
 
-import pytest
 import tempfile
 from pathlib import Path
 
-from agent_factory.promptlog import SQLiteStorage, Run, replay_run, diff_runs
-from agent_factory.promptlog.model import Run as RunModel, PromptLogEntry
+from agent_factory.promptlog import SQLiteStorage, diff_runs
+from agent_factory.promptlog.model import PromptLogEntry
+from agent_factory.promptlog.model import Run as RunModel
 
 
 def test_sqlite_storage():

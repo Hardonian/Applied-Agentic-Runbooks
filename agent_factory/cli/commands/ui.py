@@ -2,10 +2,11 @@
 CLI commands for UI generation.
 """
 
-import typer
 import subprocess
 import sys
 from pathlib import Path
+
+import typer
 
 app = typer.Typer(name="ui", help="UI generation commands")
 

@@ -1,6 +1,7 @@
 """Tests for safe expression evaluator."""
 
 import pytest
+
 from agent_factory.utils.safe_evaluator import SafeEvaluator, safe_evaluate
 
 

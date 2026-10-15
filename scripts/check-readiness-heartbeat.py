@@ -9,11 +9,11 @@ triggers on an inactive repository.
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timedelta, timezone
 import json
 import os
-from pathlib import PurePosixPath
 import sys
+from datetime import datetime, timedelta, timezone
+from pathlib import PurePosixPath
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote

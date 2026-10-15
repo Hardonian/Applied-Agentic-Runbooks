@@ -23,6 +23,9 @@ ingress:
 env:
   OTEL_EXPORTER_OTLP_ENDPOINT: ""
   REDIS_URL: "redis://redis:6379/0"
+  EVENT_BUS_BACKEND: "redis"
+  ARENA_JOB_BACKEND: "redis"
+  ARENA_ARTIFACT_DIR: "/var/lib/agent-factory/arena"
 existingSecret: agent-factory-secrets
 secretMount:
   enabled: true
@@ -31,3 +34,41 @@ podAnnotations: {}
 nodeSelector: {}
 tolerations: []
 affinity: {}
+serviceAccount:
+  create: true
+  annotations: {}
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities: {drop: ["ALL"]}
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+networkPolicy:
+  enabled: true
+monitoring:
+  serviceMonitor: {enabled: false, interval: 30s}
+  prometheusRule: {enabled: false}
+persistence:
+  enabled: true
+  size: 10Gi
+  # API and worker replicas share signed evidence. Use an RWX-capable class,
+  # or disable this PVC and configure an external artifact store.
+  accessModes: [ReadWriteMany]
+  storageClass: ""
+migrations:
+  enabled: true
+worker:
+  enabled: true
+  replicaCount: 2
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: kubernetes.io/hostname
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels: {app.kubernetes.io/name: agent-factory}

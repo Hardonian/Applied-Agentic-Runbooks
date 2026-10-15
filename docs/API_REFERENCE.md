@@ -2,6 +2,20 @@
 
 ## Autonomous Arena
 
+### `POST /api/v1/arena/jobs`
+
+Preferred production endpoint. Returns `202 Accepted`, `Location`, `run_id`,
+`status_url`, and the run-specific WebSocket topic. Settings include `trials` (1–100),
+`mode` (`deterministic` or `reality`), and `timeout_seconds`.
+
+### Durable run operations
+
+- `GET /api/v1/arena/runs` — tenant-scoped history and optional `run_status` filter.
+- `GET /api/v1/arena/runs/{run_id}` — lifecycle state and terminal summary.
+- `POST /api/v1/arena/runs/{run_id}/cancel` — cooperative cancellation request.
+- `GET /api/v1/arena/compare?ids=id1,id2` — quality/cost/latency comparison.
+- `GET /api/v1/arena/runs/{run_id}/artifacts/{apcap|veridag|manifest}` — evidence.
+
 ### `POST /api/v1/arena/run`
 
 Runs all suites by default. The optional body accepts `suites` (values:

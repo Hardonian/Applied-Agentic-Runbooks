@@ -8,9 +8,8 @@ Enables:
 """
 
 import json
-import asyncio
-from typing import Dict, List, Any, Optional, Callable, Union
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from typing import Any
 
 from agent_factory.tools.base import Tool, ToolResult
 
@@ -20,7 +19,7 @@ class MCPToolDefinition:
     """MCP standard tool schema."""
     name: str
     description: str
-    inputSchema: Dict[str, Any]
+    inputSchema: dict[str, Any]
 
 
 class MCPServer:
@@ -31,9 +30,9 @@ class MCPServer:
     def __init__(self, name: str = "agent-factory-mcp", version: str = "1.0.0"):
         self.name = name
         self.version = version
-        self.tools: Dict[str, Tool] = {}
-        self.resources: Dict[str, Dict[str, Any]] = {}
-        self.prompts: Dict[str, Dict[str, Any]] = {}
+        self.tools: dict[str, Tool] = {}
+        self.resources: dict[str, dict[str, Any]] = {}
+        self.prompts: dict[str, dict[str, Any]] = {}
 
     def register_tool(self, tool: Tool) -> None:
         """Register an Agent Factory tool into MCP server."""
@@ -56,7 +55,7 @@ class MCPServer:
             "template": template,
         }
 
-    def handle_json_rpc(self, request_json: Union[str, Dict[str, Any]]) -> Dict[str, Any]:
+    def handle_json_rpc(self, request_json: str | dict[str, Any]) -> dict[str, Any]:
         """
         Handle standard JSON-RPC 2.0 MCP request.
         """
@@ -152,9 +151,9 @@ class MCPClient:
 
     def __init__(self, server_name: str = "remote-mcp"):
         self.server_name = server_name
-        self.discovered_tools: Dict[str, Dict[str, Any]] = {}
+        self.discovered_tools: dict[str, dict[str, Any]] = {}
 
-    def ingest_server_tools(self, mcp_server: MCPServer) -> List[Tool]:
+    def ingest_server_tools(self, mcp_server: MCPServer) -> list[Tool]:
         """Convert MCP Server tools into native Agent Factory Tool instances."""
         tools_response = mcp_server.handle_json_rpc({"jsonrpc": "2.0", "id": "1", "method": "tools/list"})
         tools_list = tools_response.get("result", {}).get("tools", [])

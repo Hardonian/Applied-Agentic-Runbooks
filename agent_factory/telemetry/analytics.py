@@ -2,9 +2,9 @@
 Analytics engine for computing growth metrics and insights.
 """
 
-from typing import Dict, List, Optional, Any
-from datetime import datetime, timedelta
 from collections import defaultdict
+from datetime import datetime, timedelta
+from typing import Any
 
 from agent_factory.telemetry.collector import TelemetryCollector, get_collector
 from agent_factory.telemetry.model import EventType
@@ -27,7 +27,7 @@ class AnalyticsEngine:
         >>> print(metrics["dau"])
     """
     
-    def __init__(self, collector: Optional[TelemetryCollector] = None):
+    def __init__(self, collector: TelemetryCollector | None = None):
         """
         Initialize analytics engine.
         
@@ -38,9 +38,9 @@ class AnalyticsEngine:
     
     def get_growth_summary(
         self,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-    ) -> Dict[str, Any]:
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+    ) -> dict[str, Any]:
         """
         Get overall growth summary metrics.
         
@@ -89,9 +89,9 @@ class AnalyticsEngine:
     def get_tenant_metrics(
         self,
         tenant_id: str,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-    ) -> Dict[str, Any]:
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+    ) -> dict[str, Any]:
         """
         Get metrics for a specific tenant.
         
@@ -138,9 +138,9 @@ class AnalyticsEngine:
     
     def get_conversion_funnel(
         self,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-    ) -> Dict[str, Any]:
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+    ) -> dict[str, Any]:
         """
         Compute conversion funnel metrics.
         
@@ -166,7 +166,9 @@ class AnalyticsEngine:
         )
         
         from agent_factory.telemetry.model import (
-            TenantEvent, UserSignupEvent, UserActivatedEvent, RevenueEvent
+            RevenueEvent,
+            TenantEvent,
+            UserSignupEvent,
         )
         
         # Count funnel stages
@@ -238,7 +240,7 @@ class AnalyticsEngine:
         
         return funnel
     
-    def _compute_dau(self, events: List, date: datetime) -> int:
+    def _compute_dau(self, events: list, date: datetime) -> int:
         """Compute Daily Active Users."""
         day_start = date.replace(hour=0, minute=0, second=0, microsecond=0)
         day_end = day_start + timedelta(days=1)
@@ -248,9 +250,9 @@ class AnalyticsEngine:
             if day_start <= e.timestamp < day_end and e.user_id
         ]
         
-        return len(set(e.user_id for e in day_events))
+        return len({e.user_id for e in day_events})
     
-    def _compute_wau(self, events: List, date: datetime) -> int:
+    def _compute_wau(self, events: list, date: datetime) -> int:
         """Compute Weekly Active Users."""
         week_start = date - timedelta(days=7)
         
@@ -259,9 +261,9 @@ class AnalyticsEngine:
             if week_start <= e.timestamp <= date and e.user_id
         ]
         
-        return len(set(e.user_id for e in week_events))
+        return len({e.user_id for e in week_events})
     
-    def _compute_mau(self, events: List, date: datetime) -> int:
+    def _compute_mau(self, events: list, date: datetime) -> int:
         """Compute Monthly Active Users."""
         month_start = date - timedelta(days=30)
         
@@ -270,23 +272,23 @@ class AnalyticsEngine:
             if month_start <= e.timestamp <= date and e.user_id
         ]
         
-        return len(set(e.user_id for e in month_events))
+        return len({e.user_id for e in month_events})
     
-    def _count_unique_tenants(self, events: List) -> int:
+    def _count_unique_tenants(self, events: list) -> int:
         """Count unique tenants."""
         tenant_ids = {e.tenant_id for e in events if e.tenant_id}
         return len(tenant_ids)
     
-    def _count_unique_users(self, events: List) -> int:
+    def _count_unique_users(self, events: list) -> int:
         """Count unique users."""
         user_ids = {e.user_id for e in events if e.user_id}
         return len(user_ids)
     
-    def _count_events(self, events: List, event_type: str) -> int:
+    def _count_events(self, events: list, event_type: str) -> int:
         """Count events of a specific type."""
         return sum(1 for e in events if e.event_type.value == event_type)
     
-    def _count_unique_agents(self, events: List) -> int:
+    def _count_unique_agents(self, events: list) -> int:
         """Count unique agents."""
         from agent_factory.telemetry.model import AgentRunEvent
         
@@ -296,7 +298,7 @@ class AnalyticsEngine:
         }
         return len(agent_ids)
     
-    def _count_unique_workflows(self, events: List) -> int:
+    def _count_unique_workflows(self, events: list) -> int:
         """Count unique workflows."""
         from agent_factory.telemetry.model import WorkflowRunEvent
         
@@ -306,33 +308,29 @@ class AnalyticsEngine:
         }
         return len(workflow_ids)
     
-    def _sum_tokens(self, events: List) -> int:
+    def _sum_tokens(self, events: list) -> int:
         """Sum tokens used across events."""
         from agent_factory.telemetry.model import AgentRunEvent, WorkflowRunEvent
         
         total = 0
         for e in events:
-            if isinstance(e, AgentRunEvent):
-                total += e.tokens_used
-            elif isinstance(e, WorkflowRunEvent):
+            if isinstance(e, (AgentRunEvent, WorkflowRunEvent)):
                 total += e.tokens_used
         
         return total
     
-    def _sum_costs(self, events: List) -> float:
+    def _sum_costs(self, events: list) -> float:
         """Sum cost estimates across events."""
         from agent_factory.telemetry.model import AgentRunEvent, WorkflowRunEvent
         
         total = 0.0
         for e in events:
-            if isinstance(e, AgentRunEvent):
-                total += e.cost_estimate
-            elif isinstance(e, WorkflowRunEvent):
+            if isinstance(e, (AgentRunEvent, WorkflowRunEvent)):
                 total += e.cost_estimate
         
         return total
     
-    def _blueprint_installs_by_type(self, events: List) -> Dict[str, int]:
+    def _blueprint_installs_by_type(self, events: list) -> dict[str, int]:
         """Count blueprint installs by blueprint ID."""
         from agent_factory.telemetry.model import BlueprintInstallEvent
         
@@ -344,7 +342,7 @@ class AnalyticsEngine:
         
         return dict(counts)
     
-    def _agent_runs_by_agent(self, events: List) -> Dict[str, int]:
+    def _agent_runs_by_agent(self, events: list) -> dict[str, int]:
         """Count agent runs by agent ID."""
         from agent_factory.telemetry.model import AgentRunEvent
         
@@ -356,7 +354,7 @@ class AnalyticsEngine:
         
         return dict(counts)
     
-    def _workflow_runs_by_workflow(self, events: List) -> Dict[str, int]:
+    def _workflow_runs_by_workflow(self, events: list) -> dict[str, int]:
         """Count workflow runs by workflow ID."""
         from agent_factory.telemetry.model import WorkflowRunEvent
         
@@ -368,7 +366,7 @@ class AnalyticsEngine:
         
         return dict(counts)
     
-    def _compute_error_rate(self, events: List) -> float:
+    def _compute_error_rate(self, events: list) -> float:
         """Compute error rate (errors / total events)."""
         total_events = len(events)
         if total_events == 0:
@@ -379,9 +377,9 @@ class AnalyticsEngine:
     
     def get_channel_attribution(
         self,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-    ) -> Dict[str, Any]:
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+    ) -> dict[str, Any]:
         """
         Get user acquisition by channel.
         
@@ -438,8 +436,8 @@ class AnalyticsEngine:
     def get_retention_cohort(
         self,
         cohort_date: datetime,
-        days: List[int] = [1, 7, 30],
-    ) -> Dict[int, float]:
+        days: list[int] | None = None,
+    ) -> dict[int, float]:
         """
         Compute retention for a cohort.
         
@@ -451,6 +449,8 @@ class AnalyticsEngine:
             Dictionary mapping days to retention rate
         """
         # Get users who signed up on cohort_date
+        if days is None:
+            days = [1, 7, 30]
         signup_events = self.collector.query_events(
             event_type=EventType.TENANT_CREATED.value,
             start_time=cohort_date.replace(hour=0, minute=0, second=0, microsecond=0),
@@ -497,7 +497,7 @@ class AnalyticsEngine:
         self,
         metric: str,  # "users", "tenants", "revenue", "agent_runs"
         period: str = "month",  # "week", "month"
-    ) -> Dict[str, float]:
+    ) -> dict[str, float]:
         """
         Compute growth rate for a metric.
         
@@ -577,7 +577,7 @@ class AnalyticsEngine:
 
 
 # Global analytics instance
-_analytics: Optional[AnalyticsEngine] = None
+_analytics: AnalyticsEngine | None = None
 
 
 def get_analytics() -> AnalyticsEngine:

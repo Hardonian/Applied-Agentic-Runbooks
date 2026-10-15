@@ -5,8 +5,9 @@ Helps identify and fill [TO BE FILLED] sections in data room docs
 """
 
 import re
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
 
 def find_placeholders():
     """Find all [TO BE FILLED] placeholders in data room"""
@@ -53,7 +54,7 @@ def generate_fill_guide():
         guide += "\n"
         total += item['count']
     
-    guide += f"""
+    guide += rf"""
 **Total Placeholders:** {total}
 
 ---

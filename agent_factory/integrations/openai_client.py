@@ -2,10 +2,12 @@
 OpenAI Agents SDK integration for Agent Factory Platform.
 """
 
-import os
 import json
-from typing import List, Dict, Any, Optional
+import os
+from typing import Any
+
 from openai import OpenAI
+
 from agent_factory.tools.base import Tool
 
 
@@ -18,8 +20,8 @@ class OpenAIAgentClient:
     
     def __init__(
         self,
-        api_key: Optional[str] = None,
-        client: Optional[Any] = None,
+        api_key: str | None = None,
+        client: Any | None = None,
         timeout_seconds: float = 30.0,
     ):
         """
@@ -45,11 +47,11 @@ class OpenAIAgentClient:
         instructions: str,
         input_text: str,
         model: str = "gpt-4o",
-        tools: Optional[List[Tool]] = None,
+        tools: list[Tool] | None = None,
         temperature: float = 0.7,
         max_tokens: int = 2000,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        context: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """
         Run an agent using OpenAI API with circuit breaker protection.
         
@@ -96,7 +98,7 @@ class OpenAIAgentClient:
         messages.append({"role": "user", "content": input_text})
         
         # Call OpenAI API with circuit breaker protection
-        from agent_factory.security.circuit_breaker import get_circuit_breaker, CircuitBreakerConfig
+        from agent_factory.security.circuit_breaker import CircuitBreakerConfig, get_circuit_breaker
         
         breaker = get_circuit_breaker(
             "openai_api",
@@ -144,7 +146,7 @@ class OpenAIAgentClient:
         model: str = "gpt-4o",
         temperature: float = 0.7,
         max_tokens: int = 2000,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
     ):
         """Yield text deltas from a streamed OpenAI completion."""
         messages = [{"role": "system", "content": instructions}]

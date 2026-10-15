@@ -1,0 +1,19 @@
+{
+  "execution_id": "veridag-550865ae73c0",
+  "workflow_name": "arena-b2ab4bc92d43",
+  "final_merkle_root": "d23946790f950b33b75489fdc608e5e0ce653403b1ec09301fc9943cd2034d6b",
+  "timestamp": 1792022466.143431,
+  "is_valid": true,
+  "node_count": 1,
+  "node_proofs": {
+    "reasoning_frontier": {
+      "node_id": "reasoning_frontier",
+      "executor_id": "arena-runner",
+      "parent_hashes": [],
+      "input_hash": "d3e6035eb78769f82c7b562835014b868e6d28742cb5c4e57f3c7d7ea07ad5d8",
+      "output_hash": "123e554b4fe05bb21e7632176141828069c97c7d977b344d4c3ca374256cdfa8",
+      "state_merkle_hash": "33eeac04413a3029dc52df35baf94ee4e5fdfbcb01957d6c4e5e04eec7e87919",
+      "execution_time": 2.00001522898674e-07
+    }
+  }
+}

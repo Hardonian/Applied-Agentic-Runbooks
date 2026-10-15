@@ -5,12 +5,11 @@ Enables researchers and data scientists to track experiments, compare variants,
 and analyze results.
 """
 
+import uuid
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any, Callable
 from datetime import datetime
 from enum import Enum
-import uuid
-import json
+from typing import Any
 
 
 class ExperimentStatus(str, Enum):
@@ -34,7 +33,7 @@ class Variant:
     id: str
     name: str
     variant_type: VariantType
-    config: Dict[str, Any]
+    config: dict[str, Any]
     allocation_percent: float = 50.0  # Percentage of traffic
 
 
@@ -43,8 +42,8 @@ class ExperimentResult:
     """Result of an experiment run."""
     variant_id: str
     success: bool
-    metrics: Dict[str, float]
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metrics: dict[str, float]
+    metadata: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.utcnow)
 
 
@@ -54,13 +53,13 @@ class Experiment:
     id: str
     name: str
     description: str
-    variants: List[Variant]
+    variants: list[Variant]
     status: ExperimentStatus = ExperimentStatus.DRAFT
-    start_date: Optional[datetime] = None
-    end_date: Optional[datetime] = None
+    start_date: datetime | None = None
+    end_date: datetime | None = None
     created_at: datetime = field(default_factory=datetime.utcnow)
-    created_by: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    created_by: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class ExperimentTracker:
@@ -81,16 +80,16 @@ class ExperimentTracker:
     
     def __init__(self):
         """Initialize experiment tracker."""
-        self.experiments: Dict[str, Experiment] = {}
-        self.results: Dict[str, List[ExperimentResult]] = {}
+        self.experiments: dict[str, Experiment] = {}
+        self.results: dict[str, list[ExperimentResult]] = {}
     
     def create_experiment(
         self,
         name: str,
         description: str,
-        variants: List[Variant],
-        created_by: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        variants: list[Variant],
+        created_by: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> Experiment:
         """
         Create a new experiment.
@@ -195,8 +194,8 @@ class ExperimentTracker:
         experiment_id: str,
         variant_id: str,
         success: bool,
-        metrics: Dict[str, float],
-        metadata: Optional[Dict[str, Any]] = None,
+        metrics: dict[str, float],
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """
         Record an experiment result.
@@ -220,7 +219,7 @@ class ExperimentTracker:
         
         self.results[experiment_id].append(result)
     
-    def get_experiment_results(self, experiment_id: str) -> Dict[str, Any]:
+    def get_experiment_results(self, experiment_id: str) -> dict[str, Any]:
         """
         Get experiment results and statistics.
         
@@ -315,9 +314,9 @@ class ExperimentTracker:
     
     def list_experiments(
         self,
-        status: Optional[ExperimentStatus] = None,
-        created_by: Optional[str] = None,
-    ) -> List[Experiment]:
+        status: ExperimentStatus | None = None,
+        created_by: str | None = None,
+    ) -> list[Experiment]:
         """
         List experiments with optional filters.
         
@@ -340,7 +339,7 @@ class ExperimentTracker:
 
 
 # Global instance
-_experiment_tracker: Optional[ExperimentTracker] = None
+_experiment_tracker: ExperimentTracker | None = None
 
 
 def get_experiment_tracker() -> ExperimentTracker:

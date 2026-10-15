@@ -1,8 +1,8 @@
 """Application Performance Monitoring (APM)."""
 import os
 import time
-from typing import Optional, Dict, Any
 from functools import wraps
+from typing import Any
 
 
 class APMClient:
@@ -10,9 +10,9 @@ class APMClient:
     
     def __init__(self):
         self.enabled = os.getenv("APM_ENABLED", "false").lower() == "true"
-        self.metrics: Dict[str, list] = {}
+        self.metrics: dict[str, list] = {}
     
-    def record_timing(self, operation: str, duration: float, tags: Optional[Dict[str, str]] = None) -> None:
+    def record_timing(self, operation: str, duration: float, tags: dict[str, str] | None = None) -> None:
         """
         Record timing metric.
         
@@ -33,7 +33,7 @@ class APMClient:
             "timestamp": time.time(),
         })
     
-    def record_counter(self, metric: str, value: float = 1.0, tags: Optional[Dict[str, str]] = None) -> None:
+    def record_counter(self, metric: str, value: float = 1.0, tags: dict[str, str] | None = None) -> None:
         """
         Record counter metric.
         
@@ -46,9 +46,8 @@ class APMClient:
             return
         
         # Could integrate with Prometheus or other metrics backend
-        pass
     
-    def get_stats(self, operation: str) -> Optional[Dict[str, Any]]:
+    def get_stats(self, operation: str) -> dict[str, Any] | None:
         """
         Get statistics for an operation.
         
@@ -74,7 +73,7 @@ class APMClient:
 
 
 # Global APM client instance
-_apm_client: Optional[APMClient] = None
+_apm_client: APMClient | None = None
 
 
 def get_apm_client() -> APMClient:
@@ -151,6 +150,6 @@ def setup_apm(app) -> None:
     async def apm_stats():
         """Get APM statistics."""
         stats = {}
-        for operation in apm.metrics.keys():
+        for operation in apm.metrics:
             stats[operation] = apm.get_stats(operation)
         return stats

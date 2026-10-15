@@ -2,13 +2,13 @@
 API key management for programmatic access.
 """
 
-import secrets
 import hashlib
+import secrets
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any
+from typing import Any
 
+from agent_factory.database.models import APIKey
 from agent_factory.database.session import get_db
-from agent_factory.database.models import APIKey, User, Tenant
 from agent_factory.security.audit import audit_log
 
 
@@ -20,7 +20,7 @@ def generate_api_key() -> str:
         API key string (format: af_...)
     """
     # Generate 32 bytes of random data
-    random_bytes = secrets.token_bytes(32)
+    secrets.token_bytes(32)
     # Encode as base64-like string, prefixed with af_
     key = "af_" + secrets.token_urlsafe(32)
     return key
@@ -43,9 +43,9 @@ def create_api_key(
     name: str,
     tenant_id: str,
     user_id: str,
-    permissions: Optional[list] = None,
-    expires_days: Optional[int] = None,
-) -> Dict[str, Any]:
+    permissions: list | None = None,
+    expires_days: int | None = None,
+) -> dict[str, Any]:
     """
     Create a new API key.
     
@@ -126,7 +126,7 @@ def create_api_key(
         db.close()
 
 
-def verify_api_key(api_key: str) -> Optional[Dict[str, Any]]:
+def verify_api_key(api_key: str) -> dict[str, Any] | None:
     """
     Verify an API key and return associated user/tenant info.
     
@@ -190,7 +190,7 @@ def revoke_api_key(key_id: str, user_id: str) -> bool:
         # Check authorization (user must own key or be tenant admin)
         if api_key_model.user_id != user_id:
             # Check if user is tenant admin
-            from agent_factory.database.models import User, Tenant
+            from agent_factory.database.models import Tenant, User
             user = db.query(User).filter(User.id == user_id).first()
             if user:
                 tenant = db.query(Tenant).filter(Tenant.id == api_key_model.tenant_id).first()
@@ -222,7 +222,7 @@ def revoke_api_key(key_id: str, user_id: str) -> bool:
         db.close()
 
 
-def list_api_keys(tenant_id: str, user_id: Optional[str] = None) -> list:
+def list_api_keys(tenant_id: str, user_id: str | None = None) -> list:
     """
     List API keys for a tenant.
     

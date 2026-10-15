@@ -1,0 +1,19 @@
+{
+  "execution_id": "veridag-a0169a711dd0",
+  "workflow_name": "arena-3fcc60a8646d",
+  "final_merkle_root": "b0b453bc345342c7008d707b60ae52fb7ed0d76819dc0b903d647cfab1810717",
+  "timestamp": 1792022486.0496886,
+  "is_valid": true,
+  "node_count": 1,
+  "node_proofs": {
+    "settler_accounting": {
+      "node_id": "settler_accounting",
+      "executor_id": "arena-runner",
+      "parent_hashes": [],
+      "input_hash": "f3b8758eac2a209b4e25e45becdd4ad5ed3e8dd70a370fb2d07dbac7f48dfaa1",
+      "output_hash": "0d0d16d017bb4190621a736de51e2988c69c44f8f2fb5fb7817abf37f22ba65f",
+      "state_merkle_hash": "b89695c8c88285161308c718bf6bbeadea4a5be9c0b579e3e7ebdea62e87d777",
+      "execution_time": 3.00002284348011e-07
+    }
+  }
+}

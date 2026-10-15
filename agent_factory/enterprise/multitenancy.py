@@ -1,12 +1,13 @@
 """Multi-tenancy support."""
 
-from typing import Optional, Dict, Any
-from agent_factory.database.models import Tenant, User
+from typing import Any
+
+from agent_factory.database.models import Tenant
 from agent_factory.database.session import get_db
 from agent_factory.security.audit import audit_log
 
 
-def get_tenant(tenant_id: str) -> Optional[Dict[str, Any]]:
+def get_tenant(tenant_id: str) -> dict[str, Any] | None:
     """
     Get tenant information.
     
@@ -41,7 +42,7 @@ def create_tenant(
     name: str,
     slug: str,
     plan: str = "free"
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Create new tenant.
     

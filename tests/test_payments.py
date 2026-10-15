@@ -1,7 +1,7 @@
 """Tests for payments functionality."""
 
+
 import pytest
-from unittest.mock import Mock, patch
 
 from agent_factory.payments.revenue_sharing import calculate_revenue_share
 

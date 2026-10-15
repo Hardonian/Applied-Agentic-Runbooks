@@ -8,19 +8,17 @@ at runtime to autonomously solve long-tail problems without human intervention.
 from __future__ import annotations
 
 import ast
-import inspect
-import math
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any
 
 from agent_factory.tools.base import Tool, ToolResult
-from agent_factory.tools.interpreter import SAFE_GLOBALS, FORBIDDEN_NAMES
+from agent_factory.tools.interpreter import FORBIDDEN_NAMES, SAFE_GLOBALS
 
 
 class ToolSecurityViolation(Exception):
     """Raised when dynamically generated code violates sandbox safety boundaries."""
-    pass
 
 
 @dataclass
@@ -28,10 +26,10 @@ class ToolSynthesisSpec:
     """Specification for JIT tool synthesis."""
     name: str
     description: str
-    code: Optional[str] = None
-    parameters_schema: Dict[str, Any] = field(default_factory=dict)
-    sample_inputs: List[Dict[str, Any]] = field(default_factory=list)
-    expected_outputs: Optional[List[Any]] = None
+    code: str | None = None
+    parameters_schema: dict[str, Any] = field(default_factory=dict)
+    sample_inputs: list[dict[str, Any]] = field(default_factory=list)
+    expected_outputs: list[Any] | None = None
     author: str = "Autonomous JIT Engine"
 
 
@@ -44,7 +42,7 @@ class DynamicSynthesizedTool(Tool):
         description: str,
         callable_fn: Callable[..., Any],
         source_code: str,
-        parameters_schema: Dict[str, Any],
+        parameters_schema: dict[str, Any],
         integrity_hash: str,
     ):
         super().__init__(
@@ -81,7 +79,7 @@ class DynamicSynthesizedTool(Tool):
             return ToolResult(
                 output=None,
                 success=False,
-                error=f"Dynamic tool execution failed: {str(e)}",
+                error=f"Dynamic tool execution failed: {e!s}",
                 metadata={"tool_type": "jit_synthesized", "execution_time": duration},
             )
 
@@ -126,9 +124,8 @@ class JITToolSynthesizer:
                     raise ToolSecurityViolation(f"Forbidden call to '{node.func.id}()'")
 
             # Check for function definition matching name
-            elif isinstance(node, ast.FunctionDef):
-                if node.name == expected_fn_name:
-                    has_target_function = True
+            elif isinstance(node, ast.FunctionDef) and node.name == expected_fn_name:
+                has_target_function = True
 
         if not has_target_function:
             raise ToolSecurityViolation(
@@ -151,7 +148,7 @@ class JITToolSynthesizer:
         cls.analyze_ast_safety(spec.code, spec.name)
 
         # 2. Compile within safe isolated namespace
-        sandbox_scope: Dict[str, Any] = dict(SAFE_GLOBALS)
+        sandbox_scope: dict[str, Any] = dict(SAFE_GLOBALS)
         try:
             exec(compile(spec.code, f"<jit_tool_{spec.name}>", "exec"), sandbox_scope)
         except Exception as e:

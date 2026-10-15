@@ -2,14 +2,14 @@
 Load knowledge packs from YAML/JSON files.
 """
 
-import yaml
 from pathlib import Path
-from typing import Dict, Any, Optional
+
+import yaml
 
 from agent_factory.knowledge.model import (
-    KnowledgePack,
     DataSource,
     EmbeddingConfig,
+    KnowledgePack,
     RetrieverConfig,
 )
 

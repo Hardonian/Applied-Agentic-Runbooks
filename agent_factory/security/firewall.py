@@ -10,7 +10,6 @@ Provides:
 
 import re
 import secrets
-from typing import Dict, Any, List, Optional, Tuple
 from dataclasses import dataclass, field
 
 
@@ -19,7 +18,7 @@ class FirewallVerdict:
     """Verdict from the LLM Security Firewall inspection."""
     allowed: bool
     risk_score: float  # 0.0 to 1.0
-    violations: List[str] = field(default_factory=list)
+    violations: list[str] = field(default_factory=list)
     sanitized_text: str = ""
     canary_intact: bool = True
 
@@ -63,7 +62,7 @@ class LLMSecurityFirewall:
         """Generate a random cryptographic canary token."""
         return f"CANARY_{secrets.token_hex(8).upper()}"
 
-    def inspect_input(self, text: str, canary: Optional[str] = None) -> FirewallVerdict:
+    def inspect_input(self, text: str, canary: str | None = None) -> FirewallVerdict:
         """
         Inspect user prompt for injection attacks, jailbreaks, and sensitive data.
         """
@@ -97,7 +96,7 @@ class LLMSecurityFirewall:
             canary_intact=True,
         )
 
-    def inspect_output(self, output: str, system_prompt: str = "", canary: Optional[str] = None) -> FirewallVerdict:
+    def inspect_output(self, output: str, system_prompt: str = "", canary: str | None = None) -> FirewallVerdict:
         """
         Inspect LLM output for system prompt leakage, canary integrity, and secrets.
         """
@@ -133,7 +132,7 @@ class LLMSecurityFirewall:
             canary_intact=canary_intact,
         )
 
-    def redact_secrets(self, text: str) -> Tuple[str, List[str]]:
+    def redact_secrets(self, text: str) -> tuple[str, list[str]]:
         """Mask API keys, credentials, and PII."""
         sanitized = text
         redacted = []

@@ -1,6 +1,7 @@
 """Blueprint publishing functionality."""
 
-from typing import Optional, Dict, Any
+from typing import Any
+
 from agent_factory.blueprints.model import Blueprint
 from agent_factory.database.models import Blueprint as BlueprintModel
 from agent_factory.database.session import get_db
@@ -13,7 +14,7 @@ def publish_blueprint(
     is_public: bool = True,
     pricing_model: str = "free",
     price: float = 0.0
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Publish blueprint to marketplace.
     
@@ -104,7 +105,7 @@ def publish_blueprint(
         raise
 
 
-def unpublish_blueprint(blueprint_id: str, publisher_id: str) -> Dict[str, Any]:
+def unpublish_blueprint(blueprint_id: str, publisher_id: str) -> dict[str, Any]:
     """
     Unpublish blueprint from marketplace.
     

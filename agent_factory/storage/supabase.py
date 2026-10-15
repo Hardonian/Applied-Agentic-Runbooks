@@ -1,9 +1,13 @@
 """Supabase Storage backend."""
 
 import os
-from typing import Optional, List, BinaryIO
+from typing import BinaryIO
+
+from agent_factory.database.supabase_client import (
+    get_supabase_storage_bucket,
+    is_supabase_configured,
+)
 from agent_factory.storage.base import StorageBackend, StorageFile
-from agent_factory.database.supabase_client import get_supabase_storage_bucket, is_supabase_configured
 
 
 class SupabaseStorage(StorageBackend):
@@ -33,7 +37,7 @@ class SupabaseStorage(StorageBackend):
                 raise ValueError(f"Failed to get Supabase storage bucket: {self.bucket_name}")
         return self._bucket
     
-    def upload(self, path: str, file_obj: BinaryIO, content_type: Optional[str] = None) -> str:
+    def upload(self, path: str, file_obj: BinaryIO, content_type: str | None = None) -> str:
         """
         Upload a file to Supabase storage.
         
@@ -88,7 +92,7 @@ class SupabaseStorage(StorageBackend):
         except Exception:
             return False
     
-    def list_files(self, prefix: str = "", limit: int = 1000) -> List[StorageFile]:
+    def list_files(self, prefix: str = "", limit: int = 1000) -> list[StorageFile]:
         """
         List files in Supabase storage.
         
@@ -117,7 +121,7 @@ class SupabaseStorage(StorageBackend):
         
         return files
     
-    def get_url(self, path: str, expires_in: Optional[int] = None) -> str:
+    def get_url(self, path: str, expires_in: int | None = None) -> str:
         """
         Get public URL for a file.
         

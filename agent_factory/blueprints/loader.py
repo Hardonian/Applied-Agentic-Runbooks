@@ -2,9 +2,9 @@
 Load blueprints from YAML/JSON files.
 """
 
-import yaml
 from pathlib import Path
-from typing import Dict, Any
+
+import yaml
 
 from agent_factory.blueprints.model import (
     Blueprint,

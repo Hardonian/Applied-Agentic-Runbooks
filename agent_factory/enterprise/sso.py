@@ -6,7 +6,7 @@ redacted pending-verification record; an IdP metadata/login round trip remains
 an external production closure gate.
 """
 
-from typing import Any, Dict, Optional, Set
+from typing import Any
 from urllib.parse import urlparse
 
 
@@ -20,7 +20,7 @@ def _require_nonempty(value: str, field_name: str) -> str:
     return value.strip()
 
 
-def _require_secure_url(value: str, field_name: str, allowed_schemes: Set[str]) -> str:
+def _require_secure_url(value: str, field_name: str, allowed_schemes: set[str]) -> str:
     value = _require_nonempty(value, field_name)
     parsed = urlparse(value)
     if parsed.scheme not in allowed_schemes or not parsed.netloc:
@@ -29,7 +29,7 @@ def _require_secure_url(value: str, field_name: str, allowed_schemes: Set[str]) 
     return value
 
 
-def _pending_configuration(provider_type: str, **details: Any) -> Dict[str, Any]:
+def _pending_configuration(provider_type: str, **details: Any) -> dict[str, Any]:
     return {
         "type": provider_type,
         "status": "pending_provider_validation",
@@ -43,7 +43,7 @@ def _pending_configuration(provider_type: str, **details: Any) -> Dict[str, Any]
     }
 
 
-def setup_saml(entity_id: str, sso_url: str, x509_cert: str) -> Dict[str, Any]:
+def setup_saml(entity_id: str, sso_url: str, x509_cert: str) -> dict[str, Any]:
     """Validate SAML metadata without storing certificate material."""
     entity_id = _require_nonempty(entity_id, "entity_id")
     sso_url = _require_secure_url(sso_url, "sso_url", {"https"})
@@ -61,7 +61,7 @@ def setup_oauth(
     client_secret: str,
     authorization_url: str,
     token_url: str,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Validate OAuth endpoints and return a redacted verification record."""
     provider = _require_nonempty(provider, "provider")
     client_id = _require_nonempty(client_id, "client_id")
@@ -81,9 +81,9 @@ def setup_oauth(
 def setup_ldap(
     server_url: str,
     base_dn: str,
-    bind_dn: Optional[str] = None,
-    bind_password: Optional[str] = None,
-) -> Dict[str, Any]:
+    bind_dn: str | None = None,
+    bind_password: str | None = None,
+) -> dict[str, Any]:
     """Validate LDAPS settings and return a redacted verification record."""
     server_url = _require_secure_url(server_url, "server_url", {"ldaps"})
     base_dn = _require_nonempty(base_dn, "base_dn")

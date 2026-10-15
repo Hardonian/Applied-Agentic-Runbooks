@@ -2,9 +2,10 @@
 Write agents, tools, and workflows to files.
 """
 
-import yaml
 from pathlib import Path
-from typing import Dict, Any, Optional, List, Union
+from typing import Any
+
+import yaml
 
 
 class AgentWriter:
@@ -15,7 +16,7 @@ class AgentWriter:
         self.agents_dir = output_dir / "agents"
         self.agents_dir.mkdir(parents=True, exist_ok=True)
     
-    def write(self, agent_id: str, agent_def: Dict[str, Any]) -> Path:
+    def write(self, agent_id: str, agent_def: dict[str, Any]) -> Path:
         """
         Write agent configuration to YAML file.
         
@@ -59,7 +60,7 @@ class ToolWriter:
         self.tools_dir.mkdir(parents=True, exist_ok=True)
         self.source_code_cache = {}  # Cache source code for AST reconstruction
     
-    def write(self, tool_id: str, tool_def: Dict[str, Any], source_code: Optional[str] = None, ast_node: Optional[Any] = None) -> Path:
+    def write(self, tool_id: str, tool_def: dict[str, Any], source_code: str | None = None, ast_node: Any | None = None) -> Path:
         """
         Write tool implementation to Python file.
         
@@ -137,11 +138,11 @@ class ToolWriter:
             # If extraction fails, return template
             return ""
     
-    def _generate_tool_template(self, tool_id: str, tool_def: Dict[str, Any]) -> str:
+    def _generate_tool_template(self, tool_id: str, tool_def: dict[str, Any]) -> str:
         """Generate a tool template if code is missing."""
         params = tool_def.get("parameters", [])
         param_str = ", ".join(
-            f"{p['name']}: {p.get('type', 'str')}" + (f" = None" if not p.get('required', True) else "")
+            f"{p['name']}: {p.get('type', 'str')}" + (" = None" if not p.get('required', True) else "")
             for p in params
         )
         
@@ -161,7 +162,7 @@ class WorkflowWriter:
         self.workflows_dir = output_dir / "workflows"
         self.workflows_dir.mkdir(parents=True, exist_ok=True)
     
-    def write(self, workflow_id: str, workflow_def: Dict[str, Any]) -> Path:
+    def write(self, workflow_id: str, workflow_def: dict[str, Any]) -> Path:
         """
         Write workflow definition to YAML file.
         

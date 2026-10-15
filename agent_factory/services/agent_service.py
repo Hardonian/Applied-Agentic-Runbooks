@@ -2,7 +2,8 @@
 Agent service - Business logic for agent operations.
 """
 
-from typing import Dict, List, Optional, Any
+from typing import Any
+
 from agent_factory.agents.agent import Agent
 from agent_factory.registry.local_registry import LocalRegistry
 from agent_factory.runtime.engine import RuntimeEngine
@@ -11,7 +12,7 @@ from agent_factory.runtime.engine import RuntimeEngine
 class AgentService:
     """Service for agent operations."""
     
-    def __init__(self, registry: Optional[LocalRegistry] = None, runtime: Optional[RuntimeEngine] = None):
+    def __init__(self, registry: LocalRegistry | None = None, runtime: RuntimeEngine | None = None):
         """
         Initialize agent service.
         
@@ -22,7 +23,7 @@ class AgentService:
         self.registry = registry or LocalRegistry()
         self.runtime = runtime or RuntimeEngine()
     
-    def create_agent(self, agent_data: Dict[str, Any]) -> Agent:
+    def create_agent(self, agent_data: dict[str, Any]) -> Agent:
         """
         Create a new agent.
         
@@ -37,7 +38,7 @@ class AgentService:
         self.runtime.register_agent(agent)
         return agent
     
-    def get_agent(self, agent_id: str) -> Optional[Agent]:
+    def get_agent(self, agent_id: str) -> Agent | None:
         """
         Get agent by ID.
         
@@ -49,7 +50,7 @@ class AgentService:
         """
         return self.registry.get_agent(agent_id)
     
-    def list_agents(self, tenant_id: Optional[str] = None) -> List[str]:
+    def list_agents(self, tenant_id: str | None = None) -> list[str]:
         """
         List all agent IDs.
         
@@ -61,7 +62,7 @@ class AgentService:
         """
         return self.registry.list_agents()
     
-    def update_agent(self, agent_id: str, updates: Dict[str, Any]) -> Optional[Agent]:
+    def update_agent(self, agent_id: str, updates: dict[str, Any]) -> Agent | None:
         """
         Update an agent.
         
@@ -98,7 +99,7 @@ class AgentService:
         """
         return self.registry.delete_agent(agent_id)
     
-    def run_agent(self, agent_id: str, input_text: str, session_id: Optional[str] = None) -> str:
+    def run_agent(self, agent_id: str, input_text: str, session_id: str | None = None) -> str:
         """
         Run an agent.
         

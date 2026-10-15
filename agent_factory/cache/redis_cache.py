@@ -1,17 +1,19 @@
 """Redis caching implementation."""
 
-import os
 import json
-import redis
-from typing import Optional, Any
+import os
 from functools import wraps
+from typing import Any
+
+import redis
+
 from agent_factory.monitoring.metrics import MetricsCollector
 
 
 class RedisCache:
     """Redis cache implementation."""
     
-    def __init__(self, host: Optional[str] = None, port: int = 6379, db: int = 0):
+    def __init__(self, host: str | None = None, port: int = 6379, db: int = 0):
         """
         Initialize Redis cache.
         
@@ -39,7 +41,7 @@ class RedisCache:
         except Exception:
             self.client = None
     
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         """
         Get value from cache.
         
@@ -115,7 +117,7 @@ class RedisCache:
 
 
 # Global cache instance
-_cache: Optional[RedisCache] = None
+_cache: RedisCache | None = None
 
 
 def get_cache() -> RedisCache:
@@ -140,7 +142,7 @@ def cached(ttl: int = 3600, key_prefix: str = ""):
             cache = get_cache()
             
             # Generate cache key
-            cache_key = f"{key_prefix}:{func.__name__}:{str(args)}:{str(kwargs)}"
+            cache_key = f"{key_prefix}:{func.__name__}:{args!s}:{kwargs!s}"
             
             # Try to get from cache
             cached_value = cache.get(cache_key)

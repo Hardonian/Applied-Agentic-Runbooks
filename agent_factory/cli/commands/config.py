@@ -2,18 +2,17 @@
 CLI commands for configuration management.
 """
 
-import typer
 import json
-import os
 from pathlib import Path
-from typing import Optional
+
+import typer
 
 app = typer.Typer(name="config", help="Configuration management")
 
 
 @app.command()
 def check(
-    config_file: Optional[str] = typer.Option(None, "--file", "-f", help="Config file path"),
+    config_file: str | None = typer.Option(None, "--file", "-f", help="Config file path"),
 ):
     """Check configuration validity."""
     from agent_factory.utils.config import Config
@@ -32,7 +31,7 @@ def check(
             typer.echo("   ⚠️  Directory does not exist (will be created)")
         
         # Check API keys
-        typer.echo(f"\n🔐 API Keys:")
+        typer.echo("\n🔐 API Keys:")
         openai_key = config.openai_api_key
         anthropic_key = config.anthropic_api_key
         
@@ -40,13 +39,13 @@ def check(
             masked = openai_key[:4] + "..." + openai_key[-4:] if len(openai_key) > 8 else "***"
             typer.echo(f"   ✅ OpenAI API Key: {masked}")
         else:
-            typer.echo(f"   ⚠️  OpenAI API Key: Not set")
+            typer.echo("   ⚠️  OpenAI API Key: Not set")
         
         if anthropic_key:
             masked = anthropic_key[:4] + "..." + anthropic_key[-4:] if len(anthropic_key) > 8 else "***"
             typer.echo(f"   ✅ Anthropic API Key: {masked}")
         else:
-            typer.echo(f"   ⚠️  Anthropic API Key: Not set")
+            typer.echo("   ⚠️  Anthropic API Key: Not set")
         
         # Check environment
         typer.echo(f"\n🌍 Environment: {config.environment}")
@@ -90,7 +89,7 @@ def show(
 
 @app.command()
 def validate(
-    config_file: Optional[str] = typer.Option(None, "--file", "-f", help="Config file path"),
+    config_file: str | None = typer.Option(None, "--file", "-f", help="Config file path"),
 ):
     """Validate configuration file."""
     from agent_factory.utils.config import Config

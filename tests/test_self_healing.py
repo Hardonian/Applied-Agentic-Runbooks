@@ -1,14 +1,14 @@
 """Tests for SelfHealingAgentExecutor and resilience engine."""
 
-import pytest
 from unittest.mock import Mock
+
+import pytest
 
 from agent_factory.agents.agent import Agent, AgentResult, AgentStatus
 from agent_factory.runtime.self_healing import (
-    SelfHealingAgentExecutor,
-    SelfHealingResult,
     FailureCategory,
     RecoveryStrategy,
+    SelfHealingAgentExecutor,
 )
 from agent_factory.security.circuit_breaker import CircuitBreaker
 
@@ -118,7 +118,7 @@ def test_self_healing_circuit_breaker_halts():
         error="Connection refused by backend",
     )
 
-    from agent_factory.security.circuit_breaker import CircuitBreaker, CircuitBreakerConfig
+    from agent_factory.security.circuit_breaker import CircuitBreakerConfig
     cb = CircuitBreaker("test_cb", CircuitBreakerConfig(failure_threshold=2, timeout=60.0))
     executor = SelfHealingAgentExecutor(
         agent=mock_agent, max_retries=4, circuit_breaker=cb, initial_backoff=0.01

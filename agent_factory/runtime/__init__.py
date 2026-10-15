@@ -5,6 +5,7 @@ Runtime engine, memory, logging, and configuration.
 # Import memory first (doesn't depend on engine)
 from agent_factory.runtime.memory import MemoryStore, SQLiteMemoryStore
 
+
 # Lazy import engine to avoid circular dependency with agents
 def __getattr__(name: str):
     """Lazy import for RuntimeEngine and Execution to avoid circular imports."""
@@ -26,13 +27,13 @@ def __getattr__(name: str):
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 __all__ = [
-    "RuntimeEngine",
     "Execution",
+    "FailureCategory",
+    "HealingAction",
     "MemoryStore",
+    "RecoveryStrategy",
+    "RuntimeEngine",
     "SQLiteMemoryStore",
     "SelfHealingAgentExecutor",
     "SelfHealingResult",
-    "FailureCategory",
-    "RecoveryStrategy",
-    "HealingAction",
 ]

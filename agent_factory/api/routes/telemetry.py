@@ -1,13 +1,11 @@
 """Telemetry and metrics API routes."""
 
-from fastapi import APIRouter, HTTPException, Request
-from typing import Optional
 from datetime import datetime
-from pydantic import BaseModel
 
-from agent_factory.telemetry.analytics import get_analytics
+from fastapi import APIRouter, HTTPException, Request
+
 from agent_factory.security.auth import get_current_user_from_request
-from agent_factory.security.rbac import Permission, require_permission
+from agent_factory.telemetry.analytics import get_analytics
 
 router = APIRouter()
 
@@ -15,9 +13,9 @@ router = APIRouter()
 @router.get("/metrics")
 async def get_metrics(
     request: Request,
-    tenant_id: Optional[str] = None,
-    start_date: Optional[str] = None,
-    end_date: Optional[str] = None,
+    tenant_id: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
 ):
     """
     Get growth metrics summary.
@@ -77,8 +75,8 @@ async def get_metrics(
 async def get_tenant_metrics(
     request: Request,
     tenant_id: str,
-    start_date: Optional[str] = None,
-    end_date: Optional[str] = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
 ):
     """
     Get metrics for a specific tenant.
@@ -138,8 +136,8 @@ async def get_tenant_metrics(
 @router.get("/funnel")
 async def get_conversion_funnel(
     request: Request,
-    start_date: Optional[str] = None,
-    end_date: Optional[str] = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
 ):
     """
     Get conversion funnel metrics.

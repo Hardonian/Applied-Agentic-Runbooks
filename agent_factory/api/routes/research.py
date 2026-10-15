@@ -8,20 +8,19 @@ Provides endpoints for:
 - Downloading reports
 """
 
-from fastapi import APIRouter, HTTPException, Depends, status
-from typing import List, Dict, Any
 from datetime import datetime, timedelta
+from typing import Any
 
-from agent_factory.services.research_service import (
-    ResearchService,
-    ResearchRequest,
-    ResearchReport,
-    get_research_service
-)
-from agent_factory.security.auth import get_current_user_from_request, User
-from fastapi import Request
-from agent_factory.database.session import get_db
+from fastapi import APIRouter, HTTPException, Request, status
+
 from agent_factory.database.models import Execution as ExecutionModel
+from agent_factory.database.session import get_db
+from agent_factory.security.auth import get_current_user_from_request
+from agent_factory.services.research_service import (
+    ResearchReport,
+    ResearchRequest,
+    get_research_service,
+)
 
 router = APIRouter()
 
@@ -80,11 +79,11 @@ async def run_research(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Research failed: {str(e)}"
+            detail=f"Research failed: {e!s}"
         )
 
 
-@router.get("/research/reports", response_model=List[Dict[str, Any]])
+@router.get("/research/reports", response_model=list[dict[str, Any]])
 async def list_reports(
     http_request: Request,
     limit: int = 20,
@@ -175,7 +174,7 @@ async def get_report(
     db = next(get_db())
     try:
         # Try by report_id in output_data first
-        execution = db.query(ExecutionModel).filter(
+        db.query(ExecutionModel).filter(
             ExecutionModel.tenant_id == tenant_id,
             ExecutionModel.execution_type == "blueprint",
             ExecutionModel.resource_id == "research-assistant",
@@ -193,9 +192,8 @@ async def get_report(
         for exec in executions:
             if exec.output_data and exec.output_data.get("report_id") == report_id:
                 return ResearchReport(**exec.output_data)
-            if exec.id == report_id:
-                if exec.output_data:
-                    return ResearchReport(**exec.output_data)
+            if exec.id == report_id and exec.output_data:
+                return ResearchReport(**exec.output_data)
         
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -205,7 +203,7 @@ async def get_report(
         db.close()
 
 
-@router.get("/research/usage", response_model=Dict[str, Any])
+@router.get("/research/usage", response_model=dict[str, Any])
 async def get_usage_info(
     http_request: Request
 ):
@@ -226,7 +224,7 @@ async def get_usage_info(
     if not tenant_id:
         db = next(get_db())
         try:
-            from agent_factory.database.models import User as UserModel, Tenant
+            from agent_factory.database.models import User as UserModel
             user_model = db.query(UserModel).filter(UserModel.id == user.id).first()
             if user_model and user_model.tenant_id:
                 tenant_id = user_model.tenant_id
@@ -271,5 +269,5 @@ async def get_usage_info(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to get usage info: {str(e)}"
+            detail=f"Failed to get usage info: {e!s}"
         )

@@ -3,7 +3,8 @@ Python SDK client for Agent Factory Platform API.
 """
 
 import os
-from typing import Dict, List, Optional, Any
+from typing import Any
+
 import httpx
 
 
@@ -22,8 +23,8 @@ class Client:
     
     def __init__(
         self,
-        api_key: Optional[str] = None,
-        base_url: Optional[str] = None,
+        api_key: str | None = None,
+        base_url: str | None = None,
         timeout: float = 30.0,
     ):
         """
@@ -39,8 +40,7 @@ class Client:
         self.timeout = timeout
         
         # Remove trailing slash
-        if self.base_url.endswith("/"):
-            self.base_url = self.base_url[:-1]
+        self.base_url = self.base_url.removesuffix("/")
         
         # Setup HTTP client
         headers = {}
@@ -58,9 +58,9 @@ class Client:
         self,
         method: str,
         path: str,
-        json: Optional[Dict] = None,
-        params: Optional[Dict] = None,
-    ) -> Dict[str, Any]:
+        json: dict | None = None,
+        params: dict | None = None,
+    ) -> dict[str, Any]:
         """
         Make HTTP request.
         
@@ -88,7 +88,7 @@ class Client:
         name: str,
         instructions: str,
         model: str = "gpt-4o",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Create a new agent.
         
@@ -112,7 +112,7 @@ class Client:
             },
         )
     
-    def list_agents(self) -> List[Dict[str, Any]]:
+    def list_agents(self) -> list[dict[str, Any]]:
         """
         List all agents.
         
@@ -121,7 +121,7 @@ class Client:
         """
         return self._request("GET", "/api/v1/agents/")
     
-    def get_agent(self, agent_id: str) -> Dict[str, Any]:
+    def get_agent(self, agent_id: str) -> dict[str, Any]:
         """
         Get agent by ID.
         
@@ -137,9 +137,9 @@ class Client:
         self,
         agent_id: str,
         input_text: str,
-        session_id: Optional[str] = None,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        session_id: str | None = None,
+        context: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """
         Run an agent.
         
@@ -162,7 +162,7 @@ class Client:
             },
         )
     
-    def delete_agent(self, agent_id: str) -> Dict[str, Any]:
+    def delete_agent(self, agent_id: str) -> dict[str, Any]:
         """
         Delete an agent.
         
@@ -180,8 +180,8 @@ class Client:
         self,
         workflow_id: str,
         name: str,
-        definition: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        definition: dict[str, Any],
+    ) -> dict[str, Any]:
         """
         Create a new workflow.
         
@@ -203,7 +203,7 @@ class Client:
             },
         )
     
-    def list_workflows(self) -> List[Dict[str, Any]]:
+    def list_workflows(self) -> list[dict[str, Any]]:
         """
         List all workflows.
         
@@ -215,8 +215,8 @@ class Client:
     def run_workflow(
         self,
         workflow_id: str,
-        context: Dict[str, Any],
-    ) -> Dict[str, Any]:
+        context: dict[str, Any],
+    ) -> dict[str, Any]:
         """
         Run a workflow.
         
@@ -235,7 +235,7 @@ class Client:
     
     # Blueprint methods
     
-    def list_blueprints(self) -> List[Dict[str, Any]]:
+    def list_blueprints(self) -> list[dict[str, Any]]:
         """
         List available blueprints.
         
@@ -244,7 +244,7 @@ class Client:
         """
         return self._request("GET", "/api/v1/blueprints/")
     
-    def get_blueprint(self, blueprint_id: str) -> Dict[str, Any]:
+    def get_blueprint(self, blueprint_id: str) -> dict[str, Any]:
         """
         Get blueprint by ID.
         
@@ -259,8 +259,8 @@ class Client:
     def install_blueprint(
         self,
         blueprint_id: str,
-        project_id: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        project_id: str | None = None,
+    ) -> dict[str, Any]:
         """
         Install a blueprint.
         
@@ -277,7 +277,7 @@ class Client:
             json={"project_id": project_id} if project_id else None,
         )
     
-    def search_blueprints(self, query: str) -> List[Dict[str, Any]]:
+    def search_blueprints(self, query: str) -> list[dict[str, Any]]:
         """
         Search blueprints.
         
@@ -293,10 +293,10 @@ class Client:
     
     def get_metrics(
         self,
-        tenant_id: Optional[str] = None,
-        start_date: Optional[str] = None,
-        end_date: Optional[str] = None,
-    ) -> Dict[str, Any]:
+        tenant_id: str | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
+    ) -> dict[str, Any]:
         """
         Get metrics summary.
         
@@ -318,7 +318,7 @@ class Client:
         
         return self._request("GET", "/api/v1/telemetry/metrics", params=params)
     
-    def get_tenant_metrics(self, tenant_id: str) -> Dict[str, Any]:
+    def get_tenant_metrics(self, tenant_id: str) -> dict[str, Any]:
         """
         Get metrics for a specific tenant.
         

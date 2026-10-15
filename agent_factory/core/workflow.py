@@ -3,8 +3,8 @@ Workflow orchestration for multi-agent systems.
 """
 
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Any, Callable
 from enum import Enum
+from typing import Any
 
 
 class TriggerType(str, Enum):
@@ -19,14 +19,14 @@ class TriggerType(str, Enum):
 class Condition:
     """Condition for workflow branching."""
     expression: str  # e.g., "$steps.search.output.count > 0"
-    description: Optional[str] = None
+    description: str | None = None
 
 
 @dataclass
 class Trigger:
     """Workflow trigger definition."""
     type: TriggerType
-    config: Dict[str, Any] = field(default_factory=dict)
+    config: dict[str, Any] = field(default_factory=dict)
     enabled: bool = True
 
 
@@ -35,9 +35,9 @@ class WorkflowStep:
     """A step in a workflow."""
     id: str
     agent_id: str
-    input_mapping: Dict[str, str] = field(default_factory=dict)  # Maps workflow vars to agent inputs
-    output_mapping: Dict[str, str] = field(default_factory=dict)  # Maps agent outputs to workflow vars
-    condition: Optional[Condition] = None
+    input_mapping: dict[str, str] = field(default_factory=dict)  # Maps workflow vars to agent inputs
+    output_mapping: dict[str, str] = field(default_factory=dict)  # Maps agent outputs to workflow vars
+    condition: Condition | None = None
     timeout: int = 30  # seconds
     retry_attempts: int = 3
 
@@ -46,11 +46,11 @@ class WorkflowStep:
 class WorkflowResult:
     """Result from workflow execution."""
     success: bool
-    output: Dict[str, Any] = field(default_factory=dict)
-    steps_executed: List[str] = field(default_factory=list)
+    output: dict[str, Any] = field(default_factory=dict)
+    steps_executed: list[str] = field(default_factory=list)
     execution_time: float = 0.0
-    error: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    error: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class Workflow:
@@ -73,10 +73,10 @@ class Workflow:
         self,
         id: str,
         name: str,
-        steps: List[WorkflowStep],
-        triggers: Optional[List[Trigger]] = None,
-        branching: Optional[Dict[str, Condition]] = None,
-        agents_registry: Optional[Dict[str, Any]] = None,
+        steps: list[WorkflowStep],
+        triggers: list[Trigger] | None = None,
+        branching: dict[str, Condition] | None = None,
+        agents_registry: dict[str, Any] | None = None,
     ):
         """
         Initialize a Workflow.
@@ -106,8 +106,8 @@ class Workflow:
     
     def execute(
         self,
-        context: Dict[str, Any],
-        start_step: Optional[str] = None,
+        context: dict[str, Any],
+        start_step: str | None = None,
     ) -> WorkflowResult:
         """
         Execute the workflow with given context.
@@ -199,7 +199,7 @@ class Workflow:
                 steps_executed=steps_executed if 'steps_executed' in locals() else [],
             )
     
-    def _map_inputs(self, mapping: Dict[str, str], context: Dict[str, Any]) -> str:
+    def _map_inputs(self, mapping: dict[str, str], context: dict[str, Any]) -> str:
         """
         Map workflow context to agent input.
         
@@ -224,7 +224,7 @@ class Workflow:
         
         return "\n".join(inputs)
     
-    def _map_outputs(self, mapping: Dict[str, str], output: str) -> Dict[str, Any]:
+    def _map_outputs(self, mapping: dict[str, str], output: str) -> dict[str, Any]:
         """
         Map agent output to workflow context.
         
@@ -241,13 +241,13 @@ class Workflow:
             # Default: store output as "output"
             result["output"] = output
         else:
-            for key, value_path in mapping.items():
+            for key in mapping:
                 # For now, simple mapping
                 result[key] = output
         
         return result
     
-    def _resolve_path(self, path: str, context: Dict[str, Any]) -> Any:
+    def _resolve_path(self, path: str, context: dict[str, Any]) -> Any:
         """
         Resolve a path expression in context.
         
@@ -273,7 +273,7 @@ class Workflow:
         
         return context.get(path, path)
     
-    def _evaluate_condition(self, condition: Condition, context: Dict[str, Any]) -> bool:
+    def _evaluate_condition(self, condition: Condition, context: dict[str, Any]) -> bool:
         """Evaluate a condition expression."""
         import ast
         import operator
@@ -354,7 +354,7 @@ class Workflow:
             except Exception:
                 return False
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize workflow to dictionary."""
         return {
             "id": self.id,

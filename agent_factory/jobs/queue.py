@@ -4,14 +4,14 @@ Job queue implementation for background task processing.
 
 import json
 import os
-import uuid
-from abc import ABC, abstractmethod
-from dataclasses import dataclass, asdict
-from datetime import datetime
-from enum import Enum
-from typing import Dict, List, Optional, Any, Callable
 import threading
 import time
+from abc import ABC, abstractmethod
+from collections.abc import Callable
+from dataclasses import dataclass
+from datetime import datetime
+from enum import Enum
+from typing import Any
 
 
 class JobStatus(str, Enum):
@@ -29,17 +29,17 @@ class Job:
     """Job definition."""
     id: str
     job_type: str
-    payload: Dict[str, Any]
+    payload: dict[str, Any]
     status: JobStatus = JobStatus.PENDING
     priority: int = 0  # Higher priority runs first
     created_at: datetime = None
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
-    result: Optional[Any] = None
-    error: Optional[str] = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    result: Any | None = None
+    error: str | None = None
     retry_count: int = 0
     max_retries: int = 3
-    metadata: Dict[str, Any] = None
+    metadata: dict[str, Any] = None
     
     def __post_init__(self):
         if self.created_at is None:
@@ -54,27 +54,22 @@ class JobQueue(ABC):
     @abstractmethod
     def enqueue(self, job: Job) -> str:
         """Add job to queue."""
-        pass
     
     @abstractmethod
-    def dequeue(self, job_type: Optional[str] = None) -> Optional[Job]:
+    def dequeue(self, job_type: str | None = None) -> Job | None:
         """Get next job from queue."""
-        pass
     
     @abstractmethod
-    def get_job(self, job_id: str) -> Optional[Job]:
+    def get_job(self, job_id: str) -> Job | None:
         """Get job by ID."""
-        pass
     
     @abstractmethod
     def update_job(self, job: Job) -> None:
         """Update job status."""
-        pass
     
     @abstractmethod
     def cancel_job(self, job_id: str) -> bool:
         """Cancel a job."""
-        pass
 
 
 class InMemoryJobQueue(JobQueue):
@@ -82,8 +77,8 @@ class InMemoryJobQueue(JobQueue):
     
     def __init__(self):
         """Initialize in-memory job queue."""
-        self.jobs: Dict[str, Job] = {}
-        self.queue: List[str] = []  # Job IDs in priority order
+        self.jobs: dict[str, Job] = {}
+        self.queue: list[str] = []  # Job IDs in priority order
         self.lock = threading.Lock()
     
     def enqueue(self, job: Job) -> str:
@@ -106,7 +101,7 @@ class InMemoryJobQueue(JobQueue):
             
             return job.id
     
-    def dequeue(self, job_type: Optional[str] = None) -> Optional[Job]:
+    def dequeue(self, job_type: str | None = None) -> Job | None:
         """Get next job from queue."""
         with self.lock:
             for job_id in self.queue:
@@ -119,7 +114,7 @@ class InMemoryJobQueue(JobQueue):
                         return job
             return None
     
-    def get_job(self, job_id: str) -> Optional[Job]:
+    def get_job(self, job_id: str) -> Job | None:
         """Get job by ID."""
         with self.lock:
             return self.jobs.get(job_id)
@@ -170,7 +165,7 @@ class RedisJobQueue(JobQueue):
         """Get Redis key for job."""
         return f"{self.key_prefix}job:{job_id}"
     
-    def _get_queue_key(self, job_type: Optional[str] = None) -> str:
+    def _get_queue_key(self, job_type: str | None = None) -> str:
         """Get Redis key for queue."""
         if job_type:
             return f"{self.key_prefix}queue:{job_type}"
@@ -201,17 +196,18 @@ class RedisJobQueue(JobQueue):
         
         return job.id
     
-    def dequeue(self, job_type: Optional[str] = None) -> Optional[Job]:
+    def dequeue(self, job_type: str | None = None) -> Job | None:
         """Get next job from queue."""
         queue_key = self._get_queue_key(job_type)
         
-        # Get highest priority job
-        job_ids = self.redis.zrevrange(queue_key, 0, 0)
-        
-        if not job_ids:
+        # Atomically claim the most important job. Scores are negative priorities,
+        # therefore the minimum score represents the highest priority.
+        claimed = self.redis.zpopmin(queue_key, 1)
+
+        if not claimed:
             return None
-        
-        job_id = job_ids[0]
+
+        job_id = claimed[0][0]
         job_key = self._get_job_key(job_id)
         
         # Get job data
@@ -228,9 +224,6 @@ class RedisJobQueue(JobQueue):
         data["started_at"] = datetime.now().isoformat()
         self.redis.set(job_key, json.dumps(data))
         
-        # Remove from queue
-        self.redis.zrem(queue_key, job_id)
-        
         # Reconstruct job
         job = Job(
             id=data["id"],
@@ -246,7 +239,7 @@ class RedisJobQueue(JobQueue):
         
         return job
     
-    def get_job(self, job_id: str) -> Optional[Job]:
+    def get_job(self, job_id: str) -> Job | None:
         """Get job by ID."""
         job_key = self._get_job_key(job_id)
         job_data = self.redis.get(job_key)
@@ -312,7 +305,7 @@ class RedisJobQueue(JobQueue):
 class JobWorker:
     """Worker for processing jobs."""
     
-    def __init__(self, queue: JobQueue, handlers: Dict[str, Callable]):
+    def __init__(self, queue: JobQueue, handlers: dict[str, Callable]):
         """
         Initialize job worker.
         

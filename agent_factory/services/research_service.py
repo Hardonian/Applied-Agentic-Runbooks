@@ -8,16 +8,18 @@ OUTPUT: Structured research report with summary, findings, sources, citations
 """
 
 import uuid
-from datetime import datetime, timedelta
-from typing import Dict, Any, Optional, List
-from pydantic import BaseModel, Field, validator
+from datetime import datetime
+from typing import Any
+
 from fastapi import HTTPException, status
+from pydantic import BaseModel, Field, validator
 
 from agent_factory.agents.agent import Agent, AgentResult
-from agent_factory.integrations.tools.web_search import web_search
-from agent_factory.database.session import get_db
-from agent_factory.database.models import Execution as ExecutionModel, Tenant, Subscription, Plan
 from agent_factory.billing.usage_tracker import get_usage_tracker
+from agent_factory.database.models import Execution as ExecutionModel
+from agent_factory.database.models import Plan, Subscription, Tenant
+from agent_factory.database.session import get_db
+from agent_factory.integrations.tools.web_search import web_search
 
 
 # PRODUCT CONTRACT - Input Schema
@@ -42,9 +44,9 @@ class ResearchReport(BaseModel):
     report_id: str
     query: str
     summary: str
-    key_findings: List[Dict[str, Any]]
-    sources: List[Dict[str, Any]]
-    citations: List[str]
+    key_findings: list[dict[str, Any]]
+    sources: list[dict[str, Any]]
+    citations: list[str]
     generated_at: str
     execution_time_seconds: float
 
@@ -70,7 +72,7 @@ class ResearchService:
         """Initialize research service."""
         self.usage_tracker = get_usage_tracker()
     
-    def _check_usage_limits(self, tenant_id: str, user_id: str) -> Dict[str, Any]:
+    def _check_usage_limits(self, tenant_id: str, user_id: str) -> dict[str, Any]:
         """
         Check if user has exceeded usage limits.
         
@@ -168,7 +170,7 @@ class ResearchService:
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail={
                         "error": "Feature not available on free tier",
-                        "message": f"Free tier allows 'quick' depth only. Upgrade to Pro for 'standard' and 'comprehensive' depth.",
+                        "message": "Free tier allows 'quick' depth only. Upgrade to Pro for 'standard' and 'comprehensive' depth.",
                         "upgrade_url": "/api/v1/payments/upgrade"
                     }
                 )
@@ -248,7 +250,7 @@ Provide:
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Research execution failed: {str(e)}"
+                detail=f"Research execution failed: {e!s}"
             )
     
     def _extract_summary(self, output: str) -> str:
@@ -273,7 +275,7 @@ Provide:
         # Fallback: first 500 chars
         return output[:500] + "..." if len(output) > 500 else output
     
-    def _extract_findings(self, output: str, search_results: str) -> List[Dict[str, Any]]:
+    def _extract_findings(self, output: str, search_results: str) -> list[dict[str, Any]]:
         """Extract key findings from output."""
         findings = []
         
@@ -290,7 +292,7 @@ Provide:
                 
                 if in_findings:
                     stripped = line.strip()
-                    if stripped.startswith('-') or stripped.startswith('*') or stripped.startswith('•'):
+                    if stripped.startswith(('-', '*', '•')):
                         if current_finding:
                             findings.append(current_finding)
                         current_finding = {
@@ -314,7 +316,7 @@ Provide:
         
         return findings[:5]  # Max 5 findings
     
-    def _extract_sources(self, search_results: str) -> List[Dict[str, Any]]:
+    def _extract_sources(self, search_results: str) -> list[dict[str, Any]]:
         """Extract sources from search results."""
         sources = []
         lines = search_results.split('\n')
@@ -337,7 +339,7 @@ Provide:
         
         return sources[:10]  # Max 10 sources
     
-    def _extract_citations(self, output: str, sources: List[Dict[str, Any]]) -> List[str]:
+    def _extract_citations(self, output: str, sources: list[dict[str, Any]]) -> list[str]:
         """Extract citations from output."""
         citations = []
         
@@ -399,7 +401,7 @@ Provide:
             db.rollback()
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to create execution record: {str(e)}"
+                detail=f"Failed to create execution record: {e!s}"
             )
         finally:
             db.close()
@@ -447,12 +449,12 @@ Provide:
             
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Research execution failed: {str(e)}"
+                detail=f"Research execution failed: {e!s}"
             )
 
 
 # Global service instance
-_research_service: Optional[ResearchService] = None
+_research_service: ResearchService | None = None
 
 
 def get_research_service() -> ResearchService:

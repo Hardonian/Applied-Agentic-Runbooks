@@ -6,8 +6,8 @@ Generates:
 - OpenAPI 3.1 REST API specifications for agents
 """
 
-import json
-from typing import Dict, Any, List
+from typing import Any
+
 from agent_factory.agents.agent import Agent
 
 
@@ -17,7 +17,7 @@ class OpenAISpecExporter:
     """
 
     @staticmethod
-    def export_assistant_json(agent: Agent) -> Dict[str, Any]:
+    def export_assistant_json(agent: Agent) -> dict[str, Any]:
         """Generate OpenAI Assistants API v2 creation payload."""
         tools_spec = []
         for t in agent.tools:
@@ -45,7 +45,7 @@ class OpenAISpecExporter:
         }
 
     @staticmethod
-    def export_openapi_schema(agent: Agent) -> Dict[str, Any]:
+    def export_openapi_schema(agent: Agent) -> dict[str, Any]:
         """Generate OpenAPI 3.1 schema definition for the agent microservice."""
         return {
             "openapi": "3.1.0",

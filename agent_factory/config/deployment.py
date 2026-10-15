@@ -3,9 +3,9 @@ Deployment configuration and profiles.
 """
 
 import os
-from enum import Enum
-from typing import Dict, Optional, Any
 from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any
 
 
 class DeploymentType(str, Enum):
@@ -27,11 +27,11 @@ class DeploymentConfig:
     deployment_type: DeploymentType = DeploymentType.LOCAL_DEV
     
     # Database
-    database_url: Optional[str] = None
+    database_url: str | None = None
     database_type: str = "sqlite"  # sqlite, postgres
     
     # Cache/Queue
-    redis_url: Optional[str] = None
+    redis_url: str | None = None
     use_redis: bool = False
     
     # Storage
@@ -40,11 +40,11 @@ class DeploymentConfig:
     
     # Job Queue
     job_queue_backend: str = "sqlite"  # sqlite, redis, sqs
-    job_queue_url: Optional[str] = None
+    job_queue_url: str | None = None
     
     # Object Storage (for blueprints, artifacts)
     object_storage_type: str = "local"  # local, s3, gcs
-    object_storage_url: Optional[str] = None
+    object_storage_url: str | None = None
     
     # API
     api_host: str = "0.0.0.0"
@@ -65,7 +65,7 @@ class DeploymentConfig:
     debug: bool = False
     
     # Additional config
-    extra_config: Dict[str, Any] = field(default_factory=dict)
+    extra_config: dict[str, Any] = field(default_factory=dict)
     
     @classmethod
     def from_env(cls) -> "DeploymentConfig":
@@ -160,7 +160,7 @@ class DeploymentConfig:
 
 
 # Global deployment config
-_deployment_config: Optional[DeploymentConfig] = None
+_deployment_config: DeploymentConfig | None = None
 
 
 def get_deployment_config() -> DeploymentConfig:

@@ -3,8 +3,10 @@ Anthropic Claude SDK integration for Agent Factory Platform.
 """
 
 import os
-from typing import List, Dict, Any, Optional
+from typing import Any
+
 from anthropic import Anthropic
+
 from agent_factory.tools.base import Tool
 
 
@@ -15,7 +17,7 @@ class AnthropicAgentClient:
     This wraps the Anthropic SDK to provide agent execution capabilities.
     """
     
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: str | None = None):
         """
         Initialize Anthropic client.
         
@@ -33,11 +35,11 @@ class AnthropicAgentClient:
         instructions: str,
         input_text: str,
         model: str = "claude-3-5-sonnet-20241022",
-        tools: Optional[List[Tool]] = None,
+        tools: list[Tool] | None = None,
         temperature: float = 0.7,
         max_tokens: int = 2000,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> Dict[str, Any]:
+        context: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """
         Run an agent using Anthropic Claude API.
         
@@ -108,17 +110,17 @@ class AnthropicAgentClient:
                 "model": model,
             }
         except Exception as e:
-            raise RuntimeError(f"Anthropic API error: {str(e)}") from e
+            raise RuntimeError(f"Anthropic API error: {e!s}") from e
     
     def stream_agent(
         self,
         instructions: str,
         input_text: str,
         model: str = "claude-3-5-sonnet-20241022",
-        tools: Optional[List[Tool]] = None,
+        tools: list[Tool] | None = None,
         temperature: float = 0.7,
         max_tokens: int = 2000,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
     ):
         """
         Stream agent execution using Anthropic Claude API.
@@ -170,4 +172,4 @@ class AnthropicAgentClient:
                         if hasattr(event.delta, "text"):
                             yield event.delta.text
         except Exception as e:
-            raise RuntimeError(f"Anthropic API streaming error: {str(e)}") from e
+            raise RuntimeError(f"Anthropic API streaming error: {e!s}") from e

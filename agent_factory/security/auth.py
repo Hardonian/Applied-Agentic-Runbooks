@@ -2,12 +2,11 @@
 
 import os
 from datetime import datetime, timedelta, timezone
-from typing import Optional
-import jwt
-from fastapi import HTTPException, Security, status, Request
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel
 
+import jwt
+from fastapi import HTTPException, Request, Security, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from pydantic import BaseModel
 
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your-secret-key-change-in-production")
 ALGORITHM = "HS256"
@@ -26,19 +25,19 @@ class User(BaseModel):
     email: str
     roles: list[str] = []
     permissions: list[str] = []
-    tenant_id: Optional[str] = None
+    tenant_id: str | None = None
 
 
 class TokenData(BaseModel):
     """Token data model."""
-    user_id: Optional[str] = None
-    email: Optional[str] = None
+    user_id: str | None = None
+    email: str | None = None
 
 
 security = HTTPBearer()
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     """
     Create JWT access token.
     
@@ -143,8 +142,8 @@ async def get_current_user(
     token_data = verify_token(token)
     
     # Fetch user from database
-    from agent_factory.database.session import get_db
     from agent_factory.database.models import User as UserModel
+    from agent_factory.database.session import get_db
     
     db = next(get_db())
     try:
@@ -178,7 +177,7 @@ async def get_current_user(
         db.close()
 
 
-async def get_current_user_from_request(request: Request) -> Optional[User]:
+async def get_current_user_from_request(request: Request) -> User | None:
     """
     Get current authenticated user from request (supports both JWT and API keys).
     
@@ -197,8 +196,8 @@ async def get_current_user_from_request(request: Request) -> Optional[User]:
         
         key_info = verify_api_key(api_key)
         if key_info:
-            from agent_factory.database.session import get_db
             from agent_factory.database.models import User as UserModel
+            from agent_factory.database.session import get_db
             
             db = next(get_db())
             try:
@@ -226,8 +225,8 @@ async def get_current_user_from_request(request: Request) -> Optional[User]:
         try:
             token_data = verify_token(token)
             
-            from agent_factory.database.session import get_db
             from agent_factory.database.models import User as UserModel
+            from agent_factory.database.session import get_db
             
             db = next(get_db())
             try:

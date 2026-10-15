@@ -1,8 +1,10 @@
 """Database models."""
 
 from datetime import datetime
-from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, ForeignKey, JSON, Float
+
+from sqlalchemy import JSON, Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
+
 from agent_factory.database.session import Base
 
 
@@ -255,3 +257,45 @@ class UsageRecord(Base):
     
     tenant = relationship("Tenant")
     subscription = relationship("Subscription")
+
+
+class ArenaRun(Base):
+    """Durable, tenant-scoped autonomous Arena execution record."""
+
+    __tablename__ = "arena_runs"
+
+    id = Column(String, primary_key=True)
+    tenant_id = Column(String, nullable=False, index=True, default="public")
+    created_by = Column(String, nullable=True, index=True)
+    status = Column(String, nullable=False, index=True, default="queued")
+    mode = Column(String, nullable=False, default="deterministic")
+    benchmark_version = Column(String, nullable=False, default="2026.10")
+    request = Column(JSON, nullable=False, default=dict)
+    summary = Column(JSON, nullable=True)
+    error = Column(Text, nullable=True)
+    cancel_requested = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+    started_at = Column(DateTime, nullable=True)
+    completed_at = Column(DateTime, nullable=True)
+    expires_at = Column(DateTime, nullable=True, index=True)
+
+
+class ApprovalTicket(Base):
+    """Authoritative MCPWall ticket and immutable operator decision receipt."""
+
+    __tablename__ = "approval_tickets"
+
+    id = Column(String, primary_key=True)
+    tenant_id = Column(String, nullable=False, index=True, default="public")
+    tool_name = Column(String, nullable=False)
+    request_hash = Column(String, nullable=False, index=True)
+    arguments = Column(JSON, nullable=False, default=dict)
+    requested_by = Column(String, nullable=True)
+    status = Column(String, nullable=False, index=True, default="pending")
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    expires_at = Column(DateTime, nullable=False, index=True)
+    decided_at = Column(DateTime, nullable=True)
+    decided_by = Column(String, nullable=True)
+    decision_reason = Column(Text, nullable=True)
+    receipt_signature = Column(String, nullable=True)
+    consumed_at = Column(DateTime, nullable=True)

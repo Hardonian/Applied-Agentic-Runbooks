@@ -4,11 +4,10 @@ SLA monitoring and tracking for Agent Factory Platform.
 Tracks service level objectives (SLOs) and service level indicators (SLIs).
 """
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Callable
 from datetime import datetime, timedelta
 from enum import Enum
-from decimal import Decimal
 
 
 class SLIType(str, Enum):
@@ -27,7 +26,7 @@ class SLI:
     sli_type: SLIType
     target: float  # Target value (e.g., 0.99 for 99%)
     window_minutes: int = 60  # Measurement window
-    measurement_func: Optional[Callable] = None
+    measurement_func: Callable | None = None
 
 
 @dataclass
@@ -36,7 +35,7 @@ class SLO:
     id: str
     name: str
     description: str
-    slis: List[SLI]
+    slis: list[SLI]
     target_percent: float = 99.9  # Target compliance percentage
     window_days: int = 30  # Compliance window
 
@@ -47,7 +46,7 @@ class SLIMeasurement:
     sli_id: str
     timestamp: datetime
     value: float
-    metadata: Dict = field(default_factory=dict)
+    metadata: dict = field(default_factory=dict)
 
 
 class SLAMonitor:
@@ -63,9 +62,9 @@ class SLAMonitor:
     
     def __init__(self):
         """Initialize SLA monitor."""
-        self.slis: Dict[str, SLI] = {}
-        self.slos: Dict[str, SLO] = {}
-        self.measurements: Dict[str, List[SLIMeasurement]] = {}
+        self.slis: dict[str, SLI] = {}
+        self.slos: dict[str, SLO] = {}
+        self.measurements: dict[str, list[SLIMeasurement]] = {}
     
     def create_sli(
         self,
@@ -73,7 +72,7 @@ class SLAMonitor:
         sli_type: SLIType,
         target: float,
         window_minutes: int = 60,
-        measurement_func: Optional[Callable] = None,
+        measurement_func: Callable | None = None,
     ) -> SLI:
         """
         Create a Service Level Indicator.
@@ -109,7 +108,7 @@ class SLAMonitor:
         self,
         name: str,
         description: str,
-        sli_ids: List[str],
+        sli_ids: list[str],
         target_percent: float = 99.9,
         window_days: int = 30,
     ) -> SLO:
@@ -147,7 +146,7 @@ class SLAMonitor:
         self,
         sli_id: str,
         value: float,
-        metadata: Optional[Dict] = None,
+        metadata: dict | None = None,
     ) -> None:
         """
         Record an SLI measurement.
@@ -175,7 +174,7 @@ class SLAMonitor:
             m for m in self.measurements[sli_id] if m.timestamp > cutoff
         ]
     
-    def get_sli_status(self, sli_id: str) -> Dict[str, any]:
+    def get_sli_status(self, sli_id: str) -> dict[str, any]:
         """
         Get SLI status.
         
@@ -261,7 +260,7 @@ class SLAMonitor:
             # For availability and throughput, higher is better
             return current_value >= target
     
-    def get_slo_status(self, slo_id: str) -> Dict[str, any]:
+    def get_slo_status(self, slo_id: str) -> dict[str, any]:
         """
         Get SLO status.
         
@@ -277,13 +276,12 @@ class SLAMonitor:
         
         # Get status for each SLI
         sli_statuses = []
-        all_meeting_target = True
         
         for sli in slo.slis:
             status = self.get_sli_status(sli.id)
             sli_statuses.append(status)
             if not status.get("is_meeting_target", False):
-                all_meeting_target = False
+                pass
         
         # Calculate compliance percentage
         window_start = datetime.utcnow() - timedelta(days=slo.window_days)
@@ -321,7 +319,7 @@ class SLAMonitor:
 
 
 # Global instance
-_sla_monitor: Optional[SLAMonitor] = None
+_sla_monitor: SLAMonitor | None = None
 
 
 def get_sla_monitor() -> SLAMonitor:

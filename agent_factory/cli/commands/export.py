@@ -2,18 +2,14 @@
 CLI commands for exporting data.
 """
 
-import json
 import csv
-from typing import Optional
-from datetime import datetime
+import json
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import typer
 
-from datetime import timedelta
-
 from agent_factory.telemetry import get_analytics
-from agent_factory.telemetry.analytics import AnalyticsEngine
 
 try:
     from agent_factory.telemetry.revenue import get_revenue_tracker
@@ -141,16 +137,16 @@ def channels(
     Example:
         agent-factory export channels --output channels.json --days 30
     """
-    analytics = get_analytics()
+    get_analytics()
     
     end_date = datetime.utcnow()
-    start_date = end_date - timedelta(days=days)
+    end_date - timedelta(days=days)
     
 @app.command(name="agent")
 def export_agent_command(
     agent_id: str = typer.Argument(..., help="Agent ID to export"),
     target: str = typer.Option("langgraph", "--target", "-t", help="Target framework (langgraph, crewai, autogen, llamaindex, docker, openai)"),
-    output: Optional[str] = typer.Option(None, "--output", "-o", help="Output file path"),
+    output: str | None = typer.Option(None, "--output", "-o", help="Output file path"),
 ):
     """
     Export an agent to LangGraph, CrewAI, AutoGen, LlamaIndex, Docker, or OpenAI specs.
@@ -159,8 +155,8 @@ def export_agent_command(
         agent-factory export agent research_assistant --target langgraph
     """
     from agent_factory.agents.agent import Agent
-    from agent_factory.registry.local_registry import LocalRegistry
     from agent_factory.interop import export_agent
+    from agent_factory.registry.local_registry import LocalRegistry
     
     registry = LocalRegistry()
     agent_obj = registry.get_agent(agent_id)

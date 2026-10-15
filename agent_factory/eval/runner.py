@@ -3,17 +3,16 @@ Benchmark and stress test execution engine integrated with runtime.
 """
 
 import time
-from typing import Dict, List, Any, Optional
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Any
 
-from agent_factory.eval.model import Scenario, EvaluationResult, BenchmarkSuite
+from agent_factory.eval.model import BenchmarkSuite, EvaluationResult, Scenario
 from agent_factory.runtime.engine import RuntimeEngine
 
 
 class BenchmarkRunner:
     """Run benchmarks and stress tests using runtime engine."""
     
-    def __init__(self, runtime: Optional[RuntimeEngine] = None):
+    def __init__(self, runtime: RuntimeEngine | None = None):
         """
         Initialize benchmark runner.
         
@@ -26,7 +25,7 @@ class BenchmarkRunner:
         self,
         agent_id: str,
         suite: BenchmarkSuite,
-    ) -> List[EvaluationResult]:
+    ) -> list[EvaluationResult]:
         """
         Run benchmark suite against an agent.
         
@@ -96,7 +95,7 @@ class BenchmarkRunner:
                 latency=time.time() - start_time,
             )
     
-    def _calculate_accuracy(self, output: Dict[str, Any], expected: Dict[str, Any]) -> float:
+    def _calculate_accuracy(self, output: dict[str, Any], expected: dict[str, Any]) -> float:
         """Calculate accuracy score."""
         if output == expected:
             return 1.0
@@ -115,7 +114,7 @@ class BenchmarkRunner:
         agent_id: str,
         concurrent_requests: int = 10,
         duration: int = 60,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Run stress test (load testing).
         

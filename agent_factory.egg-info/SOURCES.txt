@@ -102,7 +102,10 @@ agent_factory/eval/model.py
 agent_factory/eval/runner.py
 agent_factory/evaluation/__init__.py
 agent_factory/evaluation/arena/__init__.py
+agent_factory/evaluation/arena/evidence.py
+agent_factory/evaluation/arena/repository.py
 agent_factory/evaluation/arena/runner.py
+agent_factory/evaluation/arena/service.py
 agent_factory/financial/__init__.py
 agent_factory/financial/cost_tracker.py
 agent_factory/financial/token_goblin.py
@@ -182,6 +185,7 @@ agent_factory/runtime/worker.py
 agent_factory/sdk/__init__.py
 agent_factory/sdk/client.py
 agent_factory/security/__init__.py
+agent_factory/security/approval.py
 agent_factory/security/audit.py
 agent_factory/security/auth.py
 agent_factory/security/capability_tokens.py
@@ -223,6 +227,10 @@ agent_factory/tools/mcp.py
 agent_factory/ui/__init__.py
 agent_factory/ui/generator.py
 agent_factory/ui/schema_inference.py
+agent_factory/ui/embed/widget.js
+agent_factory/ui/studio/app.js
+agent_factory/ui/studio/index.html
+agent_factory/ui/studio/style.css
 agent_factory/utils/__init__.py
 agent_factory/utils/config.py
 agent_factory/utils/env_validator.py
@@ -253,7 +261,9 @@ tests/test_compliance_certification.py
 tests/test_database_models.py
 tests/test_deployment_config.py
 tests/test_elevation_suite.py
+tests/test_enterprise_arena_hardening.py
 tests/test_enterprise_compliance.py
+tests/test_enterprise_deployment_assets.py
 tests/test_enterprise_sso.py
 tests/test_enterprise_webhooks.py
 tests/test_env_validator.py

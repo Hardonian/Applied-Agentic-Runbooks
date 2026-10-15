@@ -1,8 +1,9 @@
 """Tests for Workflow class."""
 
 import pytest
-from agent_factory.workflows.model import Workflow, WorkflowStep, Trigger, TriggerType
+
 from agent_factory.agents.agent import Agent
+from agent_factory.workflows.model import Trigger, TriggerType, Workflow, WorkflowStep
 
 
 @pytest.mark.unit

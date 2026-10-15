@@ -2,10 +2,9 @@
 Workflow visualization - Generate Mermaid/Graphviz diagrams.
 """
 
-from typing import Optional
 from pathlib import Path
 
-from agent_factory.workflows.model import Workflow, WorkflowStep
+from agent_factory.workflows.model import Workflow
 
 
 def to_mermaid(workflow: Workflow) -> str:
@@ -34,7 +33,7 @@ def to_mermaid(workflow: Workflow) -> str:
     
     # Add edges
     if workflow.steps:
-        lines.append(f"    Start --> Step0")
+        lines.append("    Start --> Step0")
         
         for i in range(len(workflow.steps) - 1):
             lines.append(f"    Step{i} --> Step{i+1}")
@@ -82,7 +81,7 @@ def to_graphviz(workflow: Workflow) -> str:
 def visualize(
     workflow: Workflow,
     format: str = "mermaid",
-    output_path: Optional[str] = None,
+    output_path: str | None = None,
 ) -> str:
     """
     Generate visualization and optionally save to file.
@@ -97,10 +96,8 @@ def visualize(
     """
     if format == "mermaid":
         content = to_mermaid(workflow)
-        extension = ".md"
     elif format == "graphviz":
         content = to_graphviz(workflow)
-        extension = ".dot"
     else:
         raise ValueError(f"Unsupported format: {format}")
     

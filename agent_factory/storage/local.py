@@ -2,11 +2,10 @@
 Local filesystem storage backend.
 """
 
-import os
-from pathlib import Path
-from typing import BinaryIO, Optional, List
 from datetime import datetime
 from io import BytesIO
+from pathlib import Path
+from typing import BinaryIO
 
 from agent_factory.storage.base import StorageBackend, StorageFile
 
@@ -24,7 +23,7 @@ class LocalStorage(StorageBackend):
         self.base_path = Path(base_path)
         self.base_path.mkdir(parents=True, exist_ok=True)
     
-    def upload(self, path: str, file_obj: BinaryIO, content_type: Optional[str] = None) -> str:
+    def upload(self, path: str, file_obj: BinaryIO, content_type: str | None = None) -> str:
         """Upload a file."""
         file_path = self.base_path / path
         file_path.parent.mkdir(parents=True, exist_ok=True)
@@ -59,7 +58,7 @@ class LocalStorage(StorageBackend):
         file_path = self.base_path / path
         return file_path.exists()
     
-    def list_files(self, prefix: str = "", limit: int = 1000) -> List[StorageFile]:
+    def list_files(self, prefix: str = "", limit: int = 1000) -> list[StorageFile]:
         """List files."""
         files = []
         prefix_path = self.base_path / prefix if prefix else self.base_path
@@ -80,7 +79,7 @@ class LocalStorage(StorageBackend):
         
         return files
     
-    def get_url(self, path: str, expires_in: Optional[int] = None) -> str:
+    def get_url(self, path: str, expires_in: int | None = None) -> str:
         """Get URL for file access."""
         # For local storage, return file:// URL
         file_path = self.base_path / path

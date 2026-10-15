@@ -3,15 +3,14 @@ PostgreSQL backend for telemetry storage.
 """
 
 import json
-from typing import List, Optional
 from datetime import datetime
 
-from sqlalchemy import create_engine, Column, String, Text, DateTime, Index
+from sqlalchemy import Column, DateTime, Index, String, Text, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 from agent_factory.telemetry.backends.base import TelemetryBackend
-from agent_factory.telemetry.model import TelemetryEvent, EventType
+from agent_factory.telemetry.model import EventType, TelemetryEvent
 
 Base = declarative_base()
 
@@ -42,7 +41,7 @@ class PostgresTelemetryBackend(TelemetryBackend):
     Suitable for production deployments with high volume.
     """
     
-    def __init__(self, database_url: Optional[str] = None):
+    def __init__(self, database_url: str | None = None):
         """
         Initialize PostgreSQL telemetry backend.
         
@@ -90,14 +89,14 @@ class PostgresTelemetryBackend(TelemetryBackend):
     
     def query_events(
         self,
-        event_type: Optional[str] = None,
-        tenant_id: Optional[str] = None,
-        user_id: Optional[str] = None,
-        project_id: Optional[str] = None,
-        start_time: Optional[datetime] = None,
-        end_time: Optional[datetime] = None,
+        event_type: str | None = None,
+        tenant_id: str | None = None,
+        user_id: str | None = None,
+        project_id: str | None = None,
+        start_time: datetime | None = None,
+        end_time: datetime | None = None,
         limit: int = 100,
-    ) -> List[TelemetryEvent]:
+    ) -> list[TelemetryEvent]:
         """Query telemetry events."""
         session = self.SessionLocal()
         
@@ -137,7 +136,7 @@ class PostgresTelemetryBackend(TelemetryBackend):
         finally:
             session.close()
     
-    def _deserialize_event(self, event_dict: dict) -> Optional[TelemetryEvent]:
+    def _deserialize_event(self, event_dict: dict) -> TelemetryEvent | None:
         """Deserialize event from dictionary."""
         event_type_str = event_dict.get("event_type")
         
@@ -152,17 +151,17 @@ class PostgresTelemetryBackend(TelemetryBackend):
         # Import event classes
         from agent_factory.telemetry.model import (
             AgentRunEvent,
-            WorkflowRunEvent,
+            BillingUsageEvent,
             BlueprintInstallEvent,
             ErrorEvent,
-            BillingUsageEvent,
-            TenantEvent,
             ProjectEvent,
-            UserActivatedEvent,
             ReferralEvent,
             RevenueEvent,
-            UserSignupEvent,
+            TenantEvent,
+            UserActivatedEvent,
             UserLoginEvent,
+            UserSignupEvent,
+            WorkflowRunEvent,
         )
         
         # Map event types to classes

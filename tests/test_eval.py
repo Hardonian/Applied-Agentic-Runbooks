@@ -2,12 +2,11 @@
 Tests for evaluation framework.
 """
 
-import pytest
 
-from agent_factory.eval.model import Scenario, EvaluationResult, BenchmarkSuite
+from agent_factory.agents.agent import Agent
+from agent_factory.eval.model import BenchmarkSuite, EvaluationResult, Scenario
 from agent_factory.eval.runner import BenchmarkRunner
 from agent_factory.runtime.engine import RuntimeEngine
-from agent_factory.agents.agent import Agent
 
 
 def test_scenario():

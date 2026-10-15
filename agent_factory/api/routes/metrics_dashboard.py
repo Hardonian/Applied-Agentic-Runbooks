@@ -4,14 +4,12 @@ Metrics dashboard API routes.
 Provides endpoints for metrics dashboard.
 """
 
-from typing import Optional
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Query
 from pydantic import BaseModel
 
 from agent_factory.telemetry import get_analytics
-from agent_factory.telemetry.analytics import AnalyticsEngine
 
 try:
     from agent_factory.telemetry.revenue import get_revenue_tracker

@@ -1,12 +1,12 @@
 """Agent API routes."""
 
-from fastapi import APIRouter, HTTPException, Depends
-from typing import List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from agent_factory.agents.agent import Agent
-from agent_factory.registry.local_registry import LocalRegistry
 from agent_factory.api.runtime import runtime
+from agent_factory.registry.local_registry import LocalRegistry
 from agent_factory.security.auth import get_current_user
 from agent_factory.security.rbac import Permission, require_user_permission
 
@@ -23,8 +23,8 @@ class AgentCreate(BaseModel):
 
 class AgentRun(BaseModel):
     input_text: str
-    session_id: Optional[str] = None
-    context: Optional[dict] = None
+    session_id: str | None = None
+    context: dict | None = None
 
 
 @router.post("/", response_model=dict)
@@ -44,7 +44,7 @@ def create_agent(agent_data: AgentCreate, user=Depends(get_current_user)):
     return {"id": agent.id, "status": "created"}
 
 
-@router.get("/", response_model=List[dict])
+@router.get("/", response_model=list[dict])
 def list_agents(user=Depends(get_current_user)):
     """List all agents."""
     require_user_permission(user, Permission.READ_AGENTS)

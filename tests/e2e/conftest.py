@@ -1,7 +1,7 @@
 """E2E test configuration."""
 
 import os
-from typing import Generator
+from collections.abc import Generator
 
 import httpx
 import pytest

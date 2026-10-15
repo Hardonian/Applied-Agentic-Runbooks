@@ -1,14 +1,15 @@
 """Workflow API routes."""
 
-from fastapi import APIRouter, HTTPException, Depends
-from typing import List, Optional, Dict, Any
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from agent_factory.workflows.model import Workflow, WorkflowStep, Trigger, TriggerType, Condition
-from agent_factory.registry.local_registry import LocalRegistry
 from agent_factory.api.runtime import runtime
+from agent_factory.registry.local_registry import LocalRegistry
 from agent_factory.security.auth import get_current_user
-from agent_factory.security.rbac import require_user_permission, Permission
+from agent_factory.security.rbac import Permission, require_user_permission
+from agent_factory.workflows.model import Condition, Trigger, TriggerType, Workflow, WorkflowStep
 
 router = APIRouter()
 registry = LocalRegistry()
@@ -18,32 +19,32 @@ class WorkflowCreate(BaseModel):
     """Workflow creation model."""
     id: str
     name: str
-    steps: List[Dict[str, Any]]
-    triggers: Optional[List[Dict[str, Any]]] = None
-    branching: Optional[Dict[str, Dict[str, str]]] = None
+    steps: list[dict[str, Any]]
+    triggers: list[dict[str, Any]] | None = None
+    branching: dict[str, dict[str, str]] | None = None
 
 
 class WorkflowUpdate(BaseModel):
     """Workflow update model."""
-    name: Optional[str] = None
-    steps: Optional[List[Dict[str, Any]]] = None
-    triggers: Optional[List[Dict[str, Any]]] = None
-    branching: Optional[Dict[str, Dict[str, str]]] = None
+    name: str | None = None
+    steps: list[dict[str, Any]] | None = None
+    triggers: list[dict[str, Any]] | None = None
+    branching: dict[str, dict[str, str]] | None = None
 
 
 class WorkflowRun(BaseModel):
     """Workflow run model."""
-    context: Dict[str, Any]
-    start_step: Optional[str] = None
+    context: dict[str, Any]
+    start_step: str | None = None
 
 
 class WorkflowTrigger(BaseModel):
     """Workflow trigger model."""
     trigger_type: str
-    config: Dict[str, Any]
+    config: dict[str, Any]
 
 
-@router.post("/", response_model=Dict[str, Any])
+@router.post("/", response_model=dict[str, Any])
 async def create_workflow(
     workflow_data: WorkflowCreate,
     user=Depends(get_current_user)
@@ -112,14 +113,14 @@ async def create_workflow(
     return {"id": workflow.id, "status": "created"}
 
 
-@router.get("/", response_model=List[str])
+@router.get("/", response_model=list[str])
 def list_workflows(user=Depends(get_current_user)):
     """List all workflows."""
     require_user_permission(user, Permission.READ_WORKFLOWS)
     return registry.list_workflows()
 
 
-@router.get("/{workflow_id}", response_model=Dict[str, Any])
+@router.get("/{workflow_id}", response_model=dict[str, Any])
 def get_workflow(workflow_id: str, user=Depends(get_current_user)):
     """Get workflow by ID."""
     require_user_permission(user, Permission.READ_WORKFLOWS)
@@ -131,7 +132,7 @@ def get_workflow(workflow_id: str, user=Depends(get_current_user)):
     return workflow.to_dict()
 
 
-@router.put("/{workflow_id}", response_model=Dict[str, Any])
+@router.put("/{workflow_id}", response_model=dict[str, Any])
 async def update_workflow(
     workflow_id: str,
     workflow_data: WorkflowUpdate,
@@ -197,7 +198,7 @@ async def update_workflow(
     return {"id": workflow.id, "status": "updated"}
 
 
-@router.post("/{workflow_id}/run", response_model=Dict[str, Any])
+@router.post("/{workflow_id}/run", response_model=dict[str, Any])
 def run_workflow(
     workflow_id: str,
     run_data: WorkflowRun,
@@ -223,7 +224,7 @@ def run_workflow(
     return {"execution_id": execution_id, "status": "running"}
 
 
-@router.post("/{workflow_id}/trigger", response_model=Dict[str, Any])
+@router.post("/{workflow_id}/trigger", response_model=dict[str, Any])
 async def trigger_workflow(
     workflow_id: str,
     trigger_data: WorkflowTrigger,
@@ -245,7 +246,7 @@ async def trigger_workflow(
     return {"execution_id": execution_id, "status": "triggered"}
 
 
-@router.get("/{workflow_id}/status", response_model=Dict[str, Any])
+@router.get("/{workflow_id}/status", response_model=dict[str, Any])
 def get_workflow_status(workflow_id: str, user=Depends(get_current_user)):
     """Get workflow execution status."""
     require_user_permission(user, Permission.READ_WORKFLOWS)

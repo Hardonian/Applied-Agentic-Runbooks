@@ -1,19 +1,20 @@
 """Execution API routes."""
 
-from fastapi import APIRouter, HTTPException, Depends
-from typing import List, Optional, Dict, Any
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException
 
 from agent_factory.api.runtime import runtime
 from agent_factory.security.auth import get_current_user
-from agent_factory.security.rbac import require_user_permission, Permission
+from agent_factory.security.rbac import Permission, require_user_permission
 
 router = APIRouter()
 
 
-@router.get("/", response_model=List[Dict[str, Any]])
+@router.get("/", response_model=list[dict[str, Any]])
 def list_executions(
-    entity_id: Optional[str] = None,
-    status: Optional[str] = None,
+    entity_id: str | None = None,
+    status: str | None = None,
     limit: int = 100,
     user=Depends(get_current_user)
 ):
@@ -41,7 +42,7 @@ def list_executions(
     ]
 
 
-@router.get("/{execution_id}", response_model=Dict[str, Any])
+@router.get("/{execution_id}", response_model=dict[str, Any])
 def get_execution(execution_id: str, user=Depends(get_current_user)):
     """Get execution by ID."""
     require_user_permission(user, Permission.READ_AGENTS)
@@ -63,7 +64,7 @@ def get_execution(execution_id: str, user=Depends(get_current_user)):
     }
 
 
-@router.get("/{execution_id}/logs", response_model=Dict[str, Any])
+@router.get("/{execution_id}/logs", response_model=dict[str, Any])
 def get_execution_logs(execution_id: str, user=Depends(get_current_user)):
     """Get execution logs."""
     require_user_permission(user, Permission.READ_AGENTS)
@@ -86,7 +87,7 @@ def get_execution_logs(execution_id: str, user=Depends(get_current_user)):
     }
 
 
-@router.post("/{execution_id}/retry", response_model=Dict[str, Any])
+@router.post("/{execution_id}/retry", response_model=dict[str, Any])
 async def retry_execution(
     execution_id: str,
     user=Depends(get_current_user)

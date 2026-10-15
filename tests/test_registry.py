@@ -1,17 +1,19 @@
 """Tests for Registry classes."""
 
-import pytest
 import tempfile
 from pathlib import Path
-from agent_factory.registry.local_registry import LocalRegistry
+
+import pytest
+
 from agent_factory.agents.agent import Agent
+from agent_factory.registry.local_registry import LocalRegistry
 
 
 @pytest.mark.unit
 def test_local_registry_creation():
     """Test creating a local registry."""
     with tempfile.TemporaryDirectory() as tmpdir:
-        registry = LocalRegistry(tmpdir)
+        LocalRegistry(tmpdir)
         
         assert Path(tmpdir).exists()
         assert (Path(tmpdir) / "agents").exists()

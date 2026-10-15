@@ -1,9 +1,10 @@
 """Stripe payment integration."""
 
 import os
+from typing import Any
+
 import stripe
-from typing import Dict, Any, Optional
-from fastapi import Request, HTTPException, status
+from fastapi import HTTPException, Request, status
 
 # Initialize Stripe
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "")
@@ -12,7 +13,7 @@ stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "")
 class StripeClient:
     """Stripe client wrapper."""
     
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: str | None = None):
         """
         Initialize Stripe client.
         
@@ -24,7 +25,7 @@ class StripeClient:
         elif not stripe.api_key:
             raise ValueError("Stripe API key not configured")
     
-    def create_customer(self, email: str, name: Optional[str] = None) -> Dict[str, Any]:
+    def create_customer(self, email: str, name: str | None = None) -> dict[str, Any]:
         """
         Create Stripe customer.
         
@@ -45,9 +46,9 @@ class StripeClient:
         self,
         amount: int,
         currency: str = "usd",
-        customer_id: Optional[str] = None,
-        metadata: Optional[Dict[str, str]] = None
-    ) -> Dict[str, Any]:
+        customer_id: str | None = None,
+        metadata: dict[str, str] | None = None
+    ) -> dict[str, Any]:
         """
         Create payment intent.
         
@@ -72,8 +73,8 @@ class StripeClient:
         self,
         customer_id: str,
         price_id: str,
-        metadata: Optional[Dict[str, str]] = None
-    ) -> Dict[str, Any]:
+        metadata: dict[str, str] | None = None
+    ) -> dict[str, Any]:
         """
         Create subscription.
         
@@ -98,8 +99,8 @@ def create_checkout_session(
     price: float,
     success_url: str,
     cancel_url: str,
-    customer_email: Optional[str] = None
-) -> Dict[str, Any]:
+    customer_email: str | None = None
+) -> dict[str, Any]:
     """
     Create Stripe checkout session for blueprint purchase.
     
@@ -146,7 +147,7 @@ def create_checkout_session(
     }
 
 
-def handle_webhook(request: Request) -> Dict[str, Any]:
+def handle_webhook(request: Request) -> dict[str, Any]:
     """
     Handle Stripe webhook events.
     

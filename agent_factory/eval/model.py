@@ -3,7 +3,7 @@ Evaluation data models.
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
+from typing import Any
 
 
 @dataclass
@@ -21,10 +21,10 @@ class Scenario:
     """
     id: str
     name: str
-    inputs: Dict[str, Any]
-    expected_outputs: Optional[Dict[str, Any]] = None
-    expected_behavior: Optional[str] = None  # Natural language description
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    inputs: dict[str, Any]
+    expected_outputs: dict[str, Any] | None = None
+    expected_behavior: str | None = None  # Natural language description
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -46,13 +46,13 @@ class EvaluationResult:
     scenario_id: str
     agent_id: str
     success: bool
-    accuracy: Optional[float] = None  # 0.0 to 1.0, if expected_outputs provided
+    accuracy: float | None = None  # 0.0 to 1.0, if expected_outputs provided
     latency: float = 0.0
     tokens_used: int = 0
     cost_estimate: float = 0.0
-    error: Optional[str] = None
-    output: Dict[str, Any] = field(default_factory=dict)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    error: str | None = None
+    output: dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -70,6 +70,6 @@ class BenchmarkSuite:
     """
     id: str
     name: str
-    scenarios: List[Scenario]
-    metrics: List[str] = field(default_factory=lambda: ["accuracy", "latency", "cost", "error_rate"])
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    scenarios: list[Scenario]
+    metrics: list[str] = field(default_factory=lambda: ["accuracy", "latency", "cost", "error_rate"])
+    metadata: dict[str, Any] = field(default_factory=dict)

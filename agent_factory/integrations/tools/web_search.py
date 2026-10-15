@@ -1,7 +1,9 @@
 """Web search tool integration."""
 
 import os
+
 import httpx
+
 from agent_factory.tools.decorator import function_tool
 
 
@@ -51,7 +53,7 @@ def _search_serper(query: str, num_results: int, api_key: str) -> str:
         
         return "\n\n".join(results) if results else "No results found."
     except Exception as e:
-        return f"Search error: {str(e)}"
+        return f"Search error: {e!s}"
 
 
 def _search_duckduckgo(query: str, num_results: int) -> str:
@@ -70,7 +72,7 @@ def _search_duckduckgo(query: str, num_results: int) -> str:
     except ImportError:
         return "Web search not available. Install 'duckduckgo-search' or set SERPER_API_KEY."
     except Exception as e:
-        return f"Search error: {str(e)}"
+        return f"Search error: {e!s}"
 
 
 # The decorator returns a Tool instance, so web_search is already a Tool

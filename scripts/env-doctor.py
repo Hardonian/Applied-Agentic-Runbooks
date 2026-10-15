@@ -15,12 +15,10 @@ Environment:
     Reads from .env.example and scans codebase for usage
 """
 
-import os
 import re
 import sys
-from pathlib import Path
-from typing import Dict, Set, List, Tuple
 from collections import defaultdict
+from pathlib import Path
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -32,7 +30,7 @@ if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
 
 
-def read_env_example() -> Dict[str, str]:
+def read_env_example() -> dict[str, str]:
     """Read .env.example and extract variable names."""
     env_example_path = project_root / ".env.example"
     if not env_example_path.exists():
@@ -54,7 +52,7 @@ def read_env_example() -> Dict[str, str]:
     return vars_from_example
 
 
-def scan_codebase_for_env_usage() -> Dict[str, List[str]]:
+def scan_codebase_for_env_usage() -> dict[str, list[str]]:
     """Scan codebase for environment variable usage."""
     usage_patterns = [
         r'os\.getenv\(["\']([^"\']+)["\']',
@@ -95,14 +93,14 @@ def scan_codebase_for_env_usage() -> Dict[str, List[str]]:
                                 line_num = content[:match.start()].count('\n') + 1
                                 rel_path = file_path.relative_to(project_root)
                                 env_usage[var_name].append(f"{rel_path}:{line_num}")
-                except Exception as e:
+                except Exception:
                     # Skip files that can't be read
                     continue
     
     return dict(env_usage)
 
 
-def check_ci_workflows() -> Dict[str, List[str]]:
+def check_ci_workflows() -> dict[str, list[str]]:
     """Check GitHub Actions workflows for env var references."""
     workflow_vars = defaultdict(list)
     workflows_dir = project_root / ".github" / "workflows"
@@ -131,7 +129,7 @@ def normalize_var_name(name: str) -> str:
     return name.upper()
 
 
-def find_similar_names(target: str, candidates: Set[str]) -> List[str]:
+def find_similar_names(target: str, candidates: set[str]) -> list[str]:
     """Find similar variable names (for typo detection)."""
     target_upper = target.upper()
     similar = []
@@ -185,7 +183,7 @@ def main():
     # 1. Variables in .env.example but not used
     print("1. Variables defined in .env.example but not used in code:")
     unused_vars = []
-    for var_name in vars_from_example.keys():
+    for var_name in vars_from_example:
         if var_name not in env_usage:
             unused_vars.append(var_name)
     
@@ -195,7 +193,7 @@ def main():
             print(f"   ⚠️  {var_name}")
             # Check if it's a secret (should still be documented)
             if 'SECRET' in var_name or 'KEY' in var_name or 'PASSWORD' in var_name:
-                print(f"      (Note: Secret variable - should remain documented)")
+                print("      (Note: Secret variable - should remain documented)")
     else:
         print("   ✓ All variables in .env.example are used")
     print()
@@ -203,7 +201,7 @@ def main():
     # 2. Variables used but not in .env.example
     print("2. Variables used in code but not in .env.example:")
     missing_vars = []
-    for var_name in env_usage.keys():
+    for var_name in env_usage:
         if var_name not in vars_from_example:
             missing_vars.append(var_name)
     
@@ -226,7 +224,7 @@ def main():
         normalized_map[normalize_var_name(var)].append(var)
     
     inconsistencies = []
-    for normalized, variants in normalized_map.items():
+    for variants in normalized_map.values():
         if len(variants) > 1:
             inconsistencies.append(variants)
     
@@ -234,7 +232,7 @@ def main():
         issues_found = True
         for variants in inconsistencies:
             print(f"   ⚠️  Similar names found: {', '.join(variants)}")
-            print(f"      Consider standardizing to one name")
+            print("      Consider standardizing to one name")
     else:
         print("   ✓ No naming inconsistencies found")
     print()
@@ -242,7 +240,7 @@ def main():
     # 4. CI workflow secrets not documented
     print("4. Secrets referenced in CI workflows:")
     workflow_secrets_not_doced = []
-    for secret_name in workflow_vars.keys():
+    for secret_name in workflow_vars:
         if secret_name not in vars_from_example:
             workflow_secrets_not_doced.append(secret_name)
     
@@ -251,7 +249,7 @@ def main():
         for secret_name in sorted(workflow_secrets_not_doced):
             print(f"   ⚠️  {secret_name}")
             print(f"      Used in workflows: {', '.join(workflow_vars[secret_name])}")
-            print(f"      (Note: CI secrets should be documented)")
+            print("      (Note: CI secrets should be documented)")
     else:
         print("   ✓ All CI secrets are documented")
     print()

@@ -1,10 +1,14 @@
 """Tests for enterprise compliance features."""
 
-import pytest
+from datetime import datetime
 from unittest.mock import Mock, patch
-from datetime import datetime, timedelta
 
-from agent_factory.enterprise.compliance import export_user_data, delete_user_data, enforce_data_retention
+import pytest
+
+from agent_factory.enterprise.compliance import (
+    enforce_data_retention,
+    export_user_data,
+)
 
 
 @pytest.mark.unit

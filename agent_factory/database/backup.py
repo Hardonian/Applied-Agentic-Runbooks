@@ -6,7 +6,7 @@ import os
 import subprocess
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, List
+
 from agent_factory.core.exceptions import DatabaseError
 
 
@@ -20,7 +20,7 @@ class BackupManager:
         >>> manager.restore_backup(backup_path)
     """
     
-    def __init__(self, backup_dir: Optional[str] = None):
+    def __init__(self, backup_dir: str | None = None):
         """
         Initialize backup manager.
         
@@ -31,7 +31,7 @@ class BackupManager:
         self.backup_dir.mkdir(parents=True, exist_ok=True)
         self.database_url = os.getenv("DATABASE_URL", "sqlite:///./agent_factory.db")
     
-    def create_backup(self, name: Optional[str] = None) -> str:
+    def create_backup(self, name: str | None = None) -> str:
         """
         Create a database backup.
         
@@ -119,7 +119,7 @@ class BackupManager:
         else:
             raise DatabaseError(f"Unsupported database: {self.database_url}")
     
-    def list_backups(self) -> List[dict]:
+    def list_backups(self) -> list[dict]:
         """
         List available backups.
         

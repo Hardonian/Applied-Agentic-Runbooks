@@ -3,12 +3,12 @@ Agent class - Core primitive for creating and running AI agents.
 """
 
 from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any
 from enum import Enum
+from typing import Any
 
-from agent_factory.core.tool import Tool
-from agent_factory.core.memory import MemoryStore
 from agent_factory.core.guardrails import Guardrails
+from agent_factory.core.memory import MemoryStore
+from agent_factory.core.tool import Tool
 
 
 class AgentStatus(str, Enum):
@@ -38,17 +38,17 @@ class AgentResult:
     status: AgentStatus
     tokens_used: int = 0
     execution_time: float = 0.0
-    tool_calls: List[Dict[str, Any]] = field(default_factory=list)
-    error: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    tool_calls: list[dict[str, Any]] = field(default_factory=list)
+    error: str | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class Handoff:
     """Represents a handoff to another agent."""
     to: "Agent"
-    context: Dict[str, Any] = field(default_factory=dict)
-    reason: Optional[str] = None
+    context: dict[str, Any] = field(default_factory=dict)
+    reason: str | None = None
 
 
 class Agent:
@@ -71,12 +71,12 @@ class Agent:
         id: str,
         name: str,
         instructions: str,
-        tools: Optional[List[Tool]] = None,
+        tools: list[Tool] | None = None,
         model: str = "gpt-4o",
-        memory: Optional[MemoryStore] = None,
-        guardrails: Optional[Guardrails] = None,
-        config: Optional[AgentConfig] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        memory: MemoryStore | None = None,
+        guardrails: Guardrails | None = None,
+        config: AgentConfig | None = None,
+        metadata: dict[str, Any] | None = None,
     ):
         """
         Initialize an Agent.
@@ -119,8 +119,8 @@ class Agent:
     def run(
         self,
         input_text: str,
-        session_id: Optional[str] = None,
-        context: Optional[Dict[str, Any]] = None,
+        session_id: str | None = None,
+        context: dict[str, Any] | None = None,
     ) -> AgentResult:
         """
         Run the agent with given input.
@@ -193,7 +193,7 @@ class Agent:
                 error=str(e),
             )
     
-    def _execute_agent(self, input_text: str, context: Dict[str, Any]) -> str:
+    def _execute_agent(self, input_text: str, context: dict[str, Any]) -> str:
         """
         Execute the agent using the underlying LLM SDK.
         
@@ -227,13 +227,13 @@ class Agent:
             return f"[Agent {self.name} would process: {input_text}]"
         except Exception as e:
             from agent_factory.core.exceptions import AgentExecutionError
-            raise AgentExecutionError(f"Agent execution failed: {str(e)}") from e
+            raise AgentExecutionError(f"Agent execution failed: {e!s}") from e
     
     def handoff(
         self,
         to: "Agent",
-        context: Optional[Dict[str, Any]] = None,
-        reason: Optional[str] = None,
+        context: dict[str, Any] | None = None,
+        reason: str | None = None,
     ) -> Handoff:
         """
         Create a handoff to another agent.
@@ -252,7 +252,7 @@ class Agent:
             reason=reason,
         )
     
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize agent to dictionary."""
         return {
             "id": self.id,
@@ -268,7 +268,7 @@ class Agent:
         }
     
     @classmethod
-    def from_dict(cls, data: Dict[str, Any], tools_registry: Optional[Dict[str, Tool]] = None) -> "Agent":
+    def from_dict(cls, data: dict[str, Any], tools_registry: dict[str, Tool] | None = None) -> "Agent":
         """Deserialize agent from dictionary."""
         tools = []
         if tools_registry:

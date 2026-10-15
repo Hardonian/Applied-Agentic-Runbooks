@@ -7,15 +7,14 @@ mapping security postures to OWASP Top 10 for LLMs, SOC 2, HIPAA, and EU AI Act 
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from datetime import datetime, timezone, timedelta
-from enum import Enum
 import hashlib
-import json
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta, timezone
+from enum import Enum
+from typing import Any
 
 from agent_factory.agents.agent import Agent
-from agent_factory.security.owasp_scanner import OWASPSecurityScanner, OWASPAuditReport
+from agent_factory.security.owasp_scanner import OWASPAuditReport, OWASPSecurityScanner
 
 
 class CertificationGrade(str, Enum):
@@ -61,10 +60,10 @@ class AgentCertificationRecord:
     digital_seal: str
     owasp_score: int
     controls_evaluated: int
-    evidence_trail: List[ComplianceEvidence] = field(default_factory=list)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    evidence_trail: list[ComplianceEvidence] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert certificate to structured dictionary."""
         return {
             "certificate_id": self.certificate_id,
@@ -96,28 +95,28 @@ class AgentCertificationRecord:
     def to_markdown(self) -> str:
         """Render certificate as formatted audit-ready markdown."""
         lines = [
-            f"# 🛡️ Agent Factory Production Certification Record",
-            f"",
+            "# 🛡️ Agent Factory Production Certification Record",
+            "",
             f"> **Certificate ID**: `{self.certificate_id}`  ",
             f"> **Issued**: {self.issued_at} | **Expires**: {self.expires_at}  ",
             f"> **Grade**: **{self.grade.value}** ({self.overall_score}/100) | **Risk Tier**: {self.risk_tier.value}  ",
             f"> **Cryptographic Integrity Hash**: `{self.integrity_hash[:20]}...`  ",
-            f"",
-            f"---",
-            f"",
-            f"## 📋 Certified Agent Identity",
+            "",
+            "---",
+            "",
+            "## 📋 Certified Agent Identity",
             f"- **Agent ID**: `{self.agent_id}`",
             f"- **Agent Name**: {self.agent_name}",
             f"- **Target Model**: `{self.model}`",
             f"- **OWASP LLM Top 10 Score**: **{self.owasp_score}/100**",
             f"- **Digital Verification Seal**: `{self.digital_seal}`",
-            f"",
-            f"---",
-            f"",
-            f"## 🔍 Evaluated Compliance Controls",
-            f"",
-            f"| Framework | Control ID | Control Name | Status | Rationale |",
-            f"| :--- | :--- | :--- | :--- | :--- |",
+            "",
+            "---",
+            "",
+            "## 🔍 Evaluated Compliance Controls",
+            "",
+            "| Framework | Control ID | Control Name | Status | Rationale |",
+            "| :--- | :--- | :--- | :--- | :--- |",
         ]
         for e in self.evidence_trail:
             badge = "✅" if e.status == "SATISFIED" else ("⚠️" if e.status == "PARTIAL" else "ℹ️")
@@ -126,9 +125,9 @@ class AgentCertificationRecord:
             )
 
         lines.extend([
-            f"",
-            f"---",
-            f"*Certified by Agent Factory Governance Engine. Tamper-evident verification valid for 365 days.*",
+            "",
+            "---",
+            "*Certified by Agent Factory Governance Engine. Tamper-evident verification valid for 365 days.*",
         ])
         return "\n".join(lines)
 
@@ -168,7 +167,7 @@ class AgentCertificationGenerator:
         owasp_report: OWASPAuditReport = OWASPSecurityScanner.audit_agent(agent)
         owasp_score = owasp_report.score
 
-        evidence_trail: List[ComplianceEvidence] = []
+        evidence_trail: list[ComplianceEvidence] = []
 
         # 1. Map OWASP checks into evidence
         for check in owasp_report.checks:

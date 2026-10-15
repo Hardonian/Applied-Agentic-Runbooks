@@ -10,6 +10,8 @@ from typing import Annotated
 import typer
 
 from agent_factory.evaluation.arena import ArenaRunner, GauntletSuite
+from agent_factory.evaluation.arena.evidence import EvidenceVerifier
+from agent_factory.evaluation.arena.service import arena_service
 
 app = typer.Typer(help="Run offline autonomous benchmarks and red-team gauntlets.")
 
@@ -40,3 +42,24 @@ def run_command(
         typer.echo(f"Arena summary written to {output}")
     else:
         typer.echo(rendered)
+
+
+@app.command("verify")
+def verify_command(
+    manifest: Annotated[Path, typer.Argument(help="Path to an Arena manifest JSON")],
+) -> None:
+    """Independently verify a signed Arena evidence bundle offline."""
+    report = EvidenceVerifier().verify(manifest)
+    typer.echo(json.dumps(report.to_dict(), indent=2))
+    if not report.valid:
+        raise typer.Exit(1)
+
+
+@app.command("worker")
+def worker_command() -> None:
+    """Run the Redis-backed durable Arena worker until interrupted."""
+    typer.echo("Starting durable Arena worker")
+    try:
+        asyncio.run(arena_service.worker_forever())
+    except KeyboardInterrupt:
+        typer.echo("Arena worker stopped")

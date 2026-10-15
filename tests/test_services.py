@@ -2,13 +2,10 @@
 Tests for service layer.
 """
 
-import pytest
 from agent_factory.services.agent_service import AgentService
-from agent_factory.services.workflow_service import WorkflowService
 from agent_factory.services.blueprint_service import BlueprintService
 from agent_factory.services.execution_service import ExecutionService
-from agent_factory.agents.agent import Agent
-from agent_factory.workflows.model import Workflow
+from agent_factory.services.workflow_service import WorkflowService
 
 
 def test_agent_service_create():

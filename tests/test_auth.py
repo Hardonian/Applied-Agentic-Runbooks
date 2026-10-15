@@ -1,17 +1,18 @@
 """Tests for authentication."""
 
-import pytest
 from datetime import datetime, timedelta, timezone
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
+
 import jwt
+import pytest
 from fastapi import HTTPException
 
 from agent_factory.security.auth import (
+    ALGORITHM,
+    SECRET_KEY,
+    TokenData,
     create_access_token,
     verify_token,
-    TokenData,
-    SECRET_KEY,
-    ALGORITHM,
 )
 
 

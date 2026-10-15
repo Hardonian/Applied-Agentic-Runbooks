@@ -1,15 +1,16 @@
 """Blueprint API routes."""
 
-from fastapi import APIRouter, HTTPException, Depends
-from typing import List, Dict, Any, Optional
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from agent_factory.registry.local_registry import LocalRegistry
 from agent_factory.blueprints.model import Blueprint
-from agent_factory.marketplace import publish_blueprint, get_blueprint_details
+from agent_factory.marketplace import publish_blueprint
 from agent_factory.marketplace.reviews import get_reviews
+from agent_factory.registry.local_registry import LocalRegistry
 from agent_factory.security.auth import get_current_user
-from agent_factory.security.rbac import require_user_permission, Permission
+from agent_factory.security.rbac import Permission, require_user_permission
 
 router = APIRouter()
 registry = LocalRegistry()
@@ -22,17 +23,17 @@ class BlueprintCreate(BaseModel):
     version: str
     description: str
     author: str
-    agents: Optional[List[Dict[str, Any]]] = None
-    tools: Optional[List[Dict[str, Any]]] = None
-    workflows: Optional[List[Dict[str, Any]]] = None
-    config: Optional[Dict[str, Any]] = None
-    pricing: Optional[Dict[str, Any]] = None
-    metadata: Optional[Dict[str, Any]] = None
+    agents: list[dict[str, Any]] | None = None
+    tools: list[dict[str, Any]] | None = None
+    workflows: list[dict[str, Any]] | None = None
+    config: dict[str, Any] | None = None
+    pricing: dict[str, Any] | None = None
+    metadata: dict[str, Any] | None = None
 
 
 class BlueprintInstall(BaseModel):
     """Blueprint installation model."""
-    target_path: Optional[str] = None
+    target_path: str | None = None
 
 
 class BlueprintPublish(BaseModel):
@@ -42,7 +43,7 @@ class BlueprintPublish(BaseModel):
     price: float = 0.0
 
 
-@router.post("/", response_model=Dict[str, Any])
+@router.post("/", response_model=dict[str, Any])
 async def create_blueprint(
     blueprint_data: BlueprintCreate,
     user=Depends(get_current_user)
@@ -116,14 +117,14 @@ async def create_blueprint(
     return {"id": blueprint.id, "status": "created"}
 
 
-@router.get("/", response_model=List[str])
+@router.get("/", response_model=list[str])
 def list_blueprints(user=Depends(get_current_user)):
     """List all blueprints."""
     require_user_permission(user, Permission.READ_BLUEPRINTS)
     return registry.list_blueprints()
 
 
-@router.get("/{blueprint_id}", response_model=Dict[str, Any])
+@router.get("/{blueprint_id}", response_model=dict[str, Any])
 def get_blueprint(blueprint_id: str, user=Depends(get_current_user)):
     """Get blueprint by ID."""
     require_user_permission(user, Permission.READ_BLUEPRINTS)
@@ -135,7 +136,7 @@ def get_blueprint(blueprint_id: str, user=Depends(get_current_user)):
     return blueprint.to_dict()
 
 
-@router.post("/{blueprint_id}/install", response_model=Dict[str, Any])
+@router.post("/{blueprint_id}/install", response_model=dict[str, Any])
 async def install_blueprint(
     blueprint_id: str,
     install_data: BlueprintInstall,
@@ -164,7 +165,7 @@ async def install_blueprint(
     return {"id": blueprint_id, "status": "installed", "target_path": target_path}
 
 
-@router.post("/{blueprint_id}/publish", response_model=Dict[str, Any])
+@router.post("/{blueprint_id}/publish", response_model=dict[str, Any])
 async def publish_blueprint_endpoint(
     blueprint_id: str,
     publish_data: BlueprintPublish,
@@ -189,10 +190,10 @@ async def publish_blueprint_endpoint(
         )
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Publishing failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Publishing failed: {e!s}")
 
 
-@router.get("/{blueprint_id}/reviews", response_model=Dict[str, Any])
+@router.get("/{blueprint_id}/reviews", response_model=dict[str, Any])
 def get_blueprint_reviews(
     blueprint_id: str,
     limit: int = 10,

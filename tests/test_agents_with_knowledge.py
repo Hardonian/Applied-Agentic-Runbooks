@@ -2,7 +2,6 @@
 Tests for agents with knowledge packs.
 """
 
-import pytest
 
 from agent_factory.agents.agent import Agent
 from agent_factory.knowledge.model import KnowledgePack

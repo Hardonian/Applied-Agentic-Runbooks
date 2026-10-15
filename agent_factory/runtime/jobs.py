@@ -2,12 +2,11 @@
 Job queue system for async execution of agents and workflows.
 """
 
-import uuid
-from enum import Enum
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, Optional, Any, List
-from abc import ABC, abstractmethod
+from enum import Enum
+from typing import Any
 
 
 class JobStatus(str, Enum):
@@ -42,19 +41,19 @@ class Job:
     job_id: str
     job_type: JobType
     resource_id: str  # agent_id or workflow_id
-    input_data: Dict[str, Any]
-    tenant_id: Optional[str] = None
-    user_id: Optional[str] = None
-    project_id: Optional[str] = None
+    input_data: dict[str, Any]
+    tenant_id: str | None = None
+    user_id: str | None = None
+    project_id: str | None = None
     status: JobStatus = JobStatus.QUEUED
     created_at: datetime = field(default_factory=datetime.utcnow)
-    started_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
-    result: Optional[Dict[str, Any]] = None
-    error: Optional[str] = None
+    started_at: datetime | None = None
+    completed_at: datetime | None = None
+    result: dict[str, Any] | None = None
+    error: str | None = None
     retry_count: int = 0
     max_retries: int = 3
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class JobQueue(ABC):
@@ -72,10 +71,9 @@ class JobQueue(ABC):
         Args:
             job: Job to enqueue
         """
-        pass
     
     @abstractmethod
-    def dequeue(self, job_type: Optional[JobType] = None) -> Optional[Job]:
+    def dequeue(self, job_type: JobType | None = None) -> Job | None:
         """
         Dequeue a job.
         
@@ -85,10 +83,9 @@ class JobQueue(ABC):
         Returns:
             Job or None if queue is empty
         """
-        pass
     
     @abstractmethod
-    def get_job(self, job_id: str) -> Optional[Job]:
+    def get_job(self, job_id: str) -> Job | None:
         """
         Get job by ID.
         
@@ -98,7 +95,6 @@ class JobQueue(ABC):
         Returns:
             Job or None
         """
-        pass
     
     @abstractmethod
     def update_job(self, job: Job) -> None:
@@ -108,15 +104,14 @@ class JobQueue(ABC):
         Args:
             job: Job to update
         """
-        pass
     
     @abstractmethod
     def list_jobs(
         self,
-        tenant_id: Optional[str] = None,
-        status: Optional[JobStatus] = None,
+        tenant_id: str | None = None,
+        status: JobStatus | None = None,
         limit: int = 100,
-    ) -> List[Job]:
+    ) -> list[Job]:
         """
         List jobs with filters.
         
@@ -128,7 +123,6 @@ class JobQueue(ABC):
         Returns:
             List of jobs
         """
-        pass
 
 
 class InMemoryJobQueue(JobQueue):
@@ -140,8 +134,8 @@ class InMemoryJobQueue(JobQueue):
     
     def __init__(self):
         """Initialize in-memory queue."""
-        self.jobs: Dict[str, Job] = {}
-        self.queue: List[str] = []  # List of job IDs in queue order
+        self.jobs: dict[str, Job] = {}
+        self.queue: list[str] = []  # List of job IDs in queue order
     
     def enqueue(self, job: Job) -> None:
         """Enqueue a job."""
@@ -149,7 +143,7 @@ class InMemoryJobQueue(JobQueue):
         if job.status == JobStatus.QUEUED:
             self.queue.append(job.job_id)
     
-    def dequeue(self, job_type: Optional[JobType] = None) -> Optional[Job]:
+    def dequeue(self, job_type: JobType | None = None) -> Job | None:
         """Dequeue a job."""
         while self.queue:
             job_id = self.queue.pop(0)
@@ -169,7 +163,7 @@ class InMemoryJobQueue(JobQueue):
         
         return None
     
-    def get_job(self, job_id: str) -> Optional[Job]:
+    def get_job(self, job_id: str) -> Job | None:
         """Get job by ID."""
         return self.jobs.get(job_id)
     
@@ -184,10 +178,10 @@ class InMemoryJobQueue(JobQueue):
     
     def list_jobs(
         self,
-        tenant_id: Optional[str] = None,
-        status: Optional[JobStatus] = None,
+        tenant_id: str | None = None,
+        status: JobStatus | None = None,
         limit: int = 100,
-    ) -> List[Job]:
+    ) -> list[Job]:
         """List jobs."""
         jobs = list(self.jobs.values())
         
@@ -213,8 +207,6 @@ class SQLiteJobQueue(JobQueue):
         Args:
             db_path: Path to SQLite database
         """
-        import sqlite3
-        import json
         from pathlib import Path
         
         self.db_path = Path(db_path)
@@ -224,7 +216,6 @@ class SQLiteJobQueue(JobQueue):
     def _init_db(self) -> None:
         """Initialize database tables."""
         import sqlite3
-        import json
         
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -265,8 +256,8 @@ class SQLiteJobQueue(JobQueue):
     
     def enqueue(self, job: Job) -> None:
         """Enqueue a job."""
-        import sqlite3
         import json
+        import sqlite3
         
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -301,10 +292,9 @@ class SQLiteJobQueue(JobQueue):
         finally:
             conn.close()
     
-    def dequeue(self, job_type: Optional[JobType] = None) -> Optional[Job]:
+    def dequeue(self, job_type: JobType | None = None) -> Job | None:
         """Dequeue a job."""
         import sqlite3
-        import json
         
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -338,10 +328,9 @@ class SQLiteJobQueue(JobQueue):
         finally:
             conn.close()
     
-    def get_job(self, job_id: str) -> Optional[Job]:
+    def get_job(self, job_id: str) -> Job | None:
         """Get job by ID."""
         import sqlite3
-        import json
         
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -363,13 +352,12 @@ class SQLiteJobQueue(JobQueue):
     
     def list_jobs(
         self,
-        tenant_id: Optional[str] = None,
-        status: Optional[JobStatus] = None,
+        tenant_id: str | None = None,
+        status: JobStatus | None = None,
         limit: int = 100,
-    ) -> List[Job]:
+    ) -> list[Job]:
         """List jobs."""
         import sqlite3
-        import json
         
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -421,7 +409,7 @@ class SQLiteJobQueue(JobQueue):
 
 
 # Global job queue instance
-_job_queue: Optional[JobQueue] = None
+_job_queue: JobQueue | None = None
 
 
 def get_job_queue() -> JobQueue:

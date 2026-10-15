@@ -2,25 +2,22 @@
 Main notebook converter implementation.
 """
 
-import json
-import ast
-from pathlib import Path
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
+from pathlib import Path
 
-from agent_factory.notebook_converter.parser import NotebookParser
 from agent_factory.notebook_converter.detector import AgentDetector, ToolDetector, WorkflowDetector
+from agent_factory.notebook_converter.parser import NotebookParser
 from agent_factory.notebook_converter.writer import AgentWriter, ToolWriter, WorkflowWriter
 
 
 @dataclass
 class ConversionResult:
     """Result of notebook conversion."""
-    agents_created: List[str]
-    tools_created: List[str]
-    workflows_created: List[str]
-    blueprint_created: Optional[str] = None
-    errors: List[str] = None
+    agents_created: list[str]
+    tools_created: list[str]
+    workflows_created: list[str]
+    blueprint_created: str | None = None
+    errors: list[str] = None
     
     def __post_init__(self):
         if self.errors is None:
@@ -56,7 +53,7 @@ class NotebookConverter:
     def convert(
         self,
         notebook_path: str,
-        agent_name: Optional[str] = None,
+        agent_name: str | None = None,
         create_blueprint: bool = False,
         interactive: bool = False,
     ) -> ConversionResult:
@@ -138,9 +135,9 @@ class NotebookConverter:
         
         return result
     
-    def _confirm_detections(self, agents: List[Dict], tools: List[Dict], workflows: List[Dict]) -> None:
+    def _confirm_detections(self, agents: list[dict], tools: list[dict], workflows: list[dict]) -> None:
         """Prompt user to confirm detections (placeholder for interactive mode)."""
-        print(f"\nDetected:")
+        print("\nDetected:")
         print(f"  Agents: {len(agents)}")
         print(f"  Tools: {len(tools)}")
         print(f"  Workflows: {len(workflows)}")
@@ -149,9 +146,9 @@ class NotebookConverter:
     def _create_blueprint(
         self,
         name: str,
-        agent_paths: List[str],
-        tool_paths: List[str],
-        workflow_paths: List[str],
+        agent_paths: list[str],
+        tool_paths: list[str],
+        workflow_paths: list[str],
     ) -> Path:
         """Create a blueprint.yaml from converted components."""
         from agent_factory.blueprints.model import Blueprint, BlueprintConfig, BlueprintMetadata
@@ -168,7 +165,7 @@ class NotebookConverter:
             id=name,
             name=name.replace("-", " ").title(),
             version="1.0.0",
-            description=f"Blueprint converted from notebook",
+            description="Blueprint converted from notebook",
             author="Agent Factory",
             category="converted",
             tags=["converted", "notebook"],

@@ -1,7 +1,7 @@
 """Agent CLI commands."""
 
+
 import typer
-from typing import Optional
 
 from agent_factory.agents.agent import Agent
 from agent_factory.registry.local_registry import LocalRegistry
@@ -51,7 +51,7 @@ def list():
 def run(
     agent_id: str = typer.Argument(..., help="Agent ID"),
     input_text: str = typer.Option(..., "--input", "-i", help="Input text"),
-    session_id: Optional[str] = typer.Option(None, "--session", "-s", help="Session ID"),
+    session_id: str | None = typer.Option(None, "--session", "-s", help="Session ID"),
 ):
     """Run an agent."""
     registry = LocalRegistry()

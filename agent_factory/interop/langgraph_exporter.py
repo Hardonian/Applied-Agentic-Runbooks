@@ -5,9 +5,9 @@ Compiles any Agent Factory Agent or Multi-Agent Workflow directly into
 runnable LangGraph Python code utilizing StateGraph, conditional edges, and state typed dicts.
 """
 
-from typing import Dict, Any, List, Optional
+from typing import Any
+
 from agent_factory.agents.agent import Agent
-from agent_factory.workflows.model import Workflow
 
 
 class LangGraphExporter:
@@ -74,7 +74,7 @@ if __name__ == "__main__":
         return code
 
     @staticmethod
-    def export_workflow(steps: List[Dict[str, Any]], name: str = "AgentFactoryWorkflow") -> str:
+    def export_workflow(steps: list[dict[str, Any]], name: str = "AgentFactoryWorkflow") -> str:
         """Export multi-agent sequence to a multi-node LangGraph StateGraph."""
         nodes_code = []
         edges_code = []
@@ -84,7 +84,7 @@ if __name__ == "__main__":
             step_id = step.get("id", f"step_{idx}")
             clean_id = step_id.replace("-", "_")
             step_name = step.get("name", f"Step {idx}")
-            model = step.get("model", "gpt-4o")
+            step.get("model", "gpt-4o")
 
             node_func = f'''def {clean_id}_node(state: WorkflowState) -> dict:
     """Step: {step_name}"""

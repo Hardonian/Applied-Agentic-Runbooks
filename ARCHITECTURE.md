@@ -28,6 +28,22 @@ ArenaRunner ── events ──> EventBus ──> REST/WebSocket ──> Studio
      └── AgentPCAP capture
 ```
 
+### Durable multi-replica control plane
+
+`ArenaService` writes the queued record before starting work. `ArenaRepository` uses
+the configured SQLAlchemy engine, providing SQLite development and PostgreSQL
+production behavior. Every run has a tenant, request, lifecycle timestamps, retention
+deadline, cooperative cancellation flag, terminal summary, and immutable artifact
+references. Redis Streams is an optional transport layered beneath the local bounded
+bus; sequence cursors provide replay after reconnect while the REST record remains the
+source of truth.
+
+The MCPWall approval authority persists tickets separately from WebSocket connections.
+Decisions enforce tenant boundaries, operator roles, separation of duty, expiry, and
+single consumption, then issue an HMAC-SHA256 receipt. Arena evidence uses an
+independent signing key and manifest so third parties can verify captures and Merkle
+transitions without database or model access.
+
 ## Full Directory Structure
 
 ```

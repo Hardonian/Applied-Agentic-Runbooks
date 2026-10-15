@@ -5,9 +5,9 @@ Supports SOC 2, GDPR, and other compliance requirements.
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Any
 from datetime import datetime
 from enum import Enum
+from typing import Any
 
 
 class ComplianceStandard(str, Enum):
@@ -35,10 +35,10 @@ class ComplianceControl:
     description: str
     standard: ComplianceStandard
     category: str
-    requirements: List[str] = field(default_factory=list)
-    evidence: List[str] = field(default_factory=list)
+    requirements: list[str] = field(default_factory=list)
+    evidence: list[str] = field(default_factory=list)
     status: ComplianceStatus = ComplianceStatus.NOT_ASSESSED
-    last_assessed: Optional[datetime] = None
+    last_assessed: datetime | None = None
     notes: str = ""
 
 
@@ -49,7 +49,7 @@ class ComplianceAssessment:
     standard: ComplianceStandard
     assessed_at: datetime
     assessed_by: str
-    controls: List[ComplianceControl]
+    controls: list[ComplianceControl]
     overall_status: ComplianceStatus
     notes: str = ""
 
@@ -70,8 +70,8 @@ class ComplianceFramework:
     
     def __init__(self):
         """Initialize compliance framework."""
-        self.controls: Dict[str, ComplianceControl] = {}
-        self.assessments: List[ComplianceAssessment] = []
+        self.controls: dict[str, ComplianceControl] = {}
+        self.assessments: list[ComplianceAssessment] = []
         self._initialize_default_controls()
     
     def _initialize_default_controls(self) -> None:
@@ -157,7 +157,7 @@ class ComplianceFramework:
         description: str,
         standard: ComplianceStandard,
         category: str,
-        requirements: Optional[List[str]] = None,
+        requirements: list[str] | None = None,
     ) -> ComplianceControl:
         """
         Create a compliance control.
@@ -191,7 +191,7 @@ class ComplianceFramework:
         self,
         control_id: str,
         status: ComplianceStatus,
-        evidence: Optional[List[str]] = None,
+        evidence: list[str] | None = None,
         notes: str = "",
     ) -> None:
         """
@@ -265,7 +265,7 @@ class ComplianceFramework:
         self.assessments.append(assessment)
         return assessment
     
-    def get_compliance_status(self, standard: ComplianceStandard) -> Dict[str, Any]:
+    def get_compliance_status(self, standard: ComplianceStandard) -> dict[str, Any]:
         """
         Get compliance status for a standard.
         
@@ -321,9 +321,9 @@ class ComplianceFramework:
     
     def list_controls(
         self,
-        standard: Optional[ComplianceStandard] = None,
-        category: Optional[str] = None,
-    ) -> List[ComplianceControl]:
+        standard: ComplianceStandard | None = None,
+        category: str | None = None,
+    ) -> list[ComplianceControl]:
         """
         List compliance controls.
         
@@ -346,7 +346,7 @@ class ComplianceFramework:
 
 
 # Global instance
-_compliance_framework: Optional[ComplianceFramework] = None
+_compliance_framework: ComplianceFramework | None = None
 
 
 def get_compliance_framework() -> ComplianceFramework:

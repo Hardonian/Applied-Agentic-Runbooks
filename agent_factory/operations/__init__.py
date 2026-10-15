@@ -1,31 +1,31 @@
 """Operations and monitoring module."""
 
+from agent_factory.operations.alerting import (
+    Alert,
+    AlertChannel,
+    AlertManager,
+    AlertRule,
+    AlertSeverity,
+    get_alert_manager,
+)
 from agent_factory.operations.sla_monitor import (
-    SLAMonitor,
     SLI,
     SLO,
+    SLAMonitor,
     SLIType,
     get_sla_monitor,
 )
-from agent_factory.operations.alerting import (
-    AlertManager,
-    AlertRule,
-    Alert,
-    AlertSeverity,
-    AlertChannel,
-    get_alert_manager,
-)
 
 __all__ = [
-    "SLAMonitor",
     "SLI",
     "SLO",
-    "SLIType",
-    "get_sla_monitor",
+    "Alert",
+    "AlertChannel",
     "AlertManager",
     "AlertRule",
-    "Alert",
     "AlertSeverity",
-    "AlertChannel",
+    "SLAMonitor",
+    "SLIType",
     "get_alert_manager",
+    "get_sla_monitor",
 ]

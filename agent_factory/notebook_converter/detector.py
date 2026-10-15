@@ -3,13 +3,13 @@ Detect agents, tools, and workflows in notebook code.
 """
 
 import ast
-from typing import Dict, List, Any, Optional
+from typing import Any
 
 
 class AgentDetector:
     """Detect Agent instances in notebook code."""
     
-    def detect(self, notebook_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def detect(self, notebook_data: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Detect agents in notebook cells.
         
@@ -40,7 +40,7 @@ class AgentDetector:
 class ToolDetector:
     """Detect Tool definitions in notebook code."""
     
-    def detect(self, notebook_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def detect(self, notebook_data: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Detect tools in notebook cells.
         
@@ -69,7 +69,7 @@ class ToolDetector:
 class WorkflowDetector:
     """Detect Workflow definitions in notebook code."""
     
-    def detect(self, notebook_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def detect(self, notebook_data: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Detect workflows in notebook cells.
         
@@ -133,7 +133,7 @@ class AgentVisitor(ast.NodeVisitor):
         
         self.generic_visit(node)
     
-    def _extract_agent_from_call(self, node: ast.Call) -> Optional[Dict[str, Any]]:
+    def _extract_agent_from_call(self, node: ast.Call) -> dict[str, Any] | None:
         """Extract agent definition from Agent(...) call."""
         agent_def = {
             "id": None,
@@ -154,18 +154,16 @@ class AgentVisitor(ast.NodeVisitor):
             elif keyword.arg == "model":
                 if isinstance(keyword.value, ast.Constant):
                     agent_def["model"] = keyword.value.value
-            elif keyword.arg == "tools":
-                if isinstance(keyword.value, ast.List):
-                    agent_def["tools"] = [self._extract_tool_name(elem) for elem in keyword.value.elts]
+            elif keyword.arg == "tools" and isinstance(keyword.value, ast.List):
+                agent_def["tools"] = [self._extract_tool_name(elem) for elem in keyword.value.elts]
         
         # Extract positional arguments (if any)
-        if node.args:
-            if isinstance(node.args[0], ast.Constant):
-                agent_def["name"] = agent_def["name"] or node.args[0].value
+        if node.args and isinstance(node.args[0], ast.Constant):
+            agent_def["name"] = agent_def["name"] or node.args[0].value
         
         return agent_def if agent_def["name"] or agent_def["instructions"] else None
     
-    def _extract_agent_from_factory_call(self, node: ast.Call) -> Optional[Dict[str, Any]]:
+    def _extract_agent_from_factory_call(self, node: ast.Call) -> dict[str, Any] | None:
         """Extract agent definition from AgentFactory.create_*() call."""
         agent_type = node.func.attr.replace("create_", "").replace("_", " ")
         agent_def = {
@@ -224,7 +222,7 @@ class ToolVisitor(ast.NodeVisitor):
         
         return has_docstring and has_type_hints
     
-    def _extract_tool_definition(self, node: ast.FunctionDef) -> Optional[Dict[str, Any]]:
+    def _extract_tool_definition(self, node: ast.FunctionDef) -> dict[str, Any] | None:
         """Extract tool definition from function."""
         docstring = ast.get_docstring(node) or ""
         
@@ -238,7 +236,7 @@ class ToolVisitor(ast.NodeVisitor):
         
         return tool_def
     
-    def _extract_parameters(self, node: ast.FunctionDef) -> List[Dict[str, Any]]:
+    def _extract_parameters(self, node: ast.FunctionDef) -> list[dict[str, Any]]:
         """Extract function parameters."""
         params = []
         num_defaults = len(node.args.defaults)
@@ -277,16 +275,15 @@ class WorkflowVisitor(ast.NodeVisitor):
                 workflow_def = self._extract_workflow_from_call(node)
                 if workflow_def:
                     self.workflows.append(workflow_def)
-        elif isinstance(node.func, ast.Name):
-            if node.func.id == "Crew":
-                # CrewAI pattern
-                workflow_def = self._extract_crew_workflow(node)
-                if workflow_def:
-                    self.workflows.append(workflow_def)
+        elif isinstance(node.func, ast.Name) and node.func.id == "Crew":
+            # CrewAI pattern
+            workflow_def = self._extract_crew_workflow(node)
+            if workflow_def:
+                self.workflows.append(workflow_def)
         
         self.generic_visit(node)
     
-    def _extract_workflow_from_call(self, node: ast.Call) -> Optional[Dict[str, Any]]:
+    def _extract_workflow_from_call(self, node: ast.Call) -> dict[str, Any] | None:
         """Extract workflow definition from Workflow(...) call."""
         workflow_def = {
             "id": None,
@@ -301,15 +298,14 @@ class WorkflowVisitor(ast.NodeVisitor):
             elif keyword.arg == "name":
                 if isinstance(keyword.value, ast.Constant):
                     workflow_def["name"] = keyword.value.value
-            elif keyword.arg == "steps":
-                if isinstance(keyword.value, ast.List):
-                    workflow_def["steps"] = [
-                        self._extract_step(elem) for elem in keyword.value.elts
-                    ]
+            elif keyword.arg == "steps" and isinstance(keyword.value, ast.List):
+                workflow_def["steps"] = [
+                    self._extract_step(elem) for elem in keyword.value.elts
+                ]
         
         return workflow_def if workflow_def["id"] or workflow_def["name"] else None
     
-    def _extract_crew_workflow(self, node: ast.Call) -> Optional[Dict[str, Any]]:
+    def _extract_crew_workflow(self, node: ast.Call) -> dict[str, Any] | None:
         """Extract workflow from Crew(...) call."""
         return {
             "id": "crew-workflow",
@@ -317,7 +313,7 @@ class WorkflowVisitor(ast.NodeVisitor):
             "steps": [],
         }
     
-    def _extract_step(self, node: ast.AST) -> Dict[str, Any]:
+    def _extract_step(self, node: ast.AST) -> dict[str, Any]:
         """Extract workflow step from AST node."""
         return {
             "id": "step",

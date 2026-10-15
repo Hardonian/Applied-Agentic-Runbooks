@@ -19,8 +19,8 @@
       <div class="run-controls">
         <label>Mode<select id="run-mode"><option value="deterministic">Deterministic CI</option><option value="reality">Reality / concurrency</option></select></label>
         <label>Trials<input id="run-trials" type="number" min="1" max="100" value="3"></label>
-        <button id="run-arena" class="primary">Queue all suites</button>
-        <button id="cancel-arena" class="danger" disabled>Cancel</button>
+        <button id="run-arena" class="primary" type="button">Queue all suites</button>
+        <button id="cancel-arena" class="danger" type="button" disabled>Cancel</button>
       </div>
     </section>
 
@@ -39,18 +39,18 @@
       </article>
 
       <article class="panel">
-        <div class="panel-head"><div><p class="eyebrow">Ranked evidence</p><h2>Leaderboard</h2></div><button id="refresh-board" class="secondary">Refresh</button></div>
+        <div class="panel-head"><div><p class="eyebrow">Ranked evidence</p><h2>Leaderboard</h2></div><button id="refresh-board" class="secondary" type="button">Refresh</button></div>
         <div class="table-wrap"><table><thead><tr><th>#</th><th>Run</th><th>Pass</th><th>p95</th><th>Merkle</th></tr></thead><tbody id="leaderboard"></tbody></table></div>
       </article>
     </section>
 
     <section class="workspace history-workspace">
       <article class="panel">
-        <div class="panel-head"><div><p class="eyebrow">Durable operations</p><h2>Run history</h2></div><div class="panel-actions"><select id="history-status" aria-label="Filter run status"><option value="">All statuses</option><option>queued</option><option>running</option><option>passed</option><option>failed</option><option>cancelled</option></select><button id="refresh-history" class="secondary">Refresh</button></div></div>
+        <div class="panel-head"><div><p class="eyebrow">Durable operations</p><h2>Run history</h2></div><div class="panel-actions"><select id="history-status" aria-label="Filter run status"><option value="">All statuses</option><option>queued</option><option>running</option><option>passed</option><option>failed</option><option>cancelled</option></select><button id="refresh-history" class="secondary" type="button">Refresh</button></div></div>
         <div class="table-wrap"><table><thead><tr><th>Compare</th><th>Run</th><th>Mode</th><th>Status</th><th>Created</th></tr></thead><tbody id="run-history"></tbody></table></div>
       </article>
       <article class="panel">
-        <div class="panel-head"><div><p class="eyebrow">Relative performance</p><h2>Run comparison</h2></div><button id="compare-runs" class="secondary">Compare selected</button></div>
+        <div class="panel-head"><div><p class="eyebrow">Relative performance</p><h2>Run comparison</h2></div><button id="compare-runs" class="secondary" type="button">Compare selected</button></div>
         <div id="comparison-chart" class="comparison-chart"><p>Select two or more historical runs.</p></div>
       </article>
     </section>
@@ -59,7 +59,7 @@
       <article class="panel">
         <div class="panel-head"><div><p class="eyebrow">AgentPCAP</p><h2>Frame player</h2></div><div class="panel-actions"><select id="frame-filter" aria-label="Filter packet type"><option value="">All frames</option><option value="a2a">A2A</option><option value="tool">Tool</option><option value="model">Model</option><option value="system">System</option></select><span id="anomaly-count" class="pill safe">0 anomalies</span></div></div>
         <input id="frame-scrubber" class="scrubber" type="range" min="0" max="0" value="0" aria-label="Packet frame">
-        <div class="player-actions"><button id="previous-frame" class="secondary">Previous</button><span id="frame-position">0 / 0</span><button id="next-frame" class="secondary">Next</button></div>
+        <div class="player-actions"><button id="previous-frame" class="secondary" type="button">Previous</button><span id="frame-position">0 / 0</span><button id="next-frame" class="secondary" type="button">Next</button></div>
         <div id="frame-inspector" class="frame-inspector">No capture loaded.</div>
       </article>
 
@@ -77,7 +77,7 @@
       <p id="approval-message">Review the SHA-256-bound capability request.</p>
       <code id="approval-hash"></code>
       <label class="reason-label">Decision reason<textarea id="approval-reason" rows="3" placeholder="Required operational context"></textarea></label>
-      <div class="modal-actions"><button id="deny-operation" class="danger" value="deny">Deny</button><button id="approve-operation" class="primary" value="approve">Approve once</button></div>
+      <div class="modal-actions"><button id="deny-operation" class="danger" type="submit" value="deny">Deny</button><button id="approve-operation" class="primary" type="submit" value="approve">Approve once</button></div>
     </form>
   </dialog>
   <script src="app.js"></script>

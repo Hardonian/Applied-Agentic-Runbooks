@@ -175,7 +175,9 @@ def test_tool(tool_id: str, test_params: ToolTestParams, user=Depends(get_curren
     try:
         result = tool.execute(**test_params.params)
         return {"success": True, "result": result}
-    except NotImplementedError as e:
-        return {"success": False, "error": str(e), "note": "Tool implementation not available"}
+    except NotImplementedError:
+        return {"success": False, "error": "Tool implementation not available", "note": "Tool implementation not available"}
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        import logging
+        logging.getLogger("agent_factory").error(f"Tool execution failed for {tool_id}: {type(e).__name__}")
+        return {"success": False, "error": f"Tool execution failed: {type(e).__name__}"}

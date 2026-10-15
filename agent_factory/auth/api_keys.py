@@ -36,7 +36,8 @@ def hash_api_key(key: str) -> str:
     Returns:
         Hashed key
     """
-    return hashlib.sha256(key.encode()).hexdigest()
+    salt = b"agent_factory_api_key_salt_v1"
+    return hashlib.pbkdf2_hmac("sha256", key.encode("utf-8"), salt, 100_000).hex()
 
 
 def create_api_key(

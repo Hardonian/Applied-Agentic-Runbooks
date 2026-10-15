@@ -182,15 +182,26 @@
   launcher.className = 'launcher-btn';
   launcher.innerHTML = `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
 
+  const escapeHtml = (str) => {
+    return String(str || '').replace(/[&<>"']/g, (m) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    }[m]));
+  };
+  const safeTitle = escapeHtml(title || 'Agent');
+
   const modal = document.createElement('div');
   modal.className = 'chat-modal';
   modal.innerHTML = `
     <div class="header">
-      <h3><span class="status-dot"></span> ${title}</h3>
+      <h3><span class="status-dot"></span> ${safeTitle}</h3>
       <span style="font-size: 11px; color: var(--text-muted);">Agent Factory</span>
     </div>
     <div class="messages-container" id="msg-box">
-      <div class="msg bot">Hello! How can I assist you with ${title} today?</div>
+      <div class="msg bot">Hello! How can I assist you with ${safeTitle} today?</div>
     </div>
     <div class="input-box">
       <input type="text" id="user-input" placeholder="Type a message..." />

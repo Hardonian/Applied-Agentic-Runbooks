@@ -8,7 +8,6 @@ Agent Factory is the platform that turns your AI prototypes into real products. 
 
 > **🤖 This repo audits itself.** Seven readiness audits run unattended every night at 03:00 UTC, and the diff lands as a PR this repo opens itself — 320 consecutive green nights, zero gaps, verified. How it works: [docs/RUNBOOK.md](docs/RUNBOOK.md)
 
-
 ## 🎯 One-Sentence Pitch
 
 Agent Factory gives you everything you need to build, deploy, and monetize AI agents—from prototype to production—without the usual headaches.
@@ -43,25 +42,29 @@ Agent Factory fixes that. We've built the infrastructure. We've handled the comp
 
 ## ✨ Key Features
 
-**🧩 Composable Building Blocks**
+### 🧩 Composable Building Blocks
+
 - Create agents with natural language instructions
 - Add tools and capabilities as you need them
 - Chain agents together into workflows
 - Everything works together seamlessly
 
-**🏭 Production Ready, Out of the Box**
+### 🏭 Production Ready, Out of the Box
+
 - Built-in memory and conversation context
 - Error handling and automatic retries
 - Observability and structured logging
 - Rate limiting and security built-in
 
-**📦 Blueprint System**
+### 📦 Blueprint System
+
 - Install pre-built agent configurations
 - Share your own creations
 - Build on what others have made
 - Skip the setup, start building
 
-**🔌 Multiple Ways to Use**
+### 🔌 Multiple Ways to Use
+
 - Python library for developers
 - CLI for quick prototyping
 - REST API for integrations
@@ -90,7 +93,7 @@ Turn your agent into a product. We handle billing, multi-tenancy, and scaling so
 
 ## 🏗️ Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                    Your Application                          │
 ├─────────────────────────────────────────────────────────────┤
@@ -176,7 +179,7 @@ curl -X POST http://localhost:8000/api/v1/agents/ \
 
 ## 📁 Project Structure
 
-```
+```text
 agent_factory/
 ├── core/              # Core primitives (Agent, Tool, Workflow)
 ├── agents/            # Agent implementations
@@ -201,6 +204,7 @@ agent_factory/
 Agent Factory is designed with education in mind. We partner with institutions to build tools that help students learn and teachers teach.
 
 **Education Use Cases:**
+
 - Virtual teaching assistants available 24/7
 - Personalized learning paths that adapt to each student
 - Research assistants that help with citations and papers
@@ -264,6 +268,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed development guidelines.
 ## 🤝 Community
 
 **Getting Help:**
+
 - Open an issue on GitHub for bugs or feature requests
 - Check existing issues and discussions
 - Read the documentation
@@ -272,7 +277,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed development guidelines.
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 **Partnerships:**
-Interested in partnering? Reach out at partnerships@agentfactory.io
+Interested in partnering? Reach out at <partnerships@agentfactory.io>
 
 ---
 
@@ -322,7 +327,7 @@ I've built multiple AI-driven systems myself—Hardonia OS, PromptPilot, Daily I
 
 **Agent Factory exists because I've lived this problem.** We've built the infrastructure so you don't have to.
 
-- **Email:** scottrmhardie@gmail.com
+- **Email:** <scottrmhardie@gmail.com>
 - **GitHub:** [shardie-github](https://github.com/shardie-github)
 - **LinkedIn:** [scottrmhardie](https://www.linkedin.com/in/scottrmhardie)
 

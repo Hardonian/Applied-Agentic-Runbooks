@@ -36,7 +36,7 @@ def sanitize_input(text: str, allow_html: bool = False) -> str:
         text = re.sub(pattern, "", text)
     
     # Remove script tags
-    text = re.sub(r"<script[^>]*>.*?</script>", "", text, flags=re.IGNORECASE | re.DOTALL)
+    text = re.sub(r"(?is)<script\b[^>]*>.*?</script>", "", text)
     
     return text.strip()
 

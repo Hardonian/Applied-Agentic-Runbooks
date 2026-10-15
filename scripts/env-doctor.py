@@ -246,9 +246,9 @@ def main():
     
     if workflow_secrets_not_doced:
         issues_found = True
-        for secret_name in sorted(workflow_secrets_not_doced):
-            print(f"   ⚠️  {secret_name}")
-            print(f"      Used in workflows: {', '.join(workflow_vars[secret_name])}")
+        for config_var_name in sorted(workflow_secrets_not_doced):
+            print(f"   ⚠️  {config_var_name}")
+            print(f"      Used in workflows: {', '.join(workflow_vars[config_var_name])}")
             print("      (Note: CI secrets should be documented)")
     else:
         print("   ✓ All CI secrets are documented")

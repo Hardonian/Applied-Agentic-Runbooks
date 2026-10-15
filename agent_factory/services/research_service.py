@@ -345,7 +345,7 @@ Provide:
         
         # Extract URLs from output
         import re
-        urls = re.findall(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', output)
+        urls = re.findall(r'https?://[a-zA-Z0-9_.~:/?#\[\]@!$&()*+,;=%-]+', output)
         citations.extend(urls)
         
         # Add source URLs

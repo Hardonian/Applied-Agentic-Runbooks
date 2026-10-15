@@ -166,14 +166,26 @@ class MCPWall:
         # 4. Path boundary containment
         for key in ["path", "filepath", "target_file", "file_path", "directory"]:
             if key in arguments and isinstance(arguments[key], str):
-                target_path = Path(arguments[key]).resolve()
-                is_contained = any(
-                    target_path == root or root in target_path.parents for root in self.path_roots
-                )
+                raw_arg = arguments[key]
+                # Reject relative traversal markers early
+                if ".." in raw_arg.replace("\\", "/").split("/"):
+                    return MCPWallVerdict(
+                        allowed=False,
+                        reason="Path traversal sequence detected in arguments.",
+                    )
+                target_path = Path(raw_arg).resolve()
+                is_contained = False
+                for root in self.path_roots:
+                    try:
+                        target_path.relative_to(root)
+                        is_contained = True
+                        break
+                    except ValueError:
+                        continue
                 if not is_contained:
                     return MCPWallVerdict(
                         allowed=False,
-                        reason=f"Path '{target_path}' escapes authorized root boundaries.",
+                        reason="Path escapes authorized root boundaries.",
                     )
 
         # 5. Destructive tool human approval gate

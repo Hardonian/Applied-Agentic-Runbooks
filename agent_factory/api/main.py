@@ -248,7 +248,7 @@ async def global_exception_handler(request: Request, exc: Exception):
         # Use specific error handling for known exceptions
         error_detail = {
             "error": type(exc).__name__,
-            "message": str(exc),
+            "message": "Invalid request parameter or syntax",
         }
 
         # Add stack trace in debug mode
@@ -275,8 +275,6 @@ async def global_exception_handler(request: Request, exc: Exception):
     # Add detailed information in debug mode
     if debug_mode:
         error_detail["exception_type"] = type(exc).__name__
-        error_detail["exception_message"] = str(exc)
-        error_detail["traceback"] = traceback.format_exc()
 
     return JSONResponse(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, content=error_detail)
 
@@ -332,7 +330,7 @@ async def health():
         db_check["response_time_ms"] = round((time.time() - db_start) * 1000, 2)
     except SQLAlchemyError as e:
         db_check["status"] = "unhealthy"
-        db_check["error"] = str(e)
+        db_check["error"] = "Database check failed"
         overall_healthy = False
         logger.error("Database health check failed", error=str(e))
     health_status["checks"]["database"] = db_check
@@ -351,7 +349,7 @@ async def health():
             cache_check["message"] = "Cache client not initialized"
     except RedisError as e:
         cache_check["status"] = "unhealthy"
-        cache_check["error"] = str(e)
+        cache_check["error"] = "Cache check failed"
         overall_healthy = False
         logger.error("Cache health check failed", error=str(e))
     health_status["checks"]["cache"] = cache_check

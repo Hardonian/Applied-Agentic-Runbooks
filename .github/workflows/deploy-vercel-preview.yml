@@ -52,8 +52,6 @@ jobs:
     outputs:
       preview_url: ${{ steps.vercel-deploy.outputs.preview_url || steps.check-credentials.outputs.preview_url }}
       has_token: ${{ steps.check-credentials.outputs.has_token }}
-    environment:
-      name: preview
     steps:
       - uses: actions/checkout@v4
         with:
@@ -63,14 +61,14 @@ jobs:
         id: check-credentials
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          if [ -z "$VERCEL_TOKEN" ]; then
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
             echo "has_token=false" >> $GITHUB_OUTPUT
             echo "preview_url=https://[project-name].vercel.app" >> $GITHUB_OUTPUT
-            echo "⚠️  VERCEL_TOKEN secret not set. Preview deployment skipped."
-            echo "To enable Vercel preview deployments:"
-            echo "1. Get Vercel token: https://vercel.com/account/tokens"
-            echo "2. Add VERCEL_TOKEN, VERCEL_ORG_ID, and VERCEL_PROJECT_ID to GitHub Secrets"
+            echo "ℹ️  VERCEL_TOKEN, VERCEL_ORG_ID, or VERCEL_PROJECT_ID secret not configured in GitHub Secrets."
+            echo "ℹ️  If GitHub and Vercel are integrated, Vercel deploys preview automatically on pull requests."
           else
             echo "has_token=true" >> $GITHUB_OUTPUT
           fi
@@ -93,9 +91,8 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          vercel pull --yes --environment=preview --token="$VERCEL_TOKEN" \
-            --scope="$VERCEL_ORG_ID" || {
-            echo "⚠️  Failed to pull Vercel config. Check VERCEL_ORG_ID and VERCEL_PROJECT_ID secrets."
+          vercel pull --yes --environment=preview --token="$VERCEL_TOKEN" || {
+            echo "⚠️  Failed to pull Vercel config. Verify VERCEL_ORG_ID and VERCEL_PROJECT_ID."
             exit 1
           }
       
@@ -119,7 +116,7 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          DEPLOYMENT_URL=$(vercel deploy --prebuilt --token="$VERCEL_TOKEN" --scope="$VERCEL_ORG_ID" 2>&1 | grep -o 'https://[^ ]*\.vercel\.app' | head -1)
+          DEPLOYMENT_URL=$(vercel deploy --prebuilt --token="$VERCEL_TOKEN" 2>&1 | grep -o 'https://[^ ]*\.vercel\.app' | head -1)
           
           if [ -z "$DEPLOYMENT_URL" ]; then
             echo "⚠️  Failed to extract deployment URL. Check Vercel logs above."

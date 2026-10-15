@@ -26,7 +26,7 @@ Agent Factory is a **composable, extensible platform** for building, deploying, 
 
 ## 📦 Package Structure
 
-```
+```text
 agent_factory/
 ├── agents/          # Agent implementations
 ├── api/             # FastAPI REST API
@@ -44,6 +44,7 @@ agent_factory/
 ### 1. Composable Agents
 
 Create agents by combining:
+
 - **Instructions**: Natural language agent behavior
 - **Tools**: Custom functions agents can call
 - **Workflows**: Multi-agent orchestration
@@ -128,12 +129,14 @@ In strategic partnership with **McGraw Hill Education**:
 ## 📈 Roadmap
 
 ### Short Term
+
 - Enhanced marketplace features
 - More blueprint templates
 - Improved documentation
 - Performance optimizations
 
 ### Long Term
+
 - Multi-tenant SaaS platform
 - Advanced workflow orchestration
 - Enterprise features (SSO, compliance)
@@ -141,10 +144,10 @@ In strategic partnership with **McGraw Hill Education**:
 
 ## 🌟 Getting Involved
 
-- **GitHub**: https://github.com/agentfactory/platform
-- **Documentation**: https://docs.agentfactory.io
-- **Issues**: https://github.com/agentfactory/platform/issues
-- **Email**: support@agentfactory.io
+- **GitHub**: <https://github.com/agentfactory/platform>
+- **Documentation**: <https://docs.agentfactory.io>
+- **Issues**: <https://github.com/agentfactory/platform/issues>
+- **Email**: <support@agentfactory.io>
 
 ## 📄 License
 

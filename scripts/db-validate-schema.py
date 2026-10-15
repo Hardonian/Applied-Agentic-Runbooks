@@ -89,7 +89,10 @@ def validate_schema():
         return False
     
     print("Connecting to database...")
-    print(f"URL: {db_url.split('@')[1] if '@' in db_url else '***'}")
+    masked_target = "[configured]"
+    if "@" in db_url:
+        masked_target = db_url.split("@")[1].split("?")[0]
+    print(f"Database target: {masked_target}")
     print()
     
     try:

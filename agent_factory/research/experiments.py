@@ -177,7 +177,7 @@ class ExperimentTracker:
         
         # Deterministic assignment based on user_id hash
         import hashlib
-        hash_value = int(hashlib.md5(f"{experiment_id}:{user_id}".encode()).hexdigest(), 16)
+        hash_value = int(hashlib.sha256(f"{experiment_id}:{user_id}".encode()).hexdigest(), 16)
         assignment = (hash_value % 10000) / 100.0
         
         cumulative = 0.0

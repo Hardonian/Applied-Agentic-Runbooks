@@ -7,7 +7,7 @@ and analyze results.
 
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 
@@ -44,7 +44,7 @@ class ExperimentResult:
     success: bool
     metrics: dict[str, float]
     metadata: dict[str, Any] = field(default_factory=dict)
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 @dataclass
@@ -57,7 +57,7 @@ class Experiment:
     status: ExperimentStatus = ExperimentStatus.DRAFT
     start_date: datetime | None = None
     end_date: datetime | None = None
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     created_by: str | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
 
@@ -137,7 +137,7 @@ class ExperimentTracker:
             raise ValueError(f"Experiment not found: {experiment_id}")
         
         experiment.status = ExperimentStatus.RUNNING
-        experiment.start_date = datetime.utcnow()
+        experiment.start_date = datetime.now(timezone.utc)
     
     def pause_experiment(self, experiment_id: str) -> None:
         """Pause an experiment."""
@@ -154,7 +154,7 @@ class ExperimentTracker:
             raise ValueError(f"Experiment not found: {experiment_id}")
         
         experiment.status = ExperimentStatus.COMPLETED
-        experiment.end_date = datetime.utcnow()
+        experiment.end_date = datetime.now(timezone.utc)
     
     def assign_variant(self, experiment_id: str, user_id: str) -> Variant:
         """

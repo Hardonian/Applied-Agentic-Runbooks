@@ -3,7 +3,7 @@ Name: agent-factory
 Version: 1.0.0
 Summary: A composable, extensible platform for building, deploying, and monetizing AI agents
 Author-email: Scott Hardie <scottrmhardie@gmail.com>, Agent Factory <support@agentfactory.io>
-License: GPL-3.0
+License: Apache-2.0 with Commons Clause
 Project-URL: Homepage, https://github.com/agentfactory/platform
 Project-URL: Documentation, https://docs.agentfactory.io
 Project-URL: Repository, https://github.com/agentfactory/platform
@@ -14,7 +14,7 @@ Keywords: ai,agents,automation,llm,openai,anthropic,education,higher-education
 Classifier: Development Status :: 5 - Production/Stable
 Classifier: Intended Audience :: Developers
 Classifier: Intended Audience :: Education
-Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Classifier: License :: Other/Proprietary License
 Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3.8
 Classifier: Programming Language :: Python :: 3.9
@@ -354,7 +354,7 @@ Interested in partnering? Reach out at partnerships@agentfactory.io
 
 ## 📄 License
 
-GPL-3.0 License — see [LICENSE](LICENSE) file.
+Apache 2.0 License with Commons Clause (Free for personal, academic, and non-commercial runbook usage; commercial monetization requires prior written authorization) — see [LICENSE](LICENSE) file.
 
 ---
 

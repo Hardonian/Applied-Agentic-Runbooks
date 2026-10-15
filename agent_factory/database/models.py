@@ -1,6 +1,7 @@
 """Database models."""
 
-from datetime import datetime
+import uuid
+from datetime import datetime, timedelta
 from typing import Any
 
 from sqlalchemy import JSON, Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text
@@ -238,6 +239,15 @@ class Subscription(Base):
     
     tenant: Any = relationship("Tenant")
     plan: Any = relationship("Plan")
+
+    def __init__(self, **kwargs):
+        kwargs.setdefault("id", str(uuid.uuid4()))
+        now = datetime.utcnow()
+        kwargs.setdefault("status", "active")
+        kwargs.setdefault("billing_cycle", "monthly")
+        kwargs.setdefault("current_period_start", now)
+        kwargs.setdefault("current_period_end", now + timedelta(days=30))
+        super().__init__(**kwargs)
 
 
 class UsageRecord(Base):

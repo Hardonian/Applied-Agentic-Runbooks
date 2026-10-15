@@ -67,7 +67,10 @@ class ProductVerifier:
         self.base_url = base_url.rstrip("/")
         self.in_process = False
         try:
-            httpx.get(f"{self.base_url}/health", timeout=1.5)
+            resp = httpx.get(f"{self.base_url}/health", timeout=1.5)
+            data = resp.json() if resp.status_code == 200 else {}
+            if "version" not in data or "database" not in data.get("checks", {}):
+                raise RuntimeError("Service at base_url is not Agent Factory")
             self.client = httpx.Client(base_url=self.base_url, timeout=30.0)
             print_info(f"Connected to live Agent Factory service at {self.base_url}")
         except Exception:

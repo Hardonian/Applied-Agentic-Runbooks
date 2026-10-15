@@ -171,6 +171,7 @@ class ArenaService:
         """Claim and execute one Redis-backed Arena job."""
         if self.job_queue is None:
             return False
+        await asyncio.to_thread(self.job_queue.requeue_expired, "arena")
         job = await asyncio.to_thread(self.job_queue.dequeue, "arena")
         if job is None:
             return False

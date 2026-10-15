@@ -86,8 +86,8 @@ class BM25Index:
             idf = math.log(1 + (self.doc_count - df + 0.5) / (df + 0.5))
 
             for doc_id, freq in self.inverted_index[t].items():
-                l = self.doc_len[doc_id]
-                score = idf * (freq * (self.k1 + 1)) / (freq + self.k1 * (1 - self.b + self.b * (l / max(1, self.avg_doc_len))))
+                document_length = self.doc_len[doc_id]
+                score = idf * (freq * (self.k1 + 1)) / (freq + self.k1 * (1 - self.b + self.b * (document_length / max(1, self.avg_doc_len))))
                 scores[doc_id] = scores.get(doc_id, 0.0) + score
 
         sorted_results = sorted(scores.items(), key=lambda x: x[1], reverse=True)

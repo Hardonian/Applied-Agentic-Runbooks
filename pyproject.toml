@@ -110,8 +110,22 @@ target-version = ['py38', 'py39', 'py310', 'py311']
 line-length = 100
 target-version = "py310"
 
+[tool.ruff.lint]
+# Keep the always-on gate focused on correctness. Broader modernization rules
+# are tracked separately by the non-regression quality ratchet.
+select = ["E4", "E7", "E9", "F"]
+
+[tool.ruff.lint.per-file-ignores]
+# These entry points intentionally register/import routes after app/bootstrap setup.
+"agent_factory/api/main.py" = ["E402"]
+"agent_factory/cli/main.py" = ["E402"]
+"agent_factory/telemetry/__init__.py" = ["E402"]
+"scripts/db-seed-demo.py" = ["E402"]
+"scripts/db-validate-schema.py" = ["E402"]
+
 [tool.mypy]
 python_version = "3.10"
 ignore_missing_imports = true
 warn_return_any = false
 warn_unused_configs = true
+plugins = ["sqlalchemy.ext.mypy.plugin"]

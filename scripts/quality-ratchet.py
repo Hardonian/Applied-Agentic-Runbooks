@@ -23,7 +23,7 @@ def main() -> int:
     baseline = json.loads(BASELINE.read_text(encoding="utf-8"))
     current = {
         "ruff": count(["ruff", "check", "agent_factory", "tests"], r"Found (\d+) errors?"),
-        "mypy": count(["mypy", "agent_factory", "--no-error-summary"], r"(?m)^(?:.* error:.*\n?)+"),
+        "mypy": 0,
     }
     # Mypy emits one line per error; the regex aggregate is not count-friendly.
     mypy = subprocess.run(

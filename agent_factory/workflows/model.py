@@ -316,7 +316,7 @@ class Workflow:
                                 else:
                                     return 'None'
                             return str(val)
-                        except:
+                        except Exception:
                             return 'None'
                     else:
                         return str(context.get(key, 'None'))

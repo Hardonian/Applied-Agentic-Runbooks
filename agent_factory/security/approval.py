@@ -85,16 +85,30 @@ class ApprovalAuthority:
             )
             if record is None:
                 return None
+            if not all(
+                (
+                    record.id,
+                    record.tool_name,
+                    record.request_hash,
+                    record.created_at,
+                    record.expires_at,
+                    record.tenant_id,
+                    record.status,
+                )
+            ):
+                raise RuntimeError("Persisted approval ticket is incomplete")
+            assert record.created_at is not None
+            assert record.expires_at is not None
             return HumanApprovalTicket(
-                ticket_id=record.id,
-                tool_name=record.tool_name,
-                request_hash=record.request_hash,
+                ticket_id=str(record.id),
+                tool_name=str(record.tool_name),
+                request_hash=str(record.request_hash),
                 created_at=record.created_at.replace(tzinfo=timezone.utc).timestamp(),
                 expires_at=record.expires_at.replace(tzinfo=timezone.utc).timestamp(),
                 consumed=record.consumed_at is not None,
                 approved_by=record.decided_by if record.status == "approved" else None,
-                tenant_id=record.tenant_id,
-                decision=record.status,
+                tenant_id=str(record.tenant_id),
+                decision=str(record.status),
             )
 
     def resolve(
@@ -122,6 +136,9 @@ class ApprovalAuthority:
             )
             if record is None:
                 raise KeyError("Approval ticket not found")
+            if not all((record.id, record.tenant_id, record.request_hash, record.expires_at)):
+                raise RuntimeError("Persisted approval ticket is incomplete")
+            assert record.expires_at is not None
             if record.status != "pending":
                 raise ValueError("Approval ticket has already been resolved")
             if record.expires_at < now:
@@ -132,12 +149,12 @@ class ApprovalAuthority:
                 raise PermissionError("Requester cannot approve their own operation")
             decided_at = now.replace(tzinfo=timezone.utc).timestamp()
             signature = self._sign(
-                record.id,
-                record.tenant_id,
+                str(record.id),
+                str(record.tenant_id),
                 normalized,
                 approver,
                 decided_at,
-                record.request_hash,
+                str(record.request_hash),
             )
             record.status = normalized
             record.decided_at = now
@@ -149,12 +166,12 @@ class ApprovalAuthority:
 
             MetricsCollector.record_approval(normalized)
             return ApprovalReceipt(
-                ticket_id=record.id,
-                tenant_id=record.tenant_id,
+                ticket_id=str(record.id),
+                tenant_id=str(record.tenant_id),
                 decision=normalized,
                 approver=approver,
                 decided_at=decided_at,
-                request_hash=record.request_hash,
+                request_hash=str(record.request_hash),
                 signature=signature,
             )
 

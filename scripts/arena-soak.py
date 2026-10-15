@@ -36,6 +36,7 @@ async def run(base_url: str, runs: int, concurrency: int) -> None:
     limits = httpx.Limits(max_connections=concurrency, max_keepalive_connections=concurrency)
     semaphore = asyncio.Semaphore(concurrency)
     async with httpx.AsyncClient(timeout=30, limits=limits) as client:
+
         async def bounded(index: int) -> float:
             async with semaphore:
                 return await submit(client, base_url.rstrip("/"), index)

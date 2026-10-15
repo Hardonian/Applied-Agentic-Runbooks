@@ -15,7 +15,7 @@ from decimal import Decimal
 from enum import Enum
 from pathlib import Path
 from threading import Lock
-from typing import Any
+from typing import Any, cast
 
 from agent_factory.evaluation.arena.evidence import EvidenceSigner
 from agent_factory.financial.token_goblin import TokenGoblinGovernor
@@ -110,12 +110,16 @@ class ArenaRunner:
         tracer = AgentPCAPTracer(session_id=run_id)
         results: list[SuiteResult] = []
 
-        await self._emit(event_sink, "arena.started", {"run_id": run_id, "suites": [s.value for s in selected]})
+        await self._emit(
+            event_sink, "arena.started", {"run_id": run_id, "suites": [s.value for s in selected]}
+        )
         for index, suite in enumerate(selected, start=1):
             if cancel_check is not None and cancel_check():
                 await self._emit(event_sink, "arena.cancelled", {"run_id": run_id})
                 raise ArenaRunCancelled(run_id)
-            await self._emit(event_sink, "arena.suite.started", {"run_id": run_id, "suite": suite.value})
+            await self._emit(
+                event_sink, "arena.suite.started", {"run_id": run_id, "suite": suite.value}
+            )
             result = await asyncio.to_thread(
                 self._run_suite, suite, tracer, concurrency, trial_count, mode
             )
@@ -154,7 +158,9 @@ class ArenaRunner:
         mode: str = "deterministic",
     ) -> SuiteResult:
         start = time.perf_counter()
-        handlers = {
+        handlers: dict[
+            GauntletSuite, Callable[[], tuple[bool, float, int, float, dict[str, Any]]]
+        ] = {
             GauntletSuite.REASONING_FRONTIER: self._reasoning_frontier,
             GauntletSuite.PARETO_CASCADE: self._pareto_cascade,
             GauntletSuite.ADVERSARIAL_SECURITY: self._adversarial_security,
@@ -215,32 +221,50 @@ class ArenaRunner:
         scores: list[float] = []
         nodes = 0
         for prompt in prompts:
-            result = SpeculativeMCTSEngine(max_depth=3, branching_factor=3, num_simulations=6).search(prompt)
+            result = SpeculativeMCTSEngine(
+                max_depth=3, branching_factor=3, num_simulations=6
+            ).search(prompt)
             scores.append(result.confidence_score)
             nodes += result.total_nodes_explored
         mcts_score = statistics.fmean(scores)
         greedy_score = 0.58
-        return mcts_score > greedy_score, 1.0, nodes * 24, 0.0, {
-            "mcts_score": round(mcts_score, 4),
-            "greedy_baseline_score": greedy_score,
-            "quality_lift_percent": round((mcts_score / greedy_score - 1) * 100, 2),
-            "nodes_explored": nodes,
-        }
+        return (
+            mcts_score > greedy_score,
+            1.0,
+            nodes * 24,
+            0.0,
+            {
+                "mcts_score": round(mcts_score, 4),
+                "greedy_baseline_score": greedy_score,
+                "quality_lift_percent": round((mcts_score / greedy_score - 1) * 100, 2),
+                "nodes_explored": nodes,
+            },
+        )
 
     @staticmethod
     def _pareto_cascade() -> tuple[bool, float, int, float, dict[str, Any]]:
         router = SpeculativeCascadeRouter(llm_client=object())
-        prompts = ["Classify this request.", "Extract a strict JSON schema.", "Summarize three facts."]
+        prompts = [
+            "Classify this request.",
+            "Extract a strict JSON schema.",
+            "Summarize three facts.",
+        ]
         outcomes = [router.execute(prompt, force_tier=ModelTier.FAST) for prompt in prompts]
         savings = statistics.fmean(item.cost_savings_percentage for item in outcomes)
         speedup = statistics.fmean(item.speedup_factor for item in outcomes)
         cost = sum(item.cost_usd for item in outcomes)
-        return savings > 0 and speedup >= 1, 1.0, 300, cost, {
-            "cost_savings_percent": round(savings, 2),
-            "latency_speedup_x": round(speedup, 2),
-            "frontier_baselines": ["gpt-4o", "claude-3.7-sonnet"],
-            "fast_tiers": ["gpt-4o-mini", "gemini-flash"],
-        }
+        return (
+            savings > 0 and speedup >= 1,
+            1.0,
+            300,
+            cost,
+            {
+                "cost_savings_percent": round(savings, 2),
+                "latency_speedup_x": round(speedup, 2),
+                "frontier_baselines": ["gpt-4o", "claude-3.7-sonnet"],
+                "fast_tiers": ["gpt-4o-mini", "gemini-flash"],
+            },
+        )
 
     @staticmethod
     def _adversarial_security() -> tuple[bool, float, int, float, dict[str, Any]]:
@@ -257,12 +281,18 @@ class ArenaRunner:
         tickets = [v.ticket for v in verdicts if v.requires_approval and v.ticket]
         valid_hashes = all(len(ticket.request_hash) == 64 for ticket in tickets)
         rate = intercepted / len(probes)
-        return rate == 1 and valid_hashes, rate, 0, 0.0, {
-            "probes": len(probes),
-            "intercepted": intercepted,
-            "approval_tickets": len(tickets),
-            "sha256_bound": valid_hashes,
-        }
+        return (
+            rate == 1 and valid_hashes,
+            rate,
+            0,
+            0.0,
+            {
+                "probes": len(probes),
+                "intercepted": intercepted,
+                "approval_tickets": len(tickets),
+                "sha256_bound": valid_hashes,
+            },
+        )
 
     @staticmethod
     def _self_healing() -> tuple[bool, float, int, float, dict[str, Any]]:
@@ -278,14 +308,22 @@ class ArenaRunner:
             )
             # Deterministic reflection policy: backoff, reshape, then one bounded retry.
             recovered += 1
-        retry_storms = sum(d.pathology_type.value == "retry_storm" for d in tracer.diagnose_pathologies())
+        retry_storms = sum(
+            d.pathology_type.value == "retry_storm" for d in tracer.diagnose_pathologies()
+        )
         rate = recovered / len(failures)
-        return rate == 1 and retry_storms == 0, rate, 96, 0.0, {
-            "faults_injected": failures,
-            "recovery_rate": rate,
-            "retry_storms": retry_storms,
-            "max_attempts_per_fault": 2,
-        }
+        return (
+            rate == 1 and retry_storms == 0,
+            rate,
+            96,
+            0.0,
+            {
+                "faults_injected": failures,
+                "recovery_rate": rate,
+                "retry_storms": retry_storms,
+                "max_attempts_per_fault": 2,
+            },
+        )
 
     @staticmethod
     def _settler_accounting(concurrency: int) -> tuple[bool, float, int, float, dict[str, Any]]:
@@ -296,16 +334,21 @@ class ArenaRunner:
         for _ in range(operations):
             governor.record_usage("arena-ledger", tokens=1, cost_usd=1.0)
         drift = abs(
-            initial
-            - (account.credits_spent + account.credits_reserved + account.credits_remaining)
+            initial - (account.credits_spent + account.credits_reserved + account.credits_remaining)
         )
         valid = account.verify_invariant() and drift <= 1e-9
-        return valid, 1.0 if valid else 0.0, operations, float(operations), {
-            "concurrent_workers": max(1, concurrency),
-            "transactions": operations,
-            "ledger_drift": drift,
-            "invariant": "initial == spent + reserved + remaining",
-        }
+        return (
+            valid,
+            1.0 if valid else 0.0,
+            operations,
+            float(operations),
+            {
+                "concurrent_workers": max(1, concurrency),
+                "transactions": operations,
+                "ledger_drift": drift,
+                "invariant": "initial == spent + reserved + remaining",
+            },
+        )
 
     @staticmethod
     def _settler_accounting_real(
@@ -330,14 +373,20 @@ class ArenaRunner:
         remaining = initial - spent
         drift = abs(initial - (spent + remaining))
         valid = drift == 0 and remaining == 0
-        return valid, 1.0 if valid else 0.0, operations, float(spent), {
-            "concurrent_workers": workers,
-            "transactions": operations,
-            "ledger_drift": float(drift),
-            "numeric_type": "decimal",
-            "synchronization": "mutex",
-            "invariant": "initial == spent + remaining",
-        }
+        return (
+            valid,
+            1.0 if valid else 0.0,
+            operations,
+            float(spent),
+            {
+                "concurrent_workers": workers,
+                "transactions": operations,
+                "ledger_drift": float(drift),
+                "numeric_type": "decimal",
+                "synchronization": "mutex",
+                "invariant": "initial == spent + remaining",
+            },
+        )
 
     @staticmethod
     def _build_proof(run_id: str, results: list[SuiteResult]) -> dict[str, Any]:
@@ -353,7 +402,7 @@ class ArenaRunner:
             }
             previous = node_id
         _, proof = VeriDAGEngine.execute_verifiable_dag(run_id, nodes, {"run_id": run_id})
-        return proof.to_dict()
+        return cast(dict[str, Any], proof.to_dict())
 
     @staticmethod
     def _aggregate(results: list[SuiteResult], duration_seconds: float) -> dict[str, float]:

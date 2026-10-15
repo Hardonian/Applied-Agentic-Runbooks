@@ -27,6 +27,7 @@ class MCPWallSecurityError(Exception):
 @dataclass
 class HumanApprovalTicket:
     """A cryptographic challenge required to execute destructive operations."""
+
     ticket_id: str
     tool_name: str
     request_hash: str
@@ -41,6 +42,7 @@ class HumanApprovalTicket:
 @dataclass
 class MCPWallVerdict:
     """Evaluation verdict from MCPWall."""
+
     allowed: bool
     reason: str
     requires_approval: bool = False
@@ -66,7 +68,12 @@ class MCPWall:
     ):
         self.allowed_tools = allowed_tools  # None means all non-denied allowed
         self.denied_tools = denied_tools or {"delete_database", "drop_table", "shell_exec_raw"}
-        self.destructive_tools = destructive_tools or {"execute_code", "write_file", "delete_file", "transfer_funds"}
+        self.destructive_tools = destructive_tools or {
+            "execute_code",
+            "write_file",
+            "delete_file",
+            "transfer_funds",
+        }
         self.path_roots = [Path(p).resolve() for p in (path_roots or [os.getcwd()])]
         self.max_request_bytes = max_request_bytes
         self.approval_ttl_seconds = approval_ttl_seconds
@@ -161,8 +168,7 @@ class MCPWall:
             if key in arguments and isinstance(arguments[key], str):
                 target_path = Path(arguments[key]).resolve()
                 is_contained = any(
-                    target_path == root or root in target_path.parents
-                    for root in self.path_roots
+                    target_path == root or root in target_path.parents for root in self.path_roots
                 )
                 if not is_contained:
                     return MCPWallVerdict(
@@ -189,7 +195,9 @@ class MCPWall:
             if not ticket:
                 return MCPWallVerdict(allowed=False, reason="Invalid approval ticket.")
             if ticket.consumed:
-                return MCPWallVerdict(allowed=False, reason="Approval ticket already consumed (replay blocked).")
+                return MCPWallVerdict(
+                    allowed=False, reason="Approval ticket already consumed (replay blocked)."
+                )
             if time.time() > ticket.expires_at:
                 return MCPWallVerdict(allowed=False, reason="Approval ticket expired.")
             if not ticket.approved_by:

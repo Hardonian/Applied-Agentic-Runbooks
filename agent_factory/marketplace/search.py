@@ -45,7 +45,7 @@ def search_blueprints(
     
     try:
         # Build query
-        q = db.query(BlueprintModel).filter(BlueprintModel.is_public == True)
+        q = db.query(BlueprintModel).filter(BlueprintModel.is_public.is_(True))
         
         if query:
             q = q.filter(
@@ -131,7 +131,7 @@ def get_blueprint_details(blueprint_id: str) -> dict[str, Any] | None:
     try:
         blueprint = db.query(BlueprintModel).filter(
             BlueprintModel.id == blueprint_id,
-            BlueprintModel.is_public == True
+            BlueprintModel.is_public.is_(True)
         ).first()
         
         if not blueprint:

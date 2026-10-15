@@ -2,8 +2,14 @@
 Main notebook converter implementation.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from agent_factory.blueprints.model import Blueprint
 
 from agent_factory.notebook_converter.detector import AgentDetector, ToolDetector, WorkflowDetector
 from agent_factory.notebook_converter.parser import NotebookParser

@@ -20,10 +20,10 @@ from typing import Any
 
 
 class FrameType(str, Enum):
-    A2A = "a2a"          # Agent-to-Agent communication
-    TOOL = "tool"        # Tool invocation & result
-    MODEL = "model"      # LLM inference request/response
-    SYSTEM = "system"    # Lifecycle & guardrail events
+    A2A = "a2a"  # Agent-to-Agent communication
+    TOOL = "tool"  # Tool invocation & result
+    MODEL = "model"  # LLM inference request/response
+    SYSTEM = "system"  # Lifecycle & guardrail events
 
 
 class PCAPFrameType(str, Enum):
@@ -38,15 +38,16 @@ class PCAPFrameType(str, Enum):
 
 
 class PathologyType(str, Enum):
-    RETRY_STORM = "retry_storm"            # Repetitive tool failures with identical args
-    PING_PONG_LOOP = "ping_pong_loop"      # Agents bouncing messages without progression
-    TOKEN_BURNING = "token_burning"        # Massive token consumption with minimal output
-    SLOW_DRAIN = "slow_drain"              # Latency spikes without tool execution progress
+    RETRY_STORM = "retry_storm"  # Repetitive tool failures with identical args
+    PING_PONG_LOOP = "ping_pong_loop"  # Agents bouncing messages without progression
+    TOKEN_BURNING = "token_burning"  # Massive token consumption with minimal output
+    SLOW_DRAIN = "slow_drain"  # Latency spikes without tool execution progress
 
 
 @dataclass
 class PCAPFrame:
     """A single captured protocol frame in the agent communication stream."""
+
     frame_id: str
     timestamp: float = field(default_factory=time.time)
     frame_type: FrameType | PCAPFrameType = FrameType.SYSTEM
@@ -59,7 +60,7 @@ class PCAPFrame:
     src_actor: str = ""
     dst_actor: str = ""
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.src_actor and not self.source:
             self.source = self.src_actor
         if self.dst_actor and not self.destination:
@@ -75,6 +76,7 @@ class PCAPFrame:
 @dataclass
 class PathologyDiagnostic:
     """A detected agent operational disease or loop condition."""
+
     pathology_type: PathologyType
     severity: str  # LOW, MEDIUM, CRITICAL
     description: str
@@ -134,8 +136,7 @@ class AgentPCAPTracer:
                 if len(set(hashes)) == 1:
                     # Check if error is present in payload
                     is_error = any(
-                        w.payload.get("success") is False or "error" in w.payload
-                        for w in window
+                        w.payload.get("success") is False or "error" in w.payload for w in window
                     )
                     if is_error:
                         diagnostics.append(

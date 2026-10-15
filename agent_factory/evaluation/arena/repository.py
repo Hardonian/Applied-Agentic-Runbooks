@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
-from typing import Any
+from typing import Any, cast
 
 from sqlalchemy import delete
 
@@ -43,7 +43,9 @@ class ArenaRepository:
             session.commit()
         return self.get(run_id, tenant_id) or {}
 
-    def update(self, run_id: str, tenant_id: str = "public", **values: Any) -> dict[str, Any] | None:
+    def update(
+        self, run_id: str, tenant_id: str = "public", **values: Any
+    ) -> dict[str, Any] | None:
         with SessionLocal() as session:
             record = (
                 session.query(ArenaRun)
@@ -73,7 +75,9 @@ class ArenaRepository:
             query = session.query(ArenaRun).filter(ArenaRun.tenant_id == tenant_id)
             if status:
                 query = query.filter(ArenaRun.status == status)
-            records = query.order_by(ArenaRun.created_at.desc()).limit(max(1, min(limit, 200))).all()
+            records = (
+                query.order_by(ArenaRun.created_at.desc()).limit(max(1, min(limit, 200))).all()
+            )
             return [self._serialize(record) for record in records]
 
     def request_cancel(self, run_id: str, tenant_id: str = "public") -> bool:
@@ -88,7 +92,7 @@ class ArenaRepository:
         with SessionLocal() as session:
             result = session.execute(delete(ArenaRun).where(ArenaRun.expires_at < now))
             session.commit()
-            return int(result.rowcount or 0)
+            return int(cast(Any, result).rowcount or 0)
 
     @staticmethod
     def _serialize(record: ArenaRun) -> dict[str, Any]:

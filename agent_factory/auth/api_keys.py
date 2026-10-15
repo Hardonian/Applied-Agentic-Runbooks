@@ -144,7 +144,7 @@ def verify_api_key(api_key: str) -> dict[str, Any] | None:
         # Find API key
         api_key_model = db.query(APIKey).filter(
             APIKey.key_hash == key_hash,
-            APIKey.is_active == True,
+            APIKey.is_active.is_(True),
         ).first()
         
         if not api_key_model:
@@ -238,7 +238,7 @@ def list_api_keys(tenant_id: str, user_id: str | None = None) -> list:
     try:
         query = db.query(APIKey).filter(
             APIKey.tenant_id == tenant_id,
-            APIKey.is_active == True,
+            APIKey.is_active.is_(True),
         )
         
         if user_id:

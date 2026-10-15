@@ -24,13 +24,15 @@ def get_trace_context() -> dict[str, str]:
     """Return the active trace identifiers for events and tool/model calls."""
     trace_id = current_trace_id.get()
     span_id = current_span_id.get()
-    return {key: value for key, value in {"trace_id": trace_id, "span_id": span_id}.items() if value}
+    return {
+        key: value for key, value in {"trace_id": trace_id, "span_id": span_id}.items() if value
+    }
 
 
 class TracingMiddleware(BaseHTTPMiddleware):
     """Accept and emit W3C traceparent while retaining legacy trace headers."""
 
-    async def dispatch(self, request: Request, call_next: Any):
+    async def dispatch(self, request: Request, call_next: Any) -> Any:
         incoming = request.headers.get("traceparent", "")
         match = TRACEPARENT.match(incoming)
         trace_id = match.group(1) if match else secrets.token_hex(16)
@@ -74,7 +76,7 @@ def configure_optional_otel_sdk(service_name: str = "agent-factory") -> bool:
         return False
 
 
-def setup_tracing(app: Any):
+def setup_tracing(app: Any) -> Any:
     configure_optional_otel_sdk()
     app.add_middleware(TracingMiddleware)
     return app

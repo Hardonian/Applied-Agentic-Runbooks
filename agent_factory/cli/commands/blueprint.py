@@ -268,8 +268,6 @@ def test(
             agent_id = blueprint.agents[0] if isinstance(blueprint.agents, list) else list(blueprint.agents.keys())[0]
             
             from agent_factory.agents.agent import Agent
-            from agent_factory.registry.local_registry import LocalRegistry
-            
             reg = LocalRegistry()
             agent_config = reg.get_agent(agent_id)
             

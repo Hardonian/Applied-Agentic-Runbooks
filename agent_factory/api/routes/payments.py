@@ -141,7 +141,7 @@ async def upgrade_to_pro(
     PRODUCT ENDPOINT: Upgrade from free to paid tier.
     Creates Stripe checkout session for Pro subscription ($29/month).
     """
-    from agent_factory.database.models import Plan, Tenant
+    from agent_factory.database.models import Plan, Subscription, Tenant
     from agent_factory.database.models import User as UserModel
     from agent_factory.database.session import get_db
     from agent_factory.payments.stripe_client import StripeClient

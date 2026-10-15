@@ -72,7 +72,9 @@ class EventBus:
         try:
             from agent_factory.monitoring.tracing import get_trace_context
 
-            envelope.update({key: value for key, value in get_trace_context().items() if key not in envelope})
+            envelope.update(
+                {key: value for key, value in get_trace_context().items() if key not in envelope}
+            )
         except ImportError:
             pass
         self._retain(topic, envelope)
@@ -95,9 +97,7 @@ class EventBus:
         history.append(dict(event))
 
     def _fanout(self, topic: str, envelope: dict[str, Any]) -> None:
-        queues = set(self._subscribers.get(topic, set())) | set(
-            self._subscribers.get("*", set())
-        )
+        queues = set(self._subscribers.get(topic, set())) | set(self._subscribers.get("*", set()))
         for queue in queues:
             if queue.full():
                 try:

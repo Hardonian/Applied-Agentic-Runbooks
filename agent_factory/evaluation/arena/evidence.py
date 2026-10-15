@@ -45,7 +45,8 @@ class EvidenceSigner:
             "run_id": run_id,
             "benchmark_version": benchmark_version,
             "agent_factory_version": __version__,
-            "container_image_digest": image_digest or os.getenv("CONTAINER_IMAGE_DIGEST", "unknown"),
+            "container_image_digest": image_digest
+            or os.getenv("CONTAINER_IMAGE_DIGEST", "unknown"),
             "artifacts": {
                 "veridag": {"file": proof_path.name, "sha256": self._file_hash(proof_path)},
                 "apcap": {"file": pcap_path.name, "sha256": self._file_hash(pcap_path)},
@@ -107,8 +108,10 @@ class EvidenceVerifier:
         for kind, metadata in manifest.get("artifacts", {}).items():
             artifact = (path.parent / metadata["file"]).resolve()
             contained = artifact.parent == path.parent
-            checksum_ok = contained and artifact.is_file() and (
-                self.signer._file_hash(artifact) == metadata.get("sha256")
+            checksum_ok = (
+                contained
+                and artifact.is_file()
+                and (self.signer._file_hash(artifact) == metadata.get("sha256"))
             )
             checks[f"{kind}_checksum"] = checksum_ok
             if checksum_ok:

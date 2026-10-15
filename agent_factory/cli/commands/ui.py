@@ -34,7 +34,7 @@ def demo(
 ):
     """Launch the Streamlit demo UI."""
     try:
-        import streamlit
+        import streamlit  # noqa: F401 -- availability check before subprocess launch
     except ImportError:
         typer.echo("❌ Streamlit not installed. Install with: pip install streamlit")
         typer.echo("   Or install demo dependencies: pip install 'agent-factory[demo]'")

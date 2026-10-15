@@ -21,7 +21,13 @@ jobs:
       - uses: astral-sh/setup-uv@v4
       - run: uv sync --all-extras --dev
       - run: uv run ruff check agent_factory/evaluation/arena agent_factory/api/ws agent_factory/api/routes/arena.py agent_factory/security/approval.py
-      - run: uv run mypy --follow-imports=skip agent_factory/evaluation/arena agent_factory/api/ws agent_factory/api/routes/arena.py agent_factory/security/approval.py
+      - run: >-
+          uv run mypy --follow-imports=skip --strict
+          --disable-error-code=untyped-decorator --disable-error-code=misc
+          agent_factory/evaluation/arena agent_factory/api/ws
+          agent_factory/api/routes/arena.py agent_factory/security/approval.py
+          agent_factory/monitoring/tracing.py agent_factory/telemetry/otel_exporter.py
+          agent_factory/telemetry/pcap.py
       - run: uv run python scripts/quality-ratchet.py
 
   image-security:

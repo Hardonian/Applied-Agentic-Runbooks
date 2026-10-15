@@ -16,9 +16,9 @@ def test_helm_has_security_and_reliability_resources() -> None:
     }
     assert expected <= {path.name for path in templates.iterdir()}
     deployment = (templates / "deployment.yaml").read_text(encoding="utf-8")
-    assert "readOnlyRootFilesystem" in Path(
-        "deploy/k8s/helm/agent-factory/values.yaml"
-    ).read_text(encoding="utf-8")
+    assert "readOnlyRootFilesystem" in Path("deploy/k8s/helm/agent-factory/values.yaml").read_text(
+        encoding="utf-8"
+    )
     assert "arena-artifacts" in deployment
 
 

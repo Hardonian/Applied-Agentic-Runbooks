@@ -23,9 +23,7 @@ from agent_factory.security.auth import verify_token
 router = APIRouter()
 
 
-async def _send_events(
-    websocket: WebSocket, topic: str, after_sequence: int | None = None
-) -> None:
+async def _send_events(websocket: WebSocket, topic: str, after_sequence: int | None = None) -> None:
     queue = event_bus.subscribe(topic, after_sequence)
     try:
         while True:
@@ -76,7 +74,8 @@ def _origin_allowed(websocket: WebSocket) -> bool:
     allowed = {
         item.strip()
         for item in os.getenv(
-            "WS_ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8000,http://localhost:8080"
+            "WS_ALLOWED_ORIGINS",
+            "http://localhost:3000,http://localhost:8000,http://localhost:8080",
         ).split(",")
         if item.strip()
     }
@@ -149,7 +148,9 @@ async def _serve(websocket: WebSocket, topic: str) -> None:
     principal = _principal(websocket)
     requested_topic = websocket.query_params.get("topic", topic)
     if requested_topic.startswith("approvals:") and not principal["user_id"]:
-        await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Authentication required")
+        await websocket.close(
+            code=status.WS_1008_POLICY_VIOLATION, reason="Authentication required"
+        )
         return
     cursor_value = websocket.query_params.get("cursor")
     cursor = int(cursor_value) if cursor_value and cursor_value.isdigit() else None

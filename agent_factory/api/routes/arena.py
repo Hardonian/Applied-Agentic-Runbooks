@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import FileResponse, JSONResponse
@@ -43,13 +43,11 @@ async def run_arena(request: ArenaRunRequest, http_request: Request) -> dict[str
     summary = record.get("summary")
     if summary is None:
         raise HTTPException(status_code=500, detail=record.get("error") or "Arena run failed")
-    return summary
+    return cast(dict[str, Any], summary)
 
 
 @router.post("/jobs", status_code=status.HTTP_202_ACCEPTED)
-async def create_arena_job(
-    request: ArenaRunRequest, http_request: Request
-) -> JSONResponse:
+async def create_arena_job(request: ArenaRunRequest, http_request: Request) -> JSONResponse:
     """Queue a durable background run and return immediately with discovery links."""
     tenant_id, user_id = await _principal(http_request)
     record = await arena_service.submit(

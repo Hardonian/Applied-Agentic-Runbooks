@@ -49,7 +49,7 @@ def list_plans() -> list[dict[str, Any]]:
     db = next(get_db())
     
     try:
-        plans = db.query(PlanModel).filter(PlanModel.is_active == True).all()
+        plans = db.query(PlanModel).filter(PlanModel.is_active.is_(True)).all()
         
         return [
             {

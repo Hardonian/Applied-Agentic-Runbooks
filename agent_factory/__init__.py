@@ -4,7 +4,7 @@ Agent Factory Platform
 A composable, extensible platform for building, deploying, and monetizing AI agents.
 """
 
-__version__ = "0.2.0"
+__version__ = "1.0.0"
 
 # Core primitives
 from agent_factory.agents.agent import Agent, AgentConfig, AgentResult

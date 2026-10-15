@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: agent-factory
-Version: 0.2.0
+Version: 1.0.0
 Summary: A composable, extensible platform for building, deploying, and monetizing AI agents
 Author-email: Scott Hardie <scottrmhardie@gmail.com>, Agent Factory <support@agentfactory.io>
 License: GPL-3.0
@@ -11,7 +11,7 @@ Project-URL: Issues, https://github.com/agentfactory/platform/issues
 Project-URL: Marketplace, https://marketplace.agentfactory.io
 Project-URL: Partnerships, https://www.mheducation.ca/partnerships
 Keywords: ai,agents,automation,llm,openai,anthropic,education,higher-education
-Classifier: Development Status :: 4 - Beta
+Classifier: Development Status :: 5 - Production/Stable
 Classifier: Intended Audience :: Developers
 Classifier: Intended Audience :: Education
 Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)

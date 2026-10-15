@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-10-14
+
 ### Added
 
 - **Enterprise Arena Hardening**: Durable PostgreSQL run history, asynchronous `202` jobs, status/cancel/history/compare/artifact APIs, retention, repeated-trial confidence intervals, reality-mode concurrent accounting, and an operational soak harness.
@@ -41,6 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Modern bcrypt/passlib compatibility via runtime patch.
 - Rate-limiting flake elimination in test environment runs.
 - Mypy py310 modern typing target configuration.
+- Strict type conformance across all 227 modules in `agent_factory` with zero `mypy` and zero `ruff` issues.
+- Fixed HTML button type declarations in Studio 2.0 command center.
 
 ## [0.2.0] - 2026-10-12
 

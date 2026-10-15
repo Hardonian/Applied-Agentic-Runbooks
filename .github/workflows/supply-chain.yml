@@ -46,7 +46,7 @@ jobs:
           image: agent-factory:${{ github.sha }}
           format: spdx-json
           output-file: agent-factory.spdx.json
-      - uses: aquasecurity/trivy-action@0.28.0
+      - uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: agent-factory:${{ github.sha }}
           format: sarif

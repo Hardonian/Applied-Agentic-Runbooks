@@ -3,7 +3,7 @@
 import os
 import uuid
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
@@ -173,8 +173,8 @@ async def upgrade_to_pro(
                 id="pro-plan",
                 name="Pro Plan",
                 plan_type="pro",
-                price_monthly=29.0,
-                price_yearly=290.0,  # 10 months price
+                price_monthly=cast(Any, 29.0),
+                price_yearly=cast(Any, 290.0),  # 10 months price
                 currency="USD",
                 features={
                     "unlimited_reports": True,
@@ -191,7 +191,7 @@ async def upgrade_to_pro(
             db.commit()
         
         # Create or get Stripe customer
-        stripe_customer = None
+        stripe_customer: Any = None
         try:
             if not os.getenv("STRIPE_SECRET_KEY"):
                 # In test mode without Stripe key, grant pro plan immediately
@@ -229,8 +229,8 @@ async def upgrade_to_pro(
                 stripe_customer = stripe.Customer.retrieve(existing_sub.stripe_customer_id)
             else:
                 stripe_customer = stripe_client.create_customer(
-                    email=user_model.email,
-                    name=user_model.email
+                    email=str(user_model.email or ""),
+                    name=str(user_model.email or ""),
                 )
         except Exception:
             # If Stripe not configured, return test mode response
@@ -268,9 +268,9 @@ async def upgrade_to_pro(
             cancel_url=f"{request.base_url}api/v1/payments/upgrade/cancel",
             customer=stripe_customer.id,
             metadata={
-                "tenant_id": tenant.id,
-                "user_id": user_model.id,
-                "plan_id": pro_plan.id
+                "tenant_id": str(tenant.id or ""),
+                "user_id": str(user_model.id or ""),
+                "plan_id": str(pro_plan.id or ""),
             }
         )
         
@@ -323,8 +323,11 @@ async def upgrade_success(
         if session.payment_status != "paid":
             raise HTTPException(status_code=400, detail="Payment not completed")
         
-        tenant_id = session.metadata.get("tenant_id")
-        plan_id = session.metadata.get("plan_id")
+        session_metadata = cast(dict[str, str], cast(Any, session.metadata or {}))
+        tenant_id = session_metadata.get("tenant_id")
+        plan_id = session_metadata.get("plan_id")
+        if not tenant_id or not plan_id:
+            raise HTTPException(status_code=400, detail="Checkout metadata is incomplete")
         
         db = next(get_db())
         try:
@@ -343,8 +346,10 @@ async def upgrade_success(
                 billing_cycle="monthly",
                 current_period_start=datetime.utcnow(),
                 current_period_end=datetime.utcnow() + timedelta(days=30),
-                stripe_subscription_id=session.subscription,
-                stripe_customer_id=session.customer
+                stripe_subscription_id=(
+                    str(session.subscription) if session.subscription is not None else None
+                ),
+                stripe_customer_id=str(session.customer) if session.customer is not None else None,
             )
             db.add(subscription)
             db.commit()

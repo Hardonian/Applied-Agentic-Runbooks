@@ -34,14 +34,17 @@ secret manager, and never supplied through Helm values committed to source contr
 
 ## Failure and recovery
 
-- A pod loss does not erase lifecycle state. A queued job can be resubmitted with its
-  original request; terminal summaries remain queryable until retention expiry.
+- A pod loss does not erase lifecycle state. Redis claims use a visibility lease;
+  expired running jobs are automatically requeued up to their retry budget. Tune the
+  lease with `JOB_VISIBILITY_TIMEOUT_SECONDS` (default: 1200).
 - Redis loss pauses cross-pod delivery. Local bounded delivery continues, and clients
   reconcile against the durable status endpoint after reconnecting.
 - PostgreSQL loss causes readiness to fail. Kubernetes removes the pod from service;
   no job is accepted without first persisting its record.
 - Cancellation is cooperative at suite boundaries, preventing partial ledger state
   from being reported as complete.
+- Evidence retention defaults to 30 days (`ARENA_RETENTION_DAYS`). Multi-replica Helm
+  deployments require an RWX storage class unless an external artifact store is used.
 
 ## Security model
 

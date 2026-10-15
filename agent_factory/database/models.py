@@ -1,6 +1,7 @@
 """Database models."""
 
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import JSON, Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
@@ -23,7 +24,7 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    tenant = relationship("Tenant", back_populates="users")
+    tenant: Any = relationship("Tenant", back_populates="users")
 
     def __init__(self, **kwargs):
         kwargs.setdefault("is_active", True)
@@ -47,7 +48,7 @@ class Tenant(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    users = relationship("User", back_populates="tenant")
+    users: list[Any] = relationship("User", back_populates="tenant")
 
     def __init__(self, **kwargs):
         kwargs.setdefault("is_active", True)
@@ -70,8 +71,8 @@ class Agent(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    tenant = relationship("Tenant")
-    creator = relationship("User")
+    tenant: Any = relationship("Tenant")
+    creator: Any = relationship("User")
 
     def __init__(self, **kwargs):
         kwargs.setdefault("model", "gpt-4o")
@@ -90,8 +91,8 @@ class Workflow(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    tenant = relationship("Tenant")
-    creator = relationship("User")
+    tenant: Any = relationship("Tenant")
+    creator: Any = relationship("User")
 
 
 class Blueprint(Base):
@@ -113,7 +114,7 @@ class Blueprint(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    publisher = relationship("User")
+    publisher: Any = relationship("User")
 
     def __init__(self, **kwargs):
         kwargs.setdefault("pricing_model", "free")
@@ -142,8 +143,8 @@ class Execution(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     completed_at = Column(DateTime, nullable=True)
     
-    tenant = relationship("Tenant")
-    creator = relationship("User")
+    tenant: Any = relationship("Tenant")
+    creator: Any = relationship("User")
 
 
 class AuditLog(Base):
@@ -161,7 +162,7 @@ class AuditLog(Base):
     ip_address = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     
-    user = relationship("User")
+    user: Any = relationship("User")
 
 
 class APIKey(Base):
@@ -180,8 +181,8 @@ class APIKey(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    tenant = relationship("Tenant")
-    user = relationship("User")
+    tenant: Any = relationship("Tenant")
+    user: Any = relationship("User")
 
 
 class Project(Base):
@@ -198,8 +199,8 @@ class Project(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    tenant = relationship("Tenant")
-    creator = relationship("User")
+    tenant: Any = relationship("Tenant")
+    creator: Any = relationship("User")
 
 
 class Plan(Base):
@@ -235,8 +236,8 @@ class Subscription(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    tenant = relationship("Tenant")
-    plan = relationship("Plan")
+    tenant: Any = relationship("Tenant")
+    plan: Any = relationship("Plan")
 
 
 class UsageRecord(Base):
@@ -255,8 +256,8 @@ class UsageRecord(Base):
     period_end = Column(DateTime, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     
-    tenant = relationship("Tenant")
-    subscription = relationship("Subscription")
+    tenant: Any = relationship("Tenant")
+    subscription: Any = relationship("Subscription")
 
 
 class ArenaRun(Base):

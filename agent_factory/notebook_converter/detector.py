@@ -135,7 +135,7 @@ class AgentVisitor(ast.NodeVisitor):
     
     def _extract_agent_from_call(self, node: ast.Call) -> dict[str, Any] | None:
         """Extract agent definition from Agent(...) call."""
-        agent_def = {
+        agent_def: dict[str, Any] = {
             "id": None,
             "name": None,
             "instructions": None,
@@ -165,6 +165,8 @@ class AgentVisitor(ast.NodeVisitor):
     
     def _extract_agent_from_factory_call(self, node: ast.Call) -> dict[str, Any] | None:
         """Extract agent definition from AgentFactory.create_*() call."""
+        if not isinstance(node.func, ast.Attribute):
+            return None
         agent_type = node.func.attr.replace("create_", "").replace("_", " ")
         agent_def = {
             "id": agent_type.replace(" ", "-"),
@@ -209,10 +211,8 @@ class ToolVisitor(ast.NodeVisitor):
     def _looks_like_tool(self, node: ast.FunctionDef) -> bool:
         """Heuristic: does this function look like a tool?"""
         # Has docstring
-        has_docstring = (
-            ast.get_docstring(node) is not None
-            and len(ast.get_docstring(node)) > 20
-        )
+        docstring = ast.get_docstring(node)
+        has_docstring = docstring is not None and len(docstring) > 20
         
         # Has type hints
         has_type_hints = any(
@@ -238,7 +238,7 @@ class ToolVisitor(ast.NodeVisitor):
     
     def _extract_parameters(self, node: ast.FunctionDef) -> list[dict[str, Any]]:
         """Extract function parameters."""
-        params = []
+        params: list[dict[str, Any]] = []
         num_defaults = len(node.args.defaults)
         num_args = len(node.args.args)
         default_offset = num_args - num_defaults
@@ -253,7 +253,7 @@ class ToolVisitor(ast.NodeVisitor):
             params.append(param_def)
         return params
     
-    def _extract_type(self, annotation: ast.AST) -> str:
+    def _extract_type(self, annotation: ast.AST | None) -> str:
         """Extract type from annotation."""
         if isinstance(annotation, ast.Name):
             return annotation.id
@@ -275,17 +275,16 @@ class WorkflowVisitor(ast.NodeVisitor):
                 workflow_def = self._extract_workflow_from_call(node)
                 if workflow_def:
                     self.workflows.append(workflow_def)
-        elif isinstance(node.func, ast.Name) and node.func.id == "Crew":
-            # CrewAI pattern
-            workflow_def = self._extract_crew_workflow(node)
-            if workflow_def:
-                self.workflows.append(workflow_def)
+            elif node.func.id == "Crew":
+                workflow_def = self._extract_crew_workflow(node)
+                if workflow_def:
+                    self.workflows.append(workflow_def)
         
         self.generic_visit(node)
     
     def _extract_workflow_from_call(self, node: ast.Call) -> dict[str, Any] | None:
         """Extract workflow definition from Workflow(...) call."""
-        workflow_def = {
+        workflow_def: dict[str, Any] = {
             "id": None,
             "name": None,
             "steps": [],

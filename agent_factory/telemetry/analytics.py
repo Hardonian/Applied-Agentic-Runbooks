@@ -207,7 +207,7 @@ class AnalyticsEngine:
         blueprints_installed = self._count_events(events, EventType.BLUEPRINT_INSTALL.value)
         projects_created = self._count_events(events, EventType.PROJECT_CREATED.value)
         
-        funnel = {
+        funnel: dict[str, Any] = {
             # User-focused funnel
             "user_funnel": {
                 "signups": signups,
@@ -334,7 +334,7 @@ class AnalyticsEngine:
         """Count blueprint installs by blueprint ID."""
         from agent_factory.telemetry.model import BlueprintInstallEvent
         
-        counts = defaultdict(int)
+        counts: defaultdict[str, int] = defaultdict(int)
         for e in events:
             if isinstance(e, BlueprintInstallEvent) and e.install_type == "install":
                 blueprint_id = e.blueprint_id or "unknown"
@@ -346,7 +346,7 @@ class AnalyticsEngine:
         """Count agent runs by agent ID."""
         from agent_factory.telemetry.model import AgentRunEvent
         
-        counts = defaultdict(int)
+        counts: defaultdict[str, int] = defaultdict(int)
         for e in events:
             if isinstance(e, AgentRunEvent):
                 agent_id = e.agent_id or "unknown"
@@ -358,7 +358,7 @@ class AnalyticsEngine:
         """Count workflow runs by workflow ID."""
         from agent_factory.telemetry.model import WorkflowRunEvent
         
-        counts = defaultdict(int)
+        counts: defaultdict[str, int] = defaultdict(int)
         for e in events:
             if isinstance(e, WorkflowRunEvent):
                 workflow_id = e.workflow_id or "unknown"
@@ -405,8 +405,8 @@ class AnalyticsEngine:
         
         from agent_factory.telemetry.model import TenantEvent
         
-        channel_counts = defaultdict(int)
-        channel_conversions = defaultdict(int)  # To paid
+        channel_counts: defaultdict[str, int] = defaultdict(int)
+        channel_conversions: defaultdict[str, int] = defaultdict(int)  # To paid
         
         for e in events:
             if isinstance(e, TenantEvent) and e.signup_source:
@@ -497,7 +497,7 @@ class AnalyticsEngine:
         self,
         metric: str,  # "users", "tenants", "revenue", "agent_runs"
         period: str = "month",  # "week", "month"
-    ) -> dict[str, float]:
+    ) -> dict[str, Any]:
         """
         Compute growth rate for a metric.
         
@@ -533,7 +533,9 @@ class AnalyticsEngine:
             limit=10000,
         )
         
-        # Calculate metric values
+        # Calculate metric values using a common numeric representation.
+        current_value: float
+        previous_value: float
         if metric == "users":
             current_value = self._count_unique_users(current_events)
             previous_value = self._count_unique_users(previous_events)

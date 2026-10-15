@@ -8,6 +8,7 @@ Features:
 - Prompt log viewer
 """
 
+from collections.abc import Mapping
 from datetime import datetime
 from typing import Any
 
@@ -41,6 +42,13 @@ def load_blueprints() -> list:
         return []
 
 
+def _field(value: Any, name: str, default: Any = None) -> Any:
+    """Read a field from either registry model objects or legacy dictionaries."""
+    if isinstance(value, Mapping):
+        return value.get(name, default)
+    return getattr(value, name, default)
+
+
 def run_agent(agent_id: str, input_text: str) -> dict[str, Any] | None:
     """Run an agent with given input."""
     try:
@@ -55,10 +63,10 @@ def run_agent(agent_id: str, input_text: str) -> dict[str, Any] | None:
         
         # Create agent instance
         agent = Agent(
-            id=agent_config.get("id", agent_id),
-            name=agent_config.get("name", agent_id),
-            instructions=agent_config.get("instructions", ""),
-            tools=agent_config.get("tools", [])
+            id=_field(agent_config, "id", agent_id),
+            name=_field(agent_config, "name", agent_id),
+            instructions=_field(agent_config, "instructions", ""),
+            tools=_field(agent_config, "tools", []),
         )
         
         # Run agent
@@ -98,16 +106,16 @@ def get_workflow_mermaid(workflow_id: str) -> str | None:
         # Add nodes
         if hasattr(workflow, 'steps'):
             for i, step in enumerate(workflow.steps):
-                step_id = step.get('id', f'step_{i}')
-                step_type = step.get('type', 'agent')
+                step_id = _field(step, "id", f"step_{i}")
+                step_type = _field(step, "type", _field(step, "step_type", "agent"))
                 mermaid += f"    {step_id}[{step_type}: {step_id}]\n"
         
         # Add edges
         if hasattr(workflow, 'steps'):
             for i, step in enumerate(workflow.steps):
-                step_id = step.get('id', f'step_{i}')
-                if 'next' in step:
-                    next_id = step['next']
+                step_id = _field(step, "id", f"step_{i}")
+                next_id = _field(step, "next")
+                if next_id:
                     mermaid += f"    {step_id} --> {next_id}\n"
         
         return mermaid

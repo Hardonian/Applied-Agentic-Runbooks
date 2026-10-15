@@ -48,7 +48,7 @@ class Tenant(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    users: list[Any] = relationship("User", back_populates="tenant")
+    users: Any = relationship("User", back_populates="tenant")
 
     def __init__(self, **kwargs):
         kwargs.setdefault("is_active", True)
@@ -175,9 +175,9 @@ class APIKey(Base):
     tenant_id = Column(String, ForeignKey("tenants.id"), nullable=False)
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
     permissions = Column(JSON, default=list)
-    last_used_at = Column(DateTime, nullable=True)
-    expires_at = Column(DateTime, nullable=True)
-    is_active = Column(Boolean, default=True)
+    last_used_at: Any = Column(DateTime, nullable=True)
+    expires_at: Any = Column(DateTime, nullable=True)
+    is_active: Any = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -210,8 +210,8 @@ class Plan(Base):
     id = Column(String, primary_key=True)
     name = Column(String, nullable=False)
     plan_type = Column(String, nullable=False)  # free, pro, enterprise
-    price_monthly = Column(Float, default=0.0)
-    price_yearly = Column(Float, default=0.0)
+    price_monthly: Any = Column(Float, default=0.0)
+    price_yearly: Any = Column(Float, default=0.0)
     currency = Column(String, default="USD")
     features = Column(JSON, default=dict)
     limits = Column(JSON, default=dict)
@@ -229,8 +229,8 @@ class Subscription(Base):
     plan_id = Column(String, ForeignKey("plans.id"), nullable=False)
     status = Column(String, default="active")  # active, cancelled, expired
     billing_cycle = Column(String, default="monthly")  # monthly, yearly
-    current_period_start = Column(DateTime, nullable=False)
-    current_period_end = Column(DateTime, nullable=False)
+    current_period_start: Any = Column(DateTime, nullable=False)
+    current_period_end: Any = Column(DateTime, nullable=False)
     stripe_subscription_id = Column(String, nullable=True)
     stripe_customer_id = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)

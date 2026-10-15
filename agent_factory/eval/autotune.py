@@ -178,7 +178,7 @@ def _save_tuned_config(agent_id: str, config: AgentConfig, output_path: str) -> 
 
 
 # Placeholder for AgentConfig (would be imported from agents.config)
-class AgentConfig:
+class _AgentConfigPlaceholder:
     """Placeholder for agent config."""
     def __init__(self, temperature: float = 0.7, max_tokens: int = 2000, timeout: int = 30, retry_attempts: int = 3):
         self.temperature = temperature

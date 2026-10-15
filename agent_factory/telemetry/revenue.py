@@ -143,7 +143,7 @@ class RevenueTracker:
             limit=10000,
         )
         
-        revenue_by_type = {}
+        revenue_by_type: dict[str, float] = {}
         for e in events:
             if isinstance(e, RevenueEvent):
                 revenue_type = e.revenue_type
@@ -179,7 +179,7 @@ class RevenueTracker:
             limit=10000,
         )
         
-        revenue_by_plan = {}
+        revenue_by_plan: dict[str, float] = {}
         for e in events:
             if isinstance(e, RevenueEvent) and e.plan_id:
                 plan_id = e.plan_id

@@ -46,7 +46,7 @@ class BlueprintService:
             Installation result
         """
         # Register agents, tools, workflows from blueprint
-        result = {
+        result: dict[str, list[str]] = {
             "agents_installed": [],
             "tools_installed": [],
             "workflows_installed": [],

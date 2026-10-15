@@ -49,7 +49,7 @@ class OrchestrationExecutor:
         current_agent_id = graph.entry_point
         current_message = dict(inputs)
         step_count = 0
-        steps = []
+        steps: list[dict[str, Any]] = []
         
         while current_agent_id and step_count < max_steps:
             # Get current agent
@@ -89,7 +89,7 @@ class OrchestrationExecutor:
                     outputs=result,
                     status="success" if result["status"] == "completed" else "error",
                     execution_time=time.perf_counter() - started_at,
-                    tokens_used=result["tokens_used"],
+                    tokens_used=int(result["tokens_used"] or 0),
                 )
                 self.storage.save_run(run)
 

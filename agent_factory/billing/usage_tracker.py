@@ -198,8 +198,8 @@ class UsageTracker:
                         "plan_name": plan.name,
                         "plan_type": plan.plan_type,
                         "billing_cycle": subscription.billing_cycle,
-                        "current_period_start": subscription.current_period_start.isoformat(),
-                        "current_period_end": subscription.current_period_end.isoformat(),
+                        "current_period_start": subscription.current_period_start.isoformat() if subscription.current_period_start else None,
+                        "current_period_end": subscription.current_period_end.isoformat() if subscription.current_period_end else None,
                     }
             
             # Get usage for current period

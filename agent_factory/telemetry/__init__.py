@@ -40,8 +40,8 @@ from agent_factory.telemetry.pcap import (
 try:
     from agent_factory.telemetry.revenue import RevenueTracker, get_revenue_tracker
 except ImportError:
-    RevenueTracker = None
-    get_revenue_tracker = None
+    RevenueTracker = None  # type: ignore[assignment,misc]
+    get_revenue_tracker = None  # type: ignore[assignment]
 
 # Lazy import for PostgresTelemetryBackend
 def __getattr__(name: str):

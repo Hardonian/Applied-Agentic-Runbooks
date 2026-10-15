@@ -15,24 +15,24 @@ from agent_factory.cli.commands import (
 try:
     from agent_factory.cli.commands import marketplace
 except ImportError:
-    marketplace = None
+    marketplace = None  # type: ignore[assignment]
 
 # Import execution if available
 try:
     from agent_factory.cli.commands import execution
 except ImportError:
-    execution = None
+    execution = None  # type: ignore[assignment]
 
 # Import metrics if available
 try:
     from agent_factory.cli.commands import metrics
 except ImportError:
-    metrics = None
+    metrics = None  # type: ignore[assignment]
 
 # Import export if available
 try:
     from agent_factory.cli.commands import export
 except ImportError:
-    export = None
+    export = None  # type: ignore[assignment]
 
 __all__ = ["agent", "blueprint", "config", "docs", "doctor", "execution", "export", "marketplace", "metrics", "registry", "tool", "workflow"]

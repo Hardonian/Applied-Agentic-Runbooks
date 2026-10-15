@@ -179,12 +179,12 @@ class MCPWall:
         # 5. Destructive tool human approval gate
         if tool_name in self.destructive_tools:
             if not approval_ticket_id:
-                ticket = self.request_approval(tool_name, arguments, tenant_id, requested_by)
+                new_ticket = self.request_approval(tool_name, arguments, tenant_id, requested_by)
                 return MCPWallVerdict(
                     allowed=False,
                     requires_approval=True,
-                    ticket=ticket,
-                    reason=f"Destructive tool '{tool_name}' requires human approval. Ticket: {ticket.ticket_id}",
+                    ticket=new_ticket,
+                    reason=f"Destructive tool '{tool_name}' requires human approval. Ticket: {new_ticket.ticket_id}",
                 )
 
             ticket = (

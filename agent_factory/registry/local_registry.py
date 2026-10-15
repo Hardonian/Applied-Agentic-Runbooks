@@ -357,6 +357,17 @@ class LocalRegistry:
         
         return workflow_list
     
+    def delete_workflow(self, workflow_id: str) -> bool:
+        """Delete a workflow from the registry."""
+        workflow_file = self.base_path / "workflows" / f"{workflow_id}.json"
+        if workflow_file.exists():
+            workflow_file.unlink()
+            # Invalidate cache
+            self.cache.delete(f"workflow:{workflow_id}")
+            self.cache.delete("workflows:list")
+            return True
+        return False
+    
     # Blueprint methods
     def register_blueprint(self, blueprint: Blueprint) -> None:
         """Register a blueprint in the registry."""
@@ -423,7 +434,7 @@ class LocalRegistry:
         Returns:
             Dictionary with search results
         """
-        results = {
+        results: dict[str, list[str]] = {
             "agents": [],
             "tools": [],
             "workflows": [],

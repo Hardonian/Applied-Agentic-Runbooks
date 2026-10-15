@@ -9,7 +9,7 @@ from typing import Any
 
 from agent_factory.agents.agent import Agent, AgentResult
 from agent_factory.promptlog.model import Run as RunModel
-from agent_factory.promptlog.storage import SQLiteStorage
+from agent_factory.promptlog.storage import PromptLogStorage, SQLiteStorage
 from agent_factory.telemetry.collector import get_collector
 from agent_factory.telemetry.model import UserActivatedEvent, UserSignupEvent
 from agent_factory.workflows.model import Workflow, WorkflowResult
@@ -41,7 +41,7 @@ class RuntimeEngine:
     
     def __init__(
         self,
-        prompt_log_storage: SQLiteStorage | None = None,
+        prompt_log_storage: PromptLogStorage | None = None,
         tenant_id: str | None = None,
         user_id: str | None = None,
         project_id: str | None = None,

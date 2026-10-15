@@ -124,7 +124,7 @@ def get_storage_backend(storage_type: str | None = None, **kwargs) -> StorageBac
         storage_type = os.getenv("STORAGE_TYPE", "local")
     
     if storage_type == "local":
-        base_path = kwargs.get("base_path") or os.getenv("STORAGE_PATH", "./storage")
+        base_path = str(kwargs.get("base_path") or os.getenv("STORAGE_PATH", "./storage"))
         return LocalStorage(base_path=base_path)
     elif storage_type == "s3":
         bucket_name = kwargs.get("bucket_name") or os.getenv("AWS_S3_BUCKET")
@@ -142,7 +142,7 @@ def get_storage_backend(storage_type: str | None = None, **kwargs) -> StorageBac
         except ImportError:
             raise ImportError("Supabase storage requires supabase package. Install with: pip install supabase")
         
-        bucket_name = kwargs.get("bucket_name") or os.getenv("SUPABASE_STORAGE_BUCKET", "agent-factory")
+        bucket_name = str(kwargs.get("bucket_name") or os.getenv("SUPABASE_STORAGE_BUCKET", "agent-factory"))
         return SupabaseStorage(bucket_name=bucket_name)
     else:
         raise ValueError(f"Unknown storage type: {storage_type}")

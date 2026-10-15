@@ -14,7 +14,7 @@ from agent_factory.telemetry import get_analytics
 try:
     from agent_factory.telemetry.revenue import get_revenue_tracker
 except ImportError:
-    get_revenue_tracker = None
+    get_revenue_tracker = None  # type: ignore[assignment]
 
 app = typer.Typer(name="export", help="Export metrics and data")
 
@@ -55,7 +55,7 @@ def metrics(
     }
     
     # Add revenue metrics if available
-    if get_revenue_tracker:
+    if get_revenue_tracker is not None:
         try:
             revenue_tracker = get_revenue_tracker()
             metrics_data["revenue"] = {

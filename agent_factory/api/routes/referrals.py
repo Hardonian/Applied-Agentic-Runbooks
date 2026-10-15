@@ -15,7 +15,7 @@ from agent_factory.security.rbac import Permission, require_user_permission
 from agent_factory.telemetry import ReferralEvent, get_collector
 
 router = APIRouter(prefix="/api/v1/referrals", tags=["referrals"])
-_referral_owners = {}
+_referral_owners: dict[str, str] = {}
 
 
 class ReferralCodeResponse(BaseModel):

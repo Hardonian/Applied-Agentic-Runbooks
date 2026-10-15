@@ -245,8 +245,8 @@ def function_tool(
         )
         
         # Attach tool attributes to function
-        func.tool = tool
-        func.id = tool_id
+        setattr(func, "tool", tool)
+        setattr(func, "id", tool_id)
         
         return tool
     

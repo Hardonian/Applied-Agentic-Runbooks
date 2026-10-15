@@ -60,7 +60,7 @@ class LocalStorage(StorageBackend):
     
     def list_files(self, prefix: str = "", limit: int = 1000) -> list[StorageFile]:
         """List files."""
-        files = []
+        files: list[StorageFile] = []
         prefix_path = self.base_path / prefix if prefix else self.base_path
         
         if not prefix_path.exists():

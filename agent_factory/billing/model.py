@@ -19,8 +19,8 @@ class Plan:
     price_monthly: float = 0.0
     price_yearly: float = 0.0
     currency: str = "USD"
-    features: dict[str, Any] = None
-    limits: dict[str, Any] = None
+    features: dict[str, Any] | None = None
+    limits: dict[str, Any] | None = None
     
     def __post_init__(self):
         if self.price is not None and self.price_monthly == 0.0:
@@ -41,8 +41,8 @@ class Subscription:
     plan_id: str
     status: str = "active"  # active, cancelled, expired
     billing_cycle: str = "monthly"  # monthly, yearly
-    current_period_start: datetime = None
-    current_period_end: datetime = None
+    current_period_start: datetime | None = None
+    current_period_end: datetime | None = None
     stripe_subscription_id: str | None = None
     stripe_customer_id: str | None = None
     
@@ -63,8 +63,8 @@ class UsageRecord:
     unit_price: float = 0.0
     total_cost: float = 0.0
     currency: str = "USD"
-    period_start: datetime = None
-    period_end: datetime = None
+    period_start: datetime | None = None
+    period_end: datetime | None = None
     
     def __post_init__(self):
         if self.period_start is None:

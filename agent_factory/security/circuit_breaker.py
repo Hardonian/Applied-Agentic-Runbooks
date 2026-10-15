@@ -26,7 +26,7 @@ class CircuitBreakerConfig:
     failure_threshold: int = 5  # Open circuit after N failures
     success_threshold: int = 2  # Close circuit after N successes
     timeout: float = 60.0  # Seconds before attempting half-open
-    expected_exception: type = Exception  # Exception type to catch
+    expected_exception: type[BaseException] | tuple[type[BaseException], ...] = Exception  # Exception type to catch
 
 
 @dataclass

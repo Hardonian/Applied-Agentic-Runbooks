@@ -127,7 +127,7 @@ class PostgresTelemetryBackend(TelemetryBackend):
             
             events = []
             for row in rows:
-                event_dict = json.loads(row.event_data)
+                event_dict = json.loads(str(row.event_data or "{}"))
                 event = self._deserialize_event(event_dict)
                 if event:
                     events.append(event)

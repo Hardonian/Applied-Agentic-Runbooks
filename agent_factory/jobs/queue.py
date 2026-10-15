@@ -34,14 +34,14 @@ class Job:
     payload: dict[str, Any]
     status: JobStatus = JobStatus.PENDING
     priority: int = 0  # Higher priority runs first
-    created_at: datetime = None
+    created_at: datetime | None = None
     started_at: datetime | None = None
     completed_at: datetime | None = None
     result: Any | None = None
     error: str | None = None
     retry_count: int = 0
     max_retries: int = 3
-    metadata: dict[str, Any] = None
+    metadata: dict[str, Any] | None = None
 
     def __post_init__(self):
         if self.created_at is None:
@@ -370,7 +370,7 @@ class JobWorker:
         self.queue = queue
         self.handlers = handlers
         self.running = False
-        self.thread = None
+        self.thread: threading.Thread | None = None
 
     def start(self) -> None:
         """Start worker thread."""

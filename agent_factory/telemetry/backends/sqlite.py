@@ -6,6 +6,7 @@ import json
 import sqlite3
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 from agent_factory.telemetry.backends.base import TelemetryBackend
 from agent_factory.telemetry.model import EventType, TelemetryEvent
@@ -129,7 +130,7 @@ class SQLiteTelemetryBackend(TelemetryBackend):
         
         try:
             query = "SELECT event_data FROM telemetry_events WHERE 1=1"
-            params = []
+            params: list[Any] = []
             
             if event_type:
                 query += " AND event_type = ?"

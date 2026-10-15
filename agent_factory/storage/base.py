@@ -16,6 +16,7 @@ class StorageFile:
     content_type: str | None = None
     last_modified: datetime | None = None
     metadata: dict | None = None
+    url: str | None = None
 
 
 class StorageBackend(ABC):

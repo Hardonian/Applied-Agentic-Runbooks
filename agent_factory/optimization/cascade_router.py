@@ -18,7 +18,7 @@ from typing import Any
 try:
     from agent_factory.integrations.universal_client import UniversalLLMClient
 except ImportError:
-    UniversalLLMClient = None
+    UniversalLLMClient = None  # type: ignore[assignment,misc]
 
 
 class ModelTier(str, Enum):

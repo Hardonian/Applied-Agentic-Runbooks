@@ -36,11 +36,9 @@ class Client:
             timeout: Request timeout in seconds
         """
         self.api_key = api_key or os.getenv("AGENT_FACTORY_API_KEY")
-        self.base_url = base_url or os.getenv("AGENT_FACTORY_API_URL", "http://localhost:8000")
+        base = base_url or os.getenv("AGENT_FACTORY_API_URL") or "http://localhost:8000"
+        self.base_url = base.removesuffix("/")
         self.timeout = timeout
-        
-        # Remove trailing slash
-        self.base_url = self.base_url.removesuffix("/")
         
         # Setup HTTP client
         headers = {}
@@ -60,7 +58,7 @@ class Client:
         path: str,
         json: dict | None = None,
         params: dict | None = None,
-    ) -> dict[str, Any]:
+    ) -> Any:
         """
         Make HTTP request.
         

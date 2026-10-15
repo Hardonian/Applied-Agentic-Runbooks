@@ -124,7 +124,7 @@ class Workflow:
         
         try:
             workflow_context = context.copy()
-            steps_executed = []
+            steps_executed: list[dict[str, Any]] = []
             
             # Determine starting step
             start_index = 0
@@ -263,7 +263,7 @@ class Workflow:
             # Remove $ and resolve
             path = path[1:]
             parts = path.split(".")
-            value = context
+            value: Any = context
             for part in parts:
                 if isinstance(value, dict):
                     value = value.get(part)

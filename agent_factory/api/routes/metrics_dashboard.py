@@ -14,7 +14,7 @@ from agent_factory.telemetry import get_analytics
 try:
     from agent_factory.telemetry.revenue import get_revenue_tracker
 except ImportError:
-    get_revenue_tracker = None
+    get_revenue_tracker = None  # type: ignore[assignment]
 
 router = APIRouter(prefix="/api/v1/metrics", tags=["metrics"])
 
@@ -125,7 +125,7 @@ async def get_revenue_metrics(
     Returns:
         MRR, ARR, revenue by type and plan
     """
-    if not get_revenue_tracker:
+    if get_revenue_tracker is None:
         return RevenueMetricsResponse(
             mrr=0.0,
             arr=0.0,

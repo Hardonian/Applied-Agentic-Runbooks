@@ -58,7 +58,7 @@ class ToolWriter:
         self.output_dir = output_dir
         self.tools_dir = output_dir / "tools"
         self.tools_dir.mkdir(parents=True, exist_ok=True)
-        self.source_code_cache = {}  # Cache source code for AST reconstruction
+        self.source_code_cache: dict[str, str] = {}  # Cache source code for AST reconstruction
     
     def write(self, tool_id: str, tool_def: dict[str, Any], source_code: str | None = None, ast_node: Any | None = None) -> Path:
         """

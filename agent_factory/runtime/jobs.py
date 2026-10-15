@@ -364,7 +364,7 @@ class SQLiteJobQueue(JobQueue):
         
         try:
             query = "SELECT * FROM jobs WHERE 1=1"
-            params = []
+            params: list[Any] = []
             
             if tenant_id:
                 query += " AND tenant_id = ?"

@@ -49,7 +49,7 @@ class RemoteRegistry:
         Returns:
             List of blueprint dictionaries
         """
-        params = {
+        params: dict[str, Any] = {
             "q": query,
             "limit": limit,
         }

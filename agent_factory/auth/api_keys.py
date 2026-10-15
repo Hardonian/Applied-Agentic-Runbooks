@@ -194,7 +194,7 @@ def revoke_api_key(key_id: str, user_id: str) -> bool:
             user = db.query(User).filter(User.id == user_id).first()
             if user:
                 tenant = db.query(Tenant).filter(Tenant.id == api_key_model.tenant_id).first()
-                if tenant and tenant.admin_user_id == user_id:
+                if tenant and getattr(tenant, "admin_user_id", None) == user_id:
                     # User is tenant admin, allow
                     pass
                 else:
@@ -253,7 +253,7 @@ def list_api_keys(tenant_id: str, user_id: str | None = None) -> list:
                 "permissions": k.permissions,
                 "last_used_at": k.last_used_at.isoformat() if k.last_used_at else None,
                 "expires_at": k.expires_at.isoformat() if k.expires_at else None,
-                "created_at": k.created_at.isoformat(),
+                "created_at": k.created_at.isoformat() if k.created_at else None,
             }
             for k in keys
         ]

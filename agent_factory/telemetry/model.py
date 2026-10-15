@@ -29,6 +29,7 @@ class EventType(str, Enum):
     REVENUE = "revenue"
     USER_SIGNUP = "user_signup"
     USER_LOGIN = "user_login"
+    CUSTOM = "custom"
 
 
 @dataclass
@@ -39,7 +40,7 @@ class TelemetryEvent:
     All telemetry events inherit from this base class.
     """
     event_id: str
-    event_type: EventType
+    event_type: EventType = EventType.CUSTOM
     timestamp: datetime = field(default_factory=datetime.utcnow)
     tenant_id: str | None = None
     user_id: str | None = None

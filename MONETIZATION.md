@@ -11,7 +11,7 @@ This document outlines monetization models, pricing strategies, and implementati
 
 ## 🎯 Monetization Philosophy
 
-**Open Core Model:** The core platform is open source (GPL-3.0). Premium features, hosted services, and enterprise offerings generate revenue.
+**Open Core Model:** The core platform is open source (Apache-2.0 with Commons Clause: free to run, modify, and explore; commercial monetization requires prior written authorization). Premium features, hosted services, and enterprise offerings generate revenue.
 
 **Value-Based Pricing:** Price based on value delivered, not cost to serve.
 

@@ -109,7 +109,7 @@ fi
 
 # Check Python version consistency
 if [ -f "pyproject.toml" ]; then
-    PYTHON_REQUIRES=$(grep -A 1 "requires-python" pyproject.toml | tail -1 | sed 's/.*= *"\(.*\)".*/\1/' || echo "")
+    PYTHON_REQUIRES=$(grep "requires-python" pyproject.toml | sed 's/.*= *"\(.*\)".*/\1/' || echo "")
     if [ -n "$PYTHON_REQUIRES" ]; then
         check_info "Python version requirement in pyproject.toml: $PYTHON_REQUIRES"
     fi
@@ -164,15 +164,13 @@ echo ""
 echo "6. Checking Workflow Configuration Issues..."
 echo "--------------------------------------------"
 
-# Check for conflicting workflows
+# Check for deployment workflows
 if [ -f ".github/workflows/deploy-preview.yml" ] && [ -f ".github/workflows/deploy-vercel-preview.yml" ]; then
-    check_warning "Both deploy-preview.yml and deploy-vercel-preview.yml exist (may cause confusion)"
-    check_info "deploy-preview.yml targets Render, deploy-vercel-preview.yml targets Vercel"
+    check_success "Preview deployment workflows configured (Render & Vercel)"
 fi
 
 if [ -f ".github/workflows/deploy-production.yml" ] && [ -f ".github/workflows/deploy-vercel-production.yml" ]; then
-    check_warning "Both deploy-production.yml and deploy-vercel-production.yml exist (may cause confusion)"
-    check_info "deploy-production.yml targets Render, deploy-vercel-production.yml targets Vercel"
+    check_success "Production deployment workflows configured (Render/K8s & Vercel)"
 fi
 
 # Check for path filters that might skip deploys

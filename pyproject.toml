@@ -8,7 +8,7 @@ version = "1.0.0"
 description = "A composable, extensible platform for building, deploying, and monetizing AI agents"
 readme = "README.md"
 requires-python = ">=3.8"
-license = {text = "GPL-3.0"}
+license = {text = "Apache-2.0 with Commons Clause"}
 authors = [
     {name = "Scott Hardie", email = "scottrmhardie@gmail.com"},
     {name = "Agent Factory", email = "support@agentfactory.io"},
@@ -18,7 +18,7 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Education",
-    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "License :: Other/Proprietary License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",

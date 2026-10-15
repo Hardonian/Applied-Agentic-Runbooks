@@ -10,7 +10,7 @@
 ### 1. Open-Source / Developer Community
 
 **Evidence:**
-- GPL-3.0 license (open-source core)
+- Apache 2.0 with Commons Clause (open-source core with commercial monetization restrictions)
 - GitHub repository structure
 - Comprehensive documentation
 - Examples and tutorials

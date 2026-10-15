@@ -278,7 +278,7 @@ Interested in partnering? Reach out at partnerships@agentfactory.io
 
 ## 📄 License
 
-GPL-3.0 License — see [LICENSE](LICENSE) file.
+Apache 2.0 License with Commons Clause (Free for personal, academic, and non-commercial runbook usage; commercial monetization requires prior written authorization) — see [LICENSE](LICENSE) file.
 
 ---
 

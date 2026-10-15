@@ -58,7 +58,7 @@ jobs:
     name: Deploy to Vercel Production
     runs-on: ubuntu-latest
     needs: pre-deployment-checks
-    if: needs.pre-deployment-checks.outputs.should_deploy == 'true'
+    if: needs.pre-deployment-checks.outputs.should_deploy == 'true' && secrets.VERCEL_TOKEN != ''
     environment:
       name: production
       url: ${{ secrets.VERCEL_PRODUCTION_URL || 'https://[project-name].vercel.app' }}

@@ -148,7 +148,7 @@ In strategic partnership with **McGraw Hill Education**:
 
 ## 📄 License
 
-GPL-3.0 - See [LICENSE](LICENSE) file.
+Apache 2.0 with Commons Clause (Free for personal, educational, and internal use; commercial monetization requires prior written authorization) - See [LICENSE](LICENSE) file.
 
 ---
 

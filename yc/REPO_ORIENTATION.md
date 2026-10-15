@@ -112,7 +112,7 @@ We've built the infrastructure. We've handled the complexity. You focus on what 
 - Multiple revenue streams
 
 **Supporting Elements:**
-- Open-source core (GPL-3.0) - developer acquisition
+- Open-source core (Apache 2.0 with Commons Clause) - developer acquisition
 - Blueprint marketplace - network effects
 - Education partnerships - strategic wedge
 - Professional services - high-margin revenue

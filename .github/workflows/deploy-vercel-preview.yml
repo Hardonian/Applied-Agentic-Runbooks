@@ -48,7 +48,7 @@ jobs:
     name: Deploy to Vercel Preview
     runs-on: ubuntu-latest
     needs: build-and-test
-    if: github.event.pull_request.number != '' || github.event_name == 'workflow_dispatch'
+    if: (github.event.pull_request.number != '' || github.event_name == 'workflow_dispatch') && secrets.VERCEL_TOKEN != ''
     environment:
       name: preview
     steps:

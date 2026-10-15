@@ -74,7 +74,7 @@ jobs:
     if: needs.pre-deployment-checks.outputs.should_deploy == 'true'
     environment:
       name: production
-      url: ${{ secrets.RENDER_SERVICE_URL || 'https://agent-factory-api.onrender.com' }}
+      url: https://agent-factory-api.onrender.com
     steps:
       - uses: actions/checkout@v4
       
@@ -132,7 +132,7 @@ jobs:
     name: Deploy to Kubernetes
     runs-on: ubuntu-latest
     needs: [pre-deployment-checks, deploy-docker]
-    if: needs.pre-deployment-checks.outputs.should_deploy == 'true' && secrets.KUBECONFIG != ''
+    if: needs.pre-deployment-checks.outputs.should_deploy == 'true'
     environment:
       name: production
     steps:
@@ -141,26 +141,28 @@ jobs:
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
       
-      - name: Configure kubectl
-        run: |
-          echo "${{ secrets.KUBECONFIG }}" > kubeconfig.yaml
-          export KUBECONFIG=kubeconfig.yaml
-          
-          kubectl get nodes || echo "⚠️  Kubernetes not configured"
-      
       - name: Deploy to Kubernetes
         env:
-          KUBECONFIG: kubeconfig.yaml
+          KUBECONFIG_DATA: ${{ secrets.KUBECONFIG }}
+          DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY || 'ghcr.io' }}
         run: |
-          if [ -z "$KUBECONFIG" ]; then
-            echo "⚠️  Kubernetes not configured. Skipping K8s deployment."
+          if [ -z "$KUBECONFIG_DATA" ]; then
+            echo "⚠️  Kubernetes not configured (KUBECONFIG secret not found). Skipping K8s deployment."
             exit 0
           fi
+          
+          echo "$KUBECONFIG_DATA" > kubeconfig.yaml
+          export KUBECONFIG=kubeconfig.yaml
+          
+          kubectl get nodes || {
+            echo "⚠️  Failed to reach Kubernetes cluster. Skipping."
+            exit 0
+          }
           
           echo "Deploying to Kubernetes..."
           # Update image tag in deployment
           kubectl set image deployment/agent-factory-api \
-            agent-factory-api=${{ secrets.DOCKER_REGISTRY || 'ghcr.io' }}/${{ github.repository }}:${{ github.sha }} \
+            agent-factory-api=${DOCKER_REGISTRY}/${{ github.repository }}:${{ github.sha }} \
             -n agent-factory || echo "⚠️  Kubernetes deployment not found"
           
           echo "✓ Kubernetes deployment updated"

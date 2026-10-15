@@ -77,3 +77,4 @@ def _search_duckduckgo(query: str, num_results: int) -> str:
 
 # The decorator returns a Tool instance, so web_search is already a Tool
 web_search_tool = web_search
+WebSearchTool = web_search

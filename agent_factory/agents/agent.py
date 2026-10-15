@@ -10,7 +10,7 @@ from typing import Any
 
 from agent_factory.core.guardrails import Guardrails
 from agent_factory.knowledge import KnowledgePack
-from agent_factory.promptlog.storage import SQLiteStorage
+from agent_factory.promptlog.storage import PromptLogStorage
 from agent_factory.runtime.memory import MemoryStore
 from agent_factory.tools.base import Tool
 
@@ -86,7 +86,7 @@ class Agent:
         config: AgentConfig | None = None,
         metadata: dict[str, Any] | None = None,
         knowledge_packs: list[KnowledgePack] | None = None,
-        prompt_log_storage: SQLiteStorage | None = None,
+        prompt_log_storage: PromptLogStorage | None = None,
     ):
         """
         Initialize an Agent.
@@ -114,7 +114,7 @@ class Agent:
         self.config = config or AgentConfig()
         self.metadata = metadata or {}
         self.knowledge_packs = knowledge_packs or []
-        self.prompt_log_storage = prompt_log_storage
+        self.prompt_log_storage: PromptLogStorage | None = prompt_log_storage
         self._status = AgentStatus.IDLE
     
     def add_tool(self, tool: Tool) -> None:
@@ -231,14 +231,15 @@ class Agent:
     
     def _get_knowledge_context(self, query: str) -> dict[str, Any]:
         """Get context from knowledge packs using RAG retrieval."""
-        context = {}
+        context: dict[str, Any] = {}
         
         for pack in self.knowledge_packs:
             try:
                 # Get retriever from knowledge pack
                 if hasattr(pack, 'retriever') and pack.retriever:
                     # Retrieve relevant documents/chunks
-                    results = pack.retriever.retrieve(query, top_k=pack.retriever_config.get('top_k', 5))
+                    top_k = getattr(pack.retriever_config, "top_k", 5) if hasattr(pack.retriever_config, "top_k") else 5
+                    results = pack.retriever.retrieve(query, top_k=top_k)
                     
                     # Format results as context
                     if results:
@@ -258,9 +259,10 @@ class Agent:
                         
                         if retrieved_texts:
                             # Format as context string
+                            top_k = getattr(pack.retriever_config, "top_k", 5) if pack.retriever_config else 5
                             context_text = "\n\n".join([
                                 f"[Relevance: {r['score']:.2f}]\n{r['text']}"
-                                for r in retrieved_texts[:pack.retriever_config.get('top_k', 5)]
+                                for r in retrieved_texts[:top_k]
                             ])
                             context[f"{pack.id}_context"] = context_text
                             context[f"{pack.id}_sources"] = len(retrieved_texts)
@@ -338,7 +340,7 @@ class Agent:
 
         try:
             from agent_factory.integrations.universal_client import UniversalLLMClient
-            client = UniversalLLMClient(default_model=self.model)
+            univ_client = UniversalLLMClient(default_model=self.model)
             messages = [
                 {"role": "system", "content": self.instructions},
                 {"role": "user", "content": input_text},
@@ -346,7 +348,7 @@ class Agent:
             if context:
                 messages.append({"role": "system", "content": f"Context: {context}"})
                 
-            res = client.generate(
+            res = univ_client.generate(
                 messages=messages,
                 model=self.model,
                 temperature=self.config.temperature,

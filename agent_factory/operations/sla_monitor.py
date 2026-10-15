@@ -8,6 +8,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
+from typing import Any
 
 
 class SLIType(str, Enum):
@@ -174,7 +175,7 @@ class SLAMonitor:
             m for m in self.measurements[sli_id] if m.timestamp > cutoff
         ]
     
-    def get_sli_status(self, sli_id: str) -> dict[str, any]:
+    def get_sli_status(self, sli_id: str) -> dict[str, Any]:
         """
         Get SLI status.
         
@@ -260,7 +261,7 @@ class SLAMonitor:
             # For availability and throughput, higher is better
             return current_value >= target
     
-    def get_slo_status(self, slo_id: str) -> dict[str, any]:
+    def get_slo_status(self, slo_id: str) -> dict[str, Any]:
         """
         Get SLO status.
         

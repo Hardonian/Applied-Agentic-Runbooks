@@ -17,7 +17,7 @@ def infer_ui_schema(agent: Agent) -> dict[str, Any]:
     Returns:
         UI schema dictionary
     """
-    schema = {
+    schema: dict[str, Any] = {
         "agent_id": agent.id,
         "agent_name": agent.name,
         "inputs": [],

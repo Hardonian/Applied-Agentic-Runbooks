@@ -89,7 +89,7 @@ class OrchestrationExecutor:
                     outputs=result,
                     status="success" if result["status"] == "completed" else "error",
                     execution_time=time.perf_counter() - started_at,
-                    tokens_used=int(result["tokens_used"] or 0),
+                    tokens_used=agent_result.tokens_used,
                 )
                 self.storage.save_run(run)
 

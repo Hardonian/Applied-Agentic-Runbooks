@@ -101,6 +101,7 @@ class Agent:
         self.guardrails = guardrails
         self.config = config or AgentConfig()
         self.metadata = metadata or {}
+        self.prompt_log_storage: Any | None = None
         self._status = AgentStatus.IDLE
     
     def add_tool(self, tool: Tool) -> None:
@@ -215,7 +216,7 @@ class Agent:
                 instructions=self.instructions,
                 input_text=input_text,
                 model=self.model,
-                tools=self.tools,
+                tools=self.tools,  # type: ignore[arg-type]
                 temperature=self.config.temperature,
                 max_tokens=self.config.max_tokens,
                 context=context,

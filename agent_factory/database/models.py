@@ -105,11 +105,11 @@ class Blueprint(Base):
     version = Column(String, nullable=False)
     definition = Column(JSON, nullable=False)
     pricing_model = Column(String, default="free")  # free, one-time, subscription
-    price = Column(Float, default=0.0)
+    price: Any = Column(Float, default=0.0)
     publisher_id = Column(String, ForeignKey("users.id"), nullable=True)
     is_public = Column(Boolean, default=False)
     downloads = Column(Integer, default=0)
-    rating = Column(Float, default=0.0)
+    rating: Any = Column(Float, default=0.0)
     reviews_count = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -133,15 +133,15 @@ class Execution(Base):
     id = Column(String, primary_key=True)
     execution_type = Column(String, nullable=False)  # agent, workflow
     resource_id = Column(String, nullable=False)
-    status = Column(String, nullable=False)  # pending, running, completed, failed
+    status: Any = Column(String, nullable=False)  # pending, running, completed, failed
     input_data = Column(JSON)
     output_data = Column(JSON)
     error = Column(Text)
-    execution_time = Column(Float)
+    execution_time: Any = Column(Float)
     tenant_id = Column(String, ForeignKey("tenants.id"), nullable=True)
     created_by = Column(String, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
-    completed_at = Column(DateTime, nullable=True)
+    completed_at: Any = Column(DateTime, nullable=True)
     
     tenant: Any = relationship("Tenant")
     creator: Any = relationship("User")

@@ -4,7 +4,7 @@ Main notebook converter implementation.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -23,7 +23,7 @@ class ConversionResult:
     tools_created: list[str]
     workflows_created: list[str]
     blueprint_created: str | None = None
-    errors: list[str] = None
+    errors: list[str] = field(default_factory=list)
     
     def __post_init__(self):
         if self.errors is None:
@@ -58,7 +58,7 @@ class NotebookConverter:
     
     def convert(
         self,
-        notebook_path: str,
+        notebook_path: str | Path,
         agent_name: str | None = None,
         create_blueprint: bool = False,
         interactive: bool = False,
@@ -75,12 +75,12 @@ class NotebookConverter:
         Returns:
             ConversionResult with created files and errors
         """
-        notebook_path = Path(notebook_path)
-        if not notebook_path.exists():
-            raise FileNotFoundError(f"Notebook not found: {notebook_path}")
+        nb_path = Path(notebook_path)
+        if not nb_path.exists():
+            raise FileNotFoundError(f"Notebook not found: {nb_path}")
         
         # Parse notebook
-        notebook_data = self.parser.parse(notebook_path)
+        notebook_data = self.parser.parse(nb_path)
         
         # Detect agents, tools, workflows
         agents = self.agent_detector.detect(notebook_data)

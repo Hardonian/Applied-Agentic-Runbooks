@@ -64,7 +64,7 @@ class BenchmarkRunner:
                 )
             
             result = execution.result
-            output = result.output if hasattr(result, "output") else str(result)
+            output = getattr(result, "output", str(result)) if result is not None else ""
             
             latency = time.time() - start_time
             
@@ -82,7 +82,7 @@ class BenchmarkRunner:
                 success=True,
                 accuracy=accuracy,
                 latency=latency,
-                tokens_used=result.tokens_used if hasattr(result, "tokens_used") else 0,
+                tokens_used=getattr(result, "tokens_used", 0) if result is not None else 0,
                 cost_estimate=0.0,
                 output={"output": output},
             )
@@ -178,7 +178,8 @@ class BenchmarkRunner:
             t.join(timeout=1)
         
         # Calculate statistics
-        latencies = results["latencies"]
+        raw_latencies = results.get("latencies", [])
+        latencies: list[float] = [float(x) for x in raw_latencies] if isinstance(raw_latencies, list) else []
         avg_latency = sum(latencies) / len(latencies) if latencies else 0.0
         
         sorted_latencies = sorted(latencies)

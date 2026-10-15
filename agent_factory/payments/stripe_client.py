@@ -1,7 +1,7 @@
 """Stripe payment integration."""
 
 import os
-from typing import Any
+from typing import Any, cast
 
 import stripe
 from fastapi import HTTPException, Request, status
@@ -36,11 +36,11 @@ class StripeClient:
         Returns:
             Customer object
         """
-        customer = stripe.Customer.create(
-            email=email,
-            name=name
-        )
-        return customer
+        customer_kwargs: dict[str, Any] = {"email": email}
+        if name:
+            customer_kwargs["name"] = name
+        customer = stripe.Customer.create(**customer_kwargs)
+        return cast(dict[str, Any], customer)
     
     def create_payment_intent(
         self,
@@ -61,13 +61,15 @@ class StripeClient:
         Returns:
             Payment intent object
         """
-        intent = stripe.PaymentIntent.create(
-            amount=amount,
-            currency=currency,
-            customer=customer_id,
-            metadata=metadata or {}
-        )
-        return intent
+        intent_kwargs: dict[str, Any] = {
+            "amount": amount,
+            "currency": currency,
+            "metadata": metadata or {},
+        }
+        if customer_id:
+            intent_kwargs["customer"] = customer_id
+        intent = stripe.PaymentIntent.create(**intent_kwargs)
+        return cast(dict[str, Any], intent)
     
     def create_subscription(
         self,
@@ -91,7 +93,7 @@ class StripeClient:
             items=[{"price": price_id}],
             metadata=metadata or {}
         )
-        return subscription
+        return cast(dict[str, Any], subscription)
 
 
 def create_checkout_session(
@@ -120,9 +122,9 @@ def create_checkout_session(
             detail="Payment processing not configured"
         )
     
-    session = stripe.checkout.Session.create(
-        payment_method_types=["card"],
-        line_items=[{
+    session_params: dict[str, Any] = {
+        "payment_method_types": ["card"],
+        "line_items": [{
             "price_data": {
                 "currency": "usd",
                 "product_data": {
@@ -132,14 +134,17 @@ def create_checkout_session(
             },
             "quantity": 1,
         }],
-        mode="payment",
-        success_url=success_url,
-        cancel_url=cancel_url,
-        customer_email=customer_email,
-        metadata={
+        "mode": "payment",
+        "success_url": success_url,
+        "cancel_url": cancel_url,
+        "metadata": {
             "blueprint_id": blueprint_id,
-        }
-    )
+        },
+    }
+    if customer_email:
+        session_params["customer_email"] = customer_email
+    
+    session = stripe.checkout.Session.create(**cast(Any, session_params))
     
     return {
         "session_id": session.id,
@@ -170,7 +175,7 @@ def handle_webhook(request: Request) -> dict[str, Any]:
     
     try:
         event = stripe.Webhook.construct_event(
-            payload, sig_header, webhook_secret
+            cast(Any, payload), cast(Any, sig_header), webhook_secret
         )
     except ValueError:
         raise HTTPException(
@@ -190,7 +195,7 @@ def handle_webhook(request: Request) -> dict[str, Any]:
         
         if blueprint_id:
             # Process blueprint purchase
-            from agent_factory.marketplace.publishing import get_blueprint_details
+            from agent_factory.marketplace.search import get_blueprint_details
             blueprint = get_blueprint_details(blueprint_id)
             
             if blueprint:

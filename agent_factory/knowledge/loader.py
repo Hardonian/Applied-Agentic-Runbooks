@@ -17,7 +17,7 @@ from agent_factory.knowledge.model import (
 class KnowledgePackLoader:
     """Load knowledge packs from files."""
     
-    def load(self, pack_path: str) -> KnowledgePack:
+    def load(self, pack_path: str | Path) -> KnowledgePack:
         """
         Load knowledge pack from YAML file.
         
@@ -27,11 +27,11 @@ class KnowledgePackLoader:
         Returns:
             Loaded KnowledgePack
         """
-        pack_path = Path(pack_path)
-        if not pack_path.exists():
-            raise FileNotFoundError(f"Knowledge pack not found: {pack_path}")
+        path_obj = Path(pack_path)
+        if not path_obj.exists():
+            raise FileNotFoundError(f"Knowledge pack not found: {path_obj}")
         
-        with open(pack_path, "r") as f:
+        with open(path_obj, "r") as f:
             data = yaml.safe_load(f)
         
         pack_data = data.get("knowledge_pack", {})

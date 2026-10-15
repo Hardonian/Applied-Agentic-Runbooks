@@ -156,6 +156,7 @@ class SandboxedPythonInterpreter:
             # If last statement is an expression, evaluate it
             if tree.body and isinstance(tree.body[-1], ast.Expr):
                 last_expr = tree.body.pop()
+                assert isinstance(last_expr, ast.Expr)
                 exec(compile(tree, "<sandbox>", "exec"), global_scope, local_scope)
                 eval_val = eval(compile(ast.Expression(last_expr.value), "<sandbox>", "eval"), global_scope, local_scope)
                 if eval_val is not None:

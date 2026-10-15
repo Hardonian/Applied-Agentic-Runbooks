@@ -1,6 +1,7 @@
 """Supabase client configuration and utilities."""
 
 import os
+from typing import Any, cast
 
 from supabase.lib.client_options import ClientOptions
 
@@ -30,7 +31,7 @@ def get_supabase_client() -> Client | None:
         persist_session=True,
     )
     
-    return create_client(supabase_url, key, options=options)
+    return create_client(supabase_url, key, options=cast(Any, options))
 
 
 def get_supabase_anon_client() -> Client | None:
@@ -53,7 +54,7 @@ def get_supabase_anon_client() -> Client | None:
         persist_session=True,
     )
     
-    return create_client(supabase_url, supabase_anon_key, options=options)
+    return create_client(supabase_url, supabase_anon_key, options=cast(Any, options))
 
 
 def is_supabase_configured() -> bool:

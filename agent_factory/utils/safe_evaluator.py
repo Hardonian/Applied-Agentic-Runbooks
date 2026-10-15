@@ -6,7 +6,7 @@ Replaces unsafe eval() usage with AST-based evaluation.
 
 import ast
 import operator
-from typing import Any
+from typing import Any, Callable, cast
 
 
 class SafeEvaluator:
@@ -93,7 +93,7 @@ class SafeEvaluator:
         Args:
             additional_functions: Optional dict of additional safe functions
         """
-        self.functions = {**self._SAFE_FUNCTIONS}
+        self.functions: dict[str, Any] = {**self._SAFE_FUNCTIONS}
         if additional_functions:
             self.functions.update(additional_functions)
     
@@ -160,19 +160,19 @@ class SafeEvaluator:
         
         elif isinstance(node, ast.UnaryOp):
             operand = self._eval_node(node.operand, context)
-            op = self._UNARY_OPERATORS.get(type(node.op))
-            if op is None:
+            unary_op = self._UNARY_OPERATORS.get(type(node.op))
+            if unary_op is None:
                 raise ValueError(f"Unsupported unary operator: {type(node.op).__name__}")
-            return op(operand)
+            return cast(Callable[[Any], Any], unary_op)(operand)
         
         elif isinstance(node, ast.Compare):
             left = self._eval_node(node.left, context)
             result = True
-            for op, comparator in zip(node.ops, node.comparators):
+            for cmp_op, comparator in zip(node.ops, node.comparators):
                 right = self._eval_node(comparator, context)
-                op_func = self._COMPARATORS.get(type(op))
+                op_func = self._COMPARATORS.get(type(cmp_op))
                 if op_func is None:
-                    raise ValueError(f"Unsupported comparison operator: {type(op).__name__}")
+                    raise ValueError(f"Unsupported comparison operator: {type(cmp_op).__name__}")
                 if not op_func(left, right):
                     result = False
                     break
@@ -230,7 +230,7 @@ class SafeEvaluator:
         
         elif isinstance(node, ast.Dict):
             return {
-                self._eval_node(k, context): self._eval_node(v, context)
+                self._eval_node(k, context): self._eval_node(v, context)  # type: ignore[arg-type]
                 for k, v in zip(node.keys, node.values)
             }
         
@@ -240,7 +240,7 @@ class SafeEvaluator:
         elif isinstance(node, ast.Subscript):
             value = self._eval_node(node.value, context)
             if isinstance(node.slice, ast.Index):  # Python < 3.9
-                index = self._eval_node(node.slice.value, context)
+                index = self._eval_node(getattr(node.slice, "value", node.slice), context)
             else:
                 index = self._eval_node(node.slice, context)
             try:

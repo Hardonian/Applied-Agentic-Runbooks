@@ -5,7 +5,7 @@ Handles referral code generation, tracking, and rewards.
 """
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
@@ -15,7 +15,7 @@ from agent_factory.security.rbac import Permission, require_user_permission
 from agent_factory.telemetry import ReferralEvent, get_collector
 
 router = APIRouter(prefix="/api/v1/referrals", tags=["referrals"])
-_referral_owners: dict[str, str] = {}
+_referral_owners: dict[str, dict[str, str]] = {}
 
 
 class ReferralCodeResponse(BaseModel):
@@ -65,7 +65,7 @@ async def generate_referral_code(
     return ReferralCodeResponse(
         referral_code=referral_code,
         share_url=share_url,
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
     )
 
 

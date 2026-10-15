@@ -93,14 +93,14 @@ def install(
                                     f.write(response.text)
                                     temp_path = f.name
                                 
-                                blueprint = Blueprint.from_yaml(temp_path)
+                                mp_blueprint = Blueprint.from_yaml(temp_path)
                                 import os
                                 os.unlink(temp_path)
                                 
-                                registry.register_blueprint(blueprint)
+                                registry.register_blueprint(mp_blueprint)
                                 typer.echo(f"✅ Installed blueprint from marketplace: {blueprint_id} v{blueprint_entry.get('version')}")
                                 
-                                if blueprint.install(target_path):
+                                if mp_blueprint.install(target_path):
                                     typer.echo(f"✅ Installed blueprint files to: {target_path}")
                                 return
                         except Exception as e:
@@ -150,8 +150,8 @@ def _check_version_constraint(version: str, constraint: str) -> bool:
         return version == constraint
 
 
-@app.command()
-def list():
+@app.command("list")
+def list_blueprints():
     """List installed blueprints."""
     registry = LocalRegistry()
     blueprints = registry.list_blueprints()
@@ -274,9 +274,9 @@ def test(
             if agent_config:
                 agent = Agent(
                     id=agent_id,
-                    name=agent_config.get("name", agent_id),
-                    instructions=agent_config.get("instructions", ""),
-                    tools=agent_config.get("tools", [])
+                    name=getattr(agent_config, "name", agent_id),
+                    instructions=getattr(agent_config, "instructions", ""),
+                    tools=getattr(agent_config, "tools", [])
                 )
                 
                 typer.echo("⏳ Running agent...")

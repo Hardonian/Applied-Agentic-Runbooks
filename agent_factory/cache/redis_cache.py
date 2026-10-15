@@ -26,10 +26,11 @@ class RedisCache:
         self.port = port or int(os.getenv("REDIS_PORT", "6379"))
         self.db = db
         connect_timeout = float(os.getenv("REDIS_CONNECT_TIMEOUT_SECONDS", "0.25"))
+        self.client: Any = None
         
         try:
             self.client = redis.Redis(
-                host=self.host,
+                host=str(self.host or "localhost"),
                 port=self.port,
                 db=self.db,
                 decode_responses=True,

@@ -24,7 +24,7 @@ class NotebookParser:
             notebook_json = json.load(f)
         
         # Extract code cells
-        code_cells = []
+        code_cells: list[dict[str, Any]] = []
         for cell in notebook_json.get("cells", []):
             if cell.get("cell_type") == "code":
                 source = "".join(cell.get("source", []))

@@ -54,7 +54,7 @@ def create_review(
         current_count = blueprint.reviews_count or 0
         
         new_count = current_count + 1
-        new_rating = ((current_rating * current_count) + rating) / new_count
+        new_rating = float(((current_rating * current_count) + rating) / new_count)
         
         blueprint.rating = new_rating
         blueprint.reviews_count = new_count

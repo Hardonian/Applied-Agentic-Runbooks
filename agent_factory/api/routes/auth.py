@@ -9,11 +9,11 @@ Provides:
 
 import bcrypt
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import HTTPBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, EmailStr, validator
 
 if not hasattr(bcrypt, "__about__"):
-    bcrypt.__about__ = type("about", (), {"__version__": getattr(bcrypt, "__version__", "4.0.0")})()
+    setattr(bcrypt, "__about__", type("about", (), {"__version__": getattr(bcrypt, "__version__", "4.0.0")})())
 
 import uuid
 
@@ -34,7 +34,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 class SignupRequest(BaseModel):
     """User signup request."""
     email: EmailStr
-    password: str = None  # Optional for magic link flow
+    password: str | None = None  # Optional for magic link flow
     
     @validator('password')
     def validate_password(cls, v):
@@ -169,7 +169,7 @@ async def login(request: LoginRequest):
             )
         
         # Verify password
-        if not verify_password(request.password, user.hashed_password):
+        if not verify_password(request.password, str(user.hashed_password or "")):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid email or password"
@@ -192,8 +192,8 @@ async def login(request: LoginRequest):
         return TokenResponse(
             access_token=access_token,
             token_type="bearer",
-            user_id=user.id,
-            email=user.email,
+            user_id=str(user.id),
+            email=str(user.email or ""),
             tenant_id=user.tenant_id or ""
         )
     except HTTPException:
@@ -208,7 +208,7 @@ async def login(request: LoginRequest):
 
 
 @router.get("/me", response_model=UserResponse)
-async def get_current_user_info(credentials: HTTPBearer = Depends(security)):
+async def get_current_user_info(credentials: HTTPAuthorizationCredentials = Depends(security)):
     """
     Get current authenticated user info.
     
@@ -234,8 +234,8 @@ async def get_current_user_info(credentials: HTTPBearer = Depends(security)):
                 plan = tenant.plan or "free"
         
         return UserResponse(
-            id=user.id,
-            email=user.email,
+            id=str(user.id),
+            email=str(user.email or ""),
             tenant_id=user.tenant_id or "",
             plan=plan
         )

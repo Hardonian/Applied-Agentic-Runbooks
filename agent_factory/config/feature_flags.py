@@ -63,7 +63,7 @@ class FeatureFlags:
             return False
         
         flag_def = cls.FLAGS[flag_name]
-        env_var = flag_def["env_var"]
+        env_var = str(flag_def["env_var"])
         default_value = flag_def["default"]
         
         # Check environment variable
@@ -72,7 +72,7 @@ class FeatureFlags:
             return env_value.lower() in ("true", "1", "yes", "on")
         
         # Use default from definition or provided default
-        return default if default is not None else default_value
+        return default if default is not None else bool(default_value)
     
     @classmethod
     def get_all_flags(cls) -> dict[str, bool]:

@@ -80,7 +80,7 @@ class AnthropicAgentClient:
             system_message += f"\n\nContext: {context}"
         
         try:
-            response = self.client.messages.create(
+            response = self.client.messages.create(  # type: ignore[call-overload,arg-type]
                 model=model,
                 max_tokens=max_tokens,
                 temperature=temperature,
@@ -159,13 +159,13 @@ class AnthropicAgentClient:
             system_message += f"\n\nContext: {context}"
         
         try:
-            with self.client.messages.stream(
+            with self.client.messages.stream(  # type: ignore[call-arg,arg-type]
                 model=model,
                 max_tokens=max_tokens,
                 temperature=temperature,
                 system=system_message,
-                messages=messages,
-                tools=anthropic_tools if anthropic_tools else None,
+                messages=messages,  # type: ignore[arg-type]
+                tools=anthropic_tools if anthropic_tools else None,  # type: ignore[arg-type]
             ) as stream:
                 for event in stream:
                     if event.type == "content_block_delta":

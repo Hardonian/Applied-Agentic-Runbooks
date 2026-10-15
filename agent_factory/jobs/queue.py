@@ -9,7 +9,7 @@ import time
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 
@@ -191,7 +191,7 @@ class RedisJobQueue(JobQueue):
                 "payload": job.payload,
                 "status": job.status.value,
                 "priority": job.priority,
-                "created_at": job.created_at.isoformat(),
+                "created_at": job.created_at.isoformat() if job.created_at else datetime.now(timezone.utc).isoformat(),
                 "max_retries": job.max_retries,
                 "retry_count": job.retry_count,
                 "metadata": job.metadata,
@@ -300,7 +300,7 @@ class RedisJobQueue(JobQueue):
             "payload": job.payload,
             "status": job.status.value,
             "priority": job.priority,
-            "created_at": job.created_at.isoformat(),
+            "created_at": job.created_at.isoformat() if job.created_at else datetime.now(timezone.utc).isoformat(),
             "started_at": job.started_at.isoformat() if job.started_at else None,
             "completed_at": job.completed_at.isoformat() if job.completed_at else None,
             "result": job.result,

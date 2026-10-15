@@ -124,7 +124,7 @@ class Workflow:
         
         try:
             workflow_context = context.copy()
-            steps_executed: list[dict[str, Any]] = []
+            steps_executed: list[str] = []
             
             # Determine starting step
             start_index = 0

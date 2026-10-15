@@ -132,7 +132,7 @@ async def list_reports(
                     "report_id": exec.output_data.get("report_id", exec.id),
                     "query": exec.output_data.get("query", ""),
                     "summary": exec.output_data.get("summary", "")[:200] + "..." if len(exec.output_data.get("summary", "")) > 200 else exec.output_data.get("summary", ""),
-                    "generated_at": exec.output_data.get("generated_at", exec.created_at.isoformat()),
+                    "generated_at": exec.output_data.get("generated_at", exec.created_at.isoformat() if exec.created_at else ""),
                     "execution_time_seconds": exec.execution_time or 0.0
                 })
         

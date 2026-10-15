@@ -5,7 +5,10 @@ from typing import Any
 from agent_factory.blueprints.model import Blueprint
 from agent_factory.database.models import Blueprint as BlueprintModel
 from agent_factory.database.session import get_db
+from agent_factory.marketplace.search import get_blueprint_details
 from agent_factory.security.audit import audit_log
+
+__all__ = ["publish_blueprint", "get_blueprint_details"]
 
 
 def publish_blueprint(

@@ -148,7 +148,7 @@ class ComplianceFramework:
         ]
         
         for control_data in soc2_controls + gdpr_controls:
-            control = ComplianceControl(**control_data)
+            control = ComplianceControl(**control_data)  # type: ignore[arg-type]
             self.controls[control.id] = control
     
     def create_control(

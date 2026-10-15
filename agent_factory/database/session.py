@@ -8,7 +8,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker
 
 # Database URL from environment
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv("DATABASE_URL") or ""
 if not DATABASE_URL:
     # A local checkout must be runnable without an accidental network call to
     # localhost Postgres. Production validation requires DATABASE_URL, while
@@ -55,6 +55,7 @@ else:
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+Base.__allow_unmapped__ = True
 
 
 def get_db() -> Generator[Session, None, None]:

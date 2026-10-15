@@ -18,7 +18,7 @@ from agent_factory.blueprints.model import (
 class BlueprintLoader:
     """Load blueprints from files."""
     
-    def load(self, blueprint_path: str) -> Blueprint:
+    def load(self, blueprint_path: str | Path) -> Blueprint:
         """
         Load blueprint from YAML file.
         
@@ -28,11 +28,11 @@ class BlueprintLoader:
         Returns:
             Loaded Blueprint
         """
-        blueprint_path = Path(blueprint_path)
-        if not blueprint_path.exists():
-            raise FileNotFoundError(f"Blueprint not found: {blueprint_path}")
+        path_obj = Path(blueprint_path)
+        if not path_obj.exists():
+            raise FileNotFoundError(f"Blueprint not found: {path_obj}")
         
-        with open(blueprint_path, "r") as f:
+        with open(path_obj, "r") as f:
             data = yaml.safe_load(f)
         
         blueprint_data = data.get("blueprint", {})

@@ -75,8 +75,8 @@ def verify_token(token: str) -> TokenData:
     """
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: str = payload.get("sub")
-        email: str = payload.get("email")
+        user_id = payload.get("sub")
+        email = payload.get("email")
         
         if user_id is None:
             raise HTTPException(
@@ -85,7 +85,7 @@ def verify_token(token: str) -> TokenData:
                 headers={"WWW-Authenticate": "Bearer"},
             )
         
-        token_data = TokenData(user_id=user_id, email=email)
+        token_data = TokenData(user_id=str(user_id), email=str(email or ""))
         return token_data
     except jwt.ExpiredSignatureError:
         raise HTTPException(
@@ -93,7 +93,7 @@ def verify_token(token: str) -> TokenData:
             detail="Token has expired",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    except jwt.JWTError:
+    except (jwt.PyJWTError, Exception):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
@@ -163,8 +163,8 @@ async def get_current_user(
             )
 
         user = User(
-            id=user_model.id,
-            email=user_model.email,
+            id=str(user_model.id),
+            email=str(user_model.email or ""),
             roles=user_model.roles or [],
             permissions=user_model.permissions or [],
             tenant_id=user_model.tenant_id,
@@ -204,8 +204,8 @@ async def get_current_user_from_request(request: Request) -> User | None:
                 user_model = db.query(UserModel).filter(UserModel.id == key_info["user_id"]).first()
                 if user_model:
                     user = User(
-                        id=user_model.id,
-                        email=user_model.email,
+                        id=str(user_model.id),
+                        email=str(user_model.email or ""),
                         roles=user_model.roles or [],
                         permissions=key_info.get("permissions", user_model.permissions or []),
                     )
@@ -233,8 +233,8 @@ async def get_current_user_from_request(request: Request) -> User | None:
                 user_model = db.query(UserModel).filter(UserModel.id == token_data.user_id).first()
                 if user_model:
                     user = User(
-                        id=user_model.id,
-                        email=user_model.email,
+                        id=str(user_model.id),
+                        email=str(user_model.email or ""),
                         roles=user_model.roles or [],
                         permissions=user_model.permissions or [],
                     )

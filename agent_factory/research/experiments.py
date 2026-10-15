@@ -285,11 +285,12 @@ class ExperimentTracker:
                 if variant.variant_type == VariantType.TREATMENT:
                     treatment_stats = variant_stats[variant.id]
                     
-                    # Calculate improvement
-                    if control_stats["success_rate"] > 0:
+                    ctrl_rate = float(str(control_stats["success_rate"]))
+                    treat_rate = float(str(treatment_stats["success_rate"]))
+                    if ctrl_rate > 0:
                         improvement = (
-                            (treatment_stats["success_rate"] - control_stats["success_rate"])
-                            / control_stats["success_rate"]
+                            (treat_rate - ctrl_rate)
+                            / ctrl_rate
                             * 100
                         )
                     else:

@@ -103,7 +103,7 @@ class ResearchService:
             if subscription:
                 plan = db.query(Plan).filter(Plan.id == subscription.plan_id).first()
                 if plan:
-                    plan_type = plan.plan_type
+                    plan_type = str(plan.plan_type or "free")
             
             # Check if pro/paid plan
             is_paid = plan_type in ['pro', 'enterprise', 'paid']
@@ -283,7 +283,7 @@ Provide:
         if "Key Findings:" in output or "Findings:" in output:
             lines = output.split('\n')
             in_findings = False
-            current_finding = None
+            current_finding: dict[str, Any] | None = None
             
             for line in lines:
                 if "Key Findings:" in line or "Findings:" in line:
@@ -321,7 +321,7 @@ Provide:
         sources = []
         lines = search_results.split('\n')
         
-        current_source = {}
+        current_source: dict[str, Any] = {}
         for line in lines:
             if line.strip().startswith('-'):
                 if current_source:
@@ -413,12 +413,12 @@ Provide:
             # Step 5: Save execution result
             db = next(get_db())
             try:
-                execution = db.query(ExecutionModel).filter(ExecutionModel.id == execution_id).first()
-                if execution:
-                    execution.status = "completed"
-                    execution.output_data = report.dict()
-                    execution.completed_at = datetime.utcnow()
-                    execution.execution_time = report.execution_time_seconds
+                exec_record = db.query(ExecutionModel).filter(ExecutionModel.id == execution_id).first()
+                if exec_record:
+                    exec_record.status = "completed"
+                    exec_record.output_data = report.dict()
+                    exec_record.completed_at = datetime.utcnow()
+                    exec_record.execution_time = report.execution_time_seconds
                     db.commit()
                 
                 # Track usage
@@ -438,11 +438,11 @@ Provide:
             # Mark execution as failed
             db = next(get_db())
             try:
-                execution = db.query(ExecutionModel).filter(ExecutionModel.id == execution_id).first()
-                if execution:
-                    execution.status = "failed"
-                    execution.error = str(e)
-                    execution.completed_at = datetime.utcnow()
+                exec_record = db.query(ExecutionModel).filter(ExecutionModel.id == execution_id).first()
+                if exec_record:
+                    exec_record.status = "failed"
+                    exec_record.error = str(e)
+                    exec_record.completed_at = datetime.utcnow()
                     db.commit()
             finally:
                 db.close()

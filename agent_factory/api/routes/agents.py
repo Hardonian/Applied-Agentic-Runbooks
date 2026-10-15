@@ -88,13 +88,15 @@ def run_agent(agent_id: str, run_data: AgentRun, user=Depends(get_current_user))
         context=run_data.context,
     )
     execution = runtime.get_execution(execution_id)
+    if not execution or not execution.result:
+        raise HTTPException(status_code=500, detail="Execution result not found")
     result = execution.result
     
     return {
-        "output": result.output,
-        "status": result.status.value,
-        "execution_time": result.execution_time,
-        "error": result.error,
+        "output": getattr(result, "output", ""),
+        "status": getattr(getattr(result, "status", None), "value", str(getattr(result, "status", ""))),
+        "execution_time": getattr(result, "execution_time", 0.0),
+        "error": getattr(result, "error", None),
         "execution_id": execution_id,
     }
 

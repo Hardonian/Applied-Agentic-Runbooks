@@ -200,11 +200,15 @@ async def upgrade_to_pro(
                     Subscription.tenant_id == tenant.id
                 ).first()
                 if not sub:
+                    now = datetime.utcnow()
                     sub = Subscription(
+                        id=str(uuid.uuid4()),
                         tenant_id=tenant.id,
                         plan_id=pro_plan.id,
                         status="active",
-                        billing_cycle="monthly"
+                        billing_cycle="monthly",
+                        current_period_start=now,
+                        current_period_end=now + timedelta(days=30),
                     )
                     db.add(sub)
                 else:

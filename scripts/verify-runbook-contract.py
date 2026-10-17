@@ -40,7 +40,7 @@ def main() -> int:
         require_text(
             nightly,
             (
-                "cron: '0 3 * * *'",
+                "cron: '0 6 * * 1'",
                 "workflow_dispatch:",
                 "contents: write",
                 "pull-requests: write",

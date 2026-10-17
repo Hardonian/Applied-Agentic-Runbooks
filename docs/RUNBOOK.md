@@ -125,7 +125,7 @@ changes into a bot-authored commit.
 ```yaml
 name: Nightly Readiness Updates
 on:
-  schedule: [{cron: '0 3 * * *'}]
+  schedule: [{cron: '0 6 * * 1'}]   # weekly Mon 06:00 UTC
   workflow_dispatch:            # ← also your "is it alive" test button
 permissions:
   contents: write               # least privilege — never workflow: write

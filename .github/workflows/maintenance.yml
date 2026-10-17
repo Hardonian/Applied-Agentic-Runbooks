@@ -3,12 +3,17 @@ name: Maintenance
 on:
   schedule:
     # Run weekly on Monday at 2 AM UTC
-    - cron: '0 2 * * 1'
+    - cron: '0 6 * * 1'  # weekly Mon 06:00 UTC
   workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   dependency-check:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       
@@ -48,6 +53,7 @@ jobs:
 
   stale-issues:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/stale@v9
         with:
@@ -61,6 +67,7 @@ jobs:
 
   code-quality:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       

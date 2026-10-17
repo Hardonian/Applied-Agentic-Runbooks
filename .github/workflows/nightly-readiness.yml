@@ -2,7 +2,7 @@ name: Nightly Readiness Updates
 
 on:
   schedule:
-    - cron: '0 3 * * *'  # 3 AM UTC daily
+    - cron: '0 6 * * 1'  # weekly Mon 06:00 UTC
   workflow_dispatch:  # Allow manual trigger
 
 permissions:
@@ -17,6 +17,7 @@ concurrency:
 jobs:
   nightly-updates:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     
     steps:
     - name: Checkout code

@@ -3,8 +3,16 @@ name: E2E Tests
 on:
   push:
     branches: [main, develop]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.vscode/**'
   pull_request:
     branches: [main, develop]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.vscode/**'
   workflow_dispatch:
     inputs:
       environment:
@@ -20,10 +28,15 @@ on:
 env:
   PYTHON_VERSION: '3.11'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   e2e-tests:
     name: E2E Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
@@ -114,6 +127,7 @@ jobs:
   e2e-summary:
     name: E2E Test Summary
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: e2e-tests
     if: always()
     steps:

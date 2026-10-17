@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.vscode/**'
   workflow_dispatch:
     inputs:
       pr_number:
@@ -13,10 +17,15 @@ on:
 env:
   PYTHON_VERSION: '3.11'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-test:
     name: Build and Test
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -47,6 +56,7 @@ jobs:
   deploy-preview:
     name: Deploy to Vercel Preview
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: build-and-test
     if: github.event.pull_request.number != '' || github.event_name == 'workflow_dispatch'
     outputs:
@@ -179,6 +189,7 @@ jobs:
   preview-smoke-tests:
     name: Preview Smoke Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: deploy-preview
     if: success() && needs.deploy-preview.outputs.has_token == 'true'
     steps:

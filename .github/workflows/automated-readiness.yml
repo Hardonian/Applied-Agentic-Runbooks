@@ -4,8 +4,16 @@ on:
   pull_request:
     branches: [ main, develop ]
     types: [ opened, synchronize, reopened ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.vscode/**'
   push:
     branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.vscode/**'
 
 permissions:
   contents: read
@@ -17,7 +25,9 @@ concurrency:
 
 jobs:
   automated-updates:
+    if: ${{ github.actor != 'github-actions[bot]' && github.actor != 'dependabot[bot]' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     
     steps:
     - name: Checkout code

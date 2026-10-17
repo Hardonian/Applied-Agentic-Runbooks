@@ -18,10 +18,15 @@ on:
         required: false
         default: 'false'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate-migrations:
     name: Validate Migration Syntax
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       
@@ -74,6 +79,7 @@ jobs:
   apply-migrations:
     name: Apply Migrations
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: validate-migrations
     if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'false')
     steps:
@@ -181,6 +187,7 @@ jobs:
   dry-run-migrations:
     name: Dry Run Migrations
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: validate-migrations
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true'
     steps:

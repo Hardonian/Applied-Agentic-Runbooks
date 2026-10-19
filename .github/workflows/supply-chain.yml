@@ -27,7 +27,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v7
       - run: uv sync --all-extras --dev
       - run: uv run ruff check agent_factory/evaluation/arena agent_factory/api/ws agent_factory/api/routes/arena.py agent_factory/security/approval.py
       - run: >-

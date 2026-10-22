@@ -3,7 +3,7 @@ Generate UI from agent schemas - Complete implementation with React templates.
 """
 
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Any
 
 from agent_factory.agents.agent import Agent
 from agent_factory.ui.schema_inference import infer_ui_schema
@@ -16,29 +16,29 @@ def generate_ui(
 ) -> None:
     """
     Generate UI for an agent.
-    
+
     Args:
         agent_id: Agent ID
         output_dir: Output directory
         template: Template type ("react" or "html")
-    
+
     Returns:
         None (writes files to output_dir)
     """
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
-    
+
     # Load agent from registry
     from agent_factory.registry.local_registry import LocalRegistry
-    
+
     registry = LocalRegistry()
     agent = registry.get_agent(agent_id)
-    
+
     if not agent:
         raise ValueError(f"Agent not found: {agent_id}")
-    
+
     schema = infer_ui_schema(agent)
-    
+
     if template == "html":
         _generate_html_ui(output_path, agent, schema)
     elif template == "react":
@@ -47,7 +47,7 @@ def generate_ui(
         raise ValueError(f"Unsupported template: {template}")
 
 
-def _generate_html_ui(output_path: Path, agent: Agent, schema: Dict[str, Any]) -> None:
+def _generate_html_ui(output_path: Path, agent: Agent, schema: dict[str, Any]) -> None:
     """Generate simple HTML UI."""
     html_content = f"""<!DOCTYPE html>
 <html lang="en">
@@ -183,7 +183,7 @@ def _generate_html_ui(output_path: Path, agent: Agent, schema: Dict[str, Any]) -
     (output_path / "index.html").write_text(html_content)
 
 
-def _generate_react_ui(output_path: Path, agent: Agent, schema: Dict[str, Any]) -> None:
+def _generate_react_ui(output_path: Path, agent: Agent, schema: dict[str, Any]) -> None:
     """Generate React UI."""
     # Create package.json
     package_json = """{
@@ -221,11 +221,11 @@ def _generate_react_ui(output_path: Path, agent: Agent, schema: Dict[str, Any]) 
 }
 """
     (output_path / "package.json").write_text(package_json)
-    
+
     # Create public/index.html
     public_dir = output_path / "public"
     public_dir.mkdir(exist_ok=True)
-    
+
     public_html = """<!DOCTYPE html>
 <html lang="en">
   <head>
@@ -239,11 +239,11 @@ def _generate_react_ui(output_path: Path, agent: Agent, schema: Dict[str, Any]) 
 </html>
 """
     (public_dir / "index.html").write_text(public_html)
-    
+
     # Create src/App.js
     src_dir = output_path / "src"
     src_dir.mkdir(exist_ok=True)
-    
+
     app_js = f"""import React, {{ useState }} from 'react';
 import './App.css';
 
@@ -318,7 +318,7 @@ function App() {{
 export default App;
 """
     (src_dir / "App.js").write_text(app_js)
-    
+
     # Create src/App.css
     app_css = """body {
   margin: 0;
@@ -423,7 +423,7 @@ button:disabled {
 }
 """
     (src_dir / "App.css").write_text(app_css)
-    
+
     # Create src/index.js
     index_js = """import React from 'react';
 import ReactDOM from 'react-dom/client';
@@ -438,7 +438,7 @@ root.render(
 );
 """
     (src_dir / "index.js").write_text(index_js)
-    
+
     # Create src/index.css
     index_css = """* {
   box-sizing: border-box;
@@ -450,7 +450,7 @@ body {
 }
 """
     (src_dir / "index.css").write_text(index_css)
-    
+
     # Create README.md
     readme = f"""# {agent.name} UI
 

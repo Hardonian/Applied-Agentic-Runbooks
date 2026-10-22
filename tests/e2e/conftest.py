@@ -1,8 +1,10 @@
 """E2E test configuration."""
+
 import os
-import pytest
-from typing import Generator
+from collections.abc import Generator
+
 import httpx
+import pytest
 
 
 @pytest.fixture(scope="session")

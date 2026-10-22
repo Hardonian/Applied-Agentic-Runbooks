@@ -1,24 +1,24 @@
 """Sentry error tracking integration."""
+
 import os
-from typing import Optional
 
 
-def setup_sentry() -> Optional[object]:
+def setup_sentry() -> object | None:
     """
     Setup Sentry error tracking.
-    
+
     Returns:
         Sentry client if configured, None otherwise
     """
     sentry_dsn = os.getenv("SENTRY_DSN")
     if not sentry_dsn:
         return None
-    
+
     try:
         import sentry_sdk
         from sentry_sdk.integrations.fastapi import FastApiIntegration
         from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
-        
+
         sentry_sdk.init(
             dsn=sentry_dsn,
             environment=os.getenv("ENVIRONMENT", "development"),
@@ -31,7 +31,7 @@ def setup_sentry() -> Optional[object]:
             ],
             before_send=before_send_handler,
         )
-        
+
         return sentry_sdk
     except ImportError:
         # Sentry SDK not installed
@@ -42,38 +42,39 @@ def setup_sentry() -> Optional[object]:
         return None
 
 
-def before_send_handler(event: dict, hint: dict) -> Optional[dict]:
+def before_send_handler(event: dict, hint: dict) -> dict | None:
     """
     Filter events before sending to Sentry.
-    
+
     Args:
         event: Sentry event
         hint: Event hint
-        
+
     Returns:
         Event dict if should send, None otherwise
     """
     # Filter out health check errors
     if event.get("request", {}).get("url", "").endswith("/health"):
         return None
-    
+
     # Filter out liveness/readiness probe errors
     if event.get("request", {}).get("url", "").endswith(("/live", "/ready")):
         return None
-    
+
     return event
 
 
 def capture_exception(error: Exception, **kwargs) -> None:
     """
     Capture exception in Sentry.
-    
+
     Args:
         error: Exception to capture
         **kwargs: Additional context
     """
     try:
         import sentry_sdk
+
         with sentry_sdk.push_scope() as scope:
             for key, value in kwargs.items():
                 scope.set_context(key, value)
@@ -86,7 +87,7 @@ def capture_exception(error: Exception, **kwargs) -> None:
 def capture_message(message: str, level: str = "info", **kwargs) -> None:
     """
     Capture message in Sentry.
-    
+
     Args:
         message: Message to capture
         level: Log level (info, warning, error)
@@ -94,6 +95,7 @@ def capture_message(message: str, level: str = "info", **kwargs) -> None:
     """
     try:
         import sentry_sdk
+
         with sentry_sdk.push_scope() as scope:
             for key, value in kwargs.items():
                 scope.set_context(key, value)

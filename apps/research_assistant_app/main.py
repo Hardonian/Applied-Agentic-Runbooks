@@ -4,14 +4,15 @@ Research Assistant App - Full Example Application
 A complete FastAPI application demonstrating Agent Factory integration.
 """
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, JSONResponse
-from pydantic import BaseModel
-from typing import Optional, List, Dict, Any
-import uvicorn
-from datetime import datetime
 import os
+from datetime import datetime
+from typing import Any
+
+import uvicorn
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
 app = FastAPI(
     title="Research Assistant App",
@@ -28,15 +29,15 @@ if os.path.exists(static_dir):
 # Request/Response Models
 class ResearchRequest(BaseModel):
     query: str
-    max_results: Optional[int] = 5
+    max_results: int | None = 5
     include_citations: bool = True
 
 
 class ResearchResponse(BaseModel):
     query: str
-    results: List[Dict[str, Any]]
+    results: list[dict[str, Any]]
     summary: str
-    citations: Optional[List[str]] = None
+    citations: list[str] | None = None
     timestamp: str
 
 
@@ -47,7 +48,7 @@ class HealthResponse(BaseModel):
 
 
 # In-memory storage (use database in production)
-research_history: List[ResearchResponse] = []
+research_history: list[ResearchResponse] = []
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -358,7 +359,7 @@ Be thorough and cite sources when possible.""",
         raise HTTPException(status_code=500, detail=f"Research failed: {str(e)}")
 
 
-@app.get("/api/v1/history", response_model=List[ResearchResponse])
+@app.get("/api/v1/history", response_model=list[ResearchResponse])
 async def get_history():
     """Get research history."""
     return research_history[-10:]  # Return last 10

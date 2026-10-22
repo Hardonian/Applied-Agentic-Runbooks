@@ -1,11 +1,11 @@
 """Compliance framework module."""
 
 from agent_factory.compliance.framework import (
+    ComplianceAssessment,
+    ComplianceControl,
     ComplianceFramework,
     ComplianceStandard,
     ComplianceStatus,
-    ComplianceControl,
-    ComplianceAssessment,
     get_compliance_framework,
 )
 

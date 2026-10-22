@@ -2,28 +2,29 @@
 Billing plan management.
 """
 
-from typing import Dict, List, Optional, Any
-from agent_factory.database.session import get_db
+from typing import Any
+
 from agent_factory.database.models import Plan as PlanModel
+from agent_factory.database.session import get_db
 
 
-def get_plan(plan_id: str) -> Optional[Dict[str, Any]]:
+def get_plan(plan_id: str) -> dict[str, Any] | None:
     """
     Get plan by ID.
-    
+
     Args:
         plan_id: Plan ID
-        
+
     Returns:
         Plan info or None
     """
     db = next(get_db())
-    
+
     try:
         plan = db.query(PlanModel).filter(PlanModel.id == plan_id).first()
         if not plan:
             return None
-        
+
         return {
             "id": plan.id,
             "name": plan.name,
@@ -38,18 +39,18 @@ def get_plan(plan_id: str) -> Optional[Dict[str, Any]]:
         db.close()
 
 
-def list_plans() -> List[Dict[str, Any]]:
+def list_plans() -> list[dict[str, Any]]:
     """
     List all active plans.
-    
+
     Returns:
         List of plans
     """
     db = next(get_db())
-    
+
     try:
-        plans = db.query(PlanModel).filter(PlanModel.is_active == True).all()
-        
+        plans = db.query(PlanModel).filter(PlanModel.is_active).all()
+
         return [
             {
                 "id": plan.id,
@@ -74,12 +75,12 @@ def create_plan(
     price_monthly: float = 0.0,
     price_yearly: float = 0.0,
     currency: str = "USD",
-    features: Optional[Dict[str, Any]] = None,
-    limits: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+    features: dict[str, Any] | None = None,
+    limits: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """
     Create a new billing plan.
-    
+
     Args:
         plan_id: Plan ID
         name: Plan name
@@ -89,12 +90,12 @@ def create_plan(
         currency: Currency code
         features: Plan features
         limits: Plan limits
-        
+
     Returns:
         Created plan info
     """
     db = next(get_db())
-    
+
     try:
         plan = PlanModel(
             id=plan_id,
@@ -107,10 +108,10 @@ def create_plan(
             limits=limits or {},
             is_active=True,
         )
-        
+
         db.add(plan)
         db.commit()
-        
+
         return {
             "id": plan.id,
             "name": plan.name,

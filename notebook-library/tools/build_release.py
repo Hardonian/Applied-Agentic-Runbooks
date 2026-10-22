@@ -2,13 +2,12 @@
 """
 Build Release - Creates release zips for packs and library
 """
-import json
-import shutil
-import zipfile
-from pathlib import Path
-from typing import List, Dict, Any, Optional
 import argparse
+import json
+import zipfile
 from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 # Get library root
 LIBRARY_ROOT = Path(__file__).parent.parent
@@ -16,7 +15,7 @@ PACKS_DIR = LIBRARY_ROOT / "packs"
 DIST_DIR = LIBRARY_ROOT / "dist"
 
 
-def get_pack_metadata(pack_dir: Path) -> Dict[str, Any]:
+def get_pack_metadata(pack_dir: Path) -> dict[str, Any]:
     """Load pack metadata from pack.json."""
     pack_json_path = pack_dir / "pack.json"
     if not pack_json_path.exists():
@@ -26,7 +25,7 @@ def get_pack_metadata(pack_dir: Path) -> Dict[str, Any]:
         return json.load(f)
 
 
-def create_pack_zip(pack_dir: Path, pack_json: Dict[str, Any], output_dir: Path) -> Path:
+def create_pack_zip(pack_dir: Path, pack_json: dict[str, Any], output_dir: Path) -> Path:
     """Create zip file for a single pack."""
     pack_id = pack_json["id"]
     pack_slug = pack_json["slug"]
@@ -102,7 +101,7 @@ def create_pack_zip(pack_dir: Path, pack_json: Dict[str, Any], output_dir: Path)
     return zip_path
 
 
-def create_library_zip(packs: List[Dict[str, Any]], output_dir: Path) -> Path:
+def create_library_zip(packs: list[dict[str, Any]], output_dir: Path) -> Path:
     """Create library release zip with all packs."""
     timestamp = datetime.now().strftime("%Y%m%d")
     zip_filename = f"notebook-library-{timestamp}.zip"
@@ -115,13 +114,13 @@ def create_library_zip(packs: List[Dict[str, Any]], output_dir: Path) -> Path:
         library_json_path = LIBRARY_ROOT / "library.json"
         if library_json_path.exists():
             zf.write(library_json_path, "library.json")
-            print(f"  + library.json")
+            print("  + library.json")
         
         # Add LICENSING.md if exists
         licensing_path = LIBRARY_ROOT / "LICENSING.md"
         if licensing_path.exists():
             zf.write(licensing_path, "LICENSING.md")
-            print(f"  + LICENSING.md")
+            print("  + LICENSING.md")
         
         # Add each pack
         for pack_json in packs:
@@ -142,7 +141,7 @@ def create_library_zip(packs: List[Dict[str, Any]], output_dir: Path) -> Path:
     return zip_path
 
 
-def build_release(pack_id: Optional[str] = None) -> List[Path]:
+def build_release(pack_id: str | None = None) -> list[Path]:
     """Build release zip(s)."""
     DIST_DIR.mkdir(exist_ok=True)
     
@@ -169,7 +168,7 @@ def build_release(pack_id: Optional[str] = None) -> List[Path]:
     else:
         # Build all packs and library
         print(f"\n{'='*70}")
-        print(f"📚 Building Library Release")
+        print("📚 Building Library Release")
         print(f"{'='*70}")
         
         # Get all packs
@@ -191,7 +190,7 @@ def build_release(pack_id: Optional[str] = None) -> List[Path]:
             created_zips.append(library_zip)
     
     print(f"\n{'='*70}")
-    print(f"✅ Build complete!")
+    print("✅ Build complete!")
     print(f"{'='*70}")
     print(f"\nCreated {len(created_zips)} zip file(s):")
     for zip_path in created_zips:

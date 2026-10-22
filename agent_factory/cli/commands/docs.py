@@ -2,9 +2,9 @@
 CLI commands for documentation generation.
 """
 
-import typer
 from pathlib import Path
-from typing import Optional
+
+import typer
 
 app = typer.Typer(name="docs", help="Documentation generation")
 
@@ -13,18 +13,21 @@ app = typer.Typer(name="docs", help="Documentation generation")
 def generate(
     output_dir: str = typer.Option("./docs", "--output", "-o", help="Output directory"),
     format: str = typer.Option("markdown", "--format", "-f", help="Output format (markdown, html)"),
-    include_examples: bool = typer.Option(True, "--examples/--no-examples", help="Include examples"),
+    include_examples: bool = typer.Option(
+        True, "--examples/--no-examples", help="Include examples"
+    ),
 ):
     """Generate documentation from code and blueprints."""
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
-    
-    typer.echo(f"📚 Generating documentation...\n")
-    
+
+    typer.echo("📚 Generating documentation...\n")
+
     # Generate API documentation
     typer.echo("📖 Generating API documentation...")
     try:
         from agent_factory import __version__
+
         api_doc = f"""# Agent Factory API Reference
 
 Version: {__version__}
@@ -120,38 +123,41 @@ agent-factory blueprint test research-assistant
 See the `examples/` directory for complete examples.
 
 """
-        
+
         (output_path / "API_REFERENCE.md").write_text(api_doc)
         typer.echo("   ✅ API reference generated")
     except Exception as e:
         typer.echo(f"   ⚠️  API reference generation failed: {e}")
-    
+
     # Generate blueprint documentation
     typer.echo("\n📦 Generating blueprint documentation...")
     try:
         from agent_factory.registry.local_registry import LocalRegistry
+
         registry = LocalRegistry()
         blueprints = registry.list_blueprints()
-        
+
         blueprint_doc = "# Available Blueprints\n\n"
-        
+
         for bp_id in blueprints:
             blueprint = registry.get_blueprint(bp_id)
             if blueprint:
                 blueprint_doc += f"## {blueprint.name}\n\n"
                 blueprint_doc += f"**ID:** `{blueprint.id}`\n\n"
-                if hasattr(blueprint, 'description'):
+                if hasattr(blueprint, "description"):
                     blueprint_doc += f"{blueprint.description}\n\n"
-                if hasattr(blueprint, 'version'):
+                if hasattr(blueprint, "version"):
                     blueprint_doc += f"**Version:** {blueprint.version}\n\n"
-                blueprint_doc += f"**Install:** `agent-factory blueprint install {blueprint.id}`\n\n"
+                blueprint_doc += (
+                    f"**Install:** `agent-factory blueprint install {blueprint.id}`\n\n"
+                )
                 blueprint_doc += "---\n\n"
-        
+
         (output_path / "BLUEPRINTS.md").write_text(blueprint_doc)
         typer.echo(f"   ✅ Blueprint documentation generated ({len(blueprints)} blueprints)")
     except Exception as e:
         typer.echo(f"   ⚠️  Blueprint documentation generation failed: {e}")
-    
+
     # Generate quick start guide
     typer.echo("\n🚀 Generating quick start guide...")
     try:
@@ -224,12 +230,12 @@ agent-factory ui demo
 - Read the [API Reference](API_REFERENCE.md)
 
 """
-        
+
         (output_path / "QUICK_START.md").write_text(quickstart)
         typer.echo("   ✅ Quick start guide generated")
     except Exception as e:
         typer.echo(f"   ⚠️  Quick start guide generation failed: {e}")
-    
+
     typer.echo(f"\n✅ Documentation generated in: {output_path}")
     typer.echo(f"   Format: {format}")
     typer.echo(f"   Examples included: {include_examples}")

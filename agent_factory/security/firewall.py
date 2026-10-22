@@ -10,16 +10,16 @@ Provides:
 
 import re
 import secrets
-from typing import Dict, Any, List, Optional, Tuple
 from dataclasses import dataclass, field
 
 
 @dataclass
 class FirewallVerdict:
     """Verdict from the LLM Security Firewall inspection."""
+
     allowed: bool
     risk_score: float  # 0.0 to 1.0
-    violations: List[str] = field(default_factory=list)
+    violations: list[str] = field(default_factory=list)
     sanitized_text: str = ""
     canary_intact: bool = True
 
@@ -63,7 +63,7 @@ class LLMSecurityFirewall:
         """Generate a random cryptographic canary token."""
         return f"CANARY_{secrets.token_hex(8).upper()}"
 
-    def inspect_input(self, text: str, canary: Optional[str] = None) -> FirewallVerdict:
+    def inspect_input(self, text: str, canary: str | None = None) -> FirewallVerdict:
         """
         Inspect user prompt for injection attacks, jailbreaks, and sensitive data.
         """
@@ -78,7 +78,9 @@ class LLMSecurityFirewall:
                 break
 
         # Check for system prompt extraction attempts
-        if "system prompt" in text.lower() and ("show" in text.lower() or "print" in text.lower() or "what is" in text.lower()):
+        if "system prompt" in text.lower() and (
+            "show" in text.lower() or "print" in text.lower() or "what is" in text.lower()
+        ):
             violations.append("System prompt extraction probe")
             risk_score += 0.4
 
@@ -97,7 +99,9 @@ class LLMSecurityFirewall:
             canary_intact=True,
         )
 
-    def inspect_output(self, output: str, system_prompt: str = "", canary: Optional[str] = None) -> FirewallVerdict:
+    def inspect_output(
+        self, output: str, system_prompt: str = "", canary: str | None = None
+    ) -> FirewallVerdict:
         """
         Inspect LLM output for system prompt leakage, canary integrity, and secrets.
         """
@@ -121,7 +125,9 @@ class LLMSecurityFirewall:
         # Redact secrets from output
         sanitized, redacted_items = self.redact_secrets(output)
         if redacted_items:
-            violations.extend([f"Redacted sensitive output data: {item}" for item in redacted_items])
+            violations.extend(
+                [f"Redacted sensitive output data: {item}" for item in redacted_items]
+            )
 
         allowed = risk_score < 0.8
 
@@ -133,7 +139,7 @@ class LLMSecurityFirewall:
             canary_intact=canary_intact,
         )
 
-    def redact_secrets(self, text: str) -> Tuple[str, List[str]]:
+    def redact_secrets(self, text: str) -> tuple[str, list[str]]:
         """Mask API keys, credentials, and PII."""
         sanitized = text
         redacted = []

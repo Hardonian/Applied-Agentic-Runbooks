@@ -8,8 +8,8 @@ Designed for McGraw Hill Education partnership institutions.
 """
 
 from agent_factory.agents.agent import Agent
-from agent_factory.integrations.tools.web_search import web_search
 from agent_factory.integrations.tools.calculator import calculator
+from agent_factory.integrations.tools.web_search import web_search
 
 
 def create_learning_path_agent():

@@ -11,8 +11,8 @@ Adds performance indexes for common query patterns:
 - Timestamp-based queries (created_at, updated_at)
 """
 
+
 from alembic import op
-import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '003'

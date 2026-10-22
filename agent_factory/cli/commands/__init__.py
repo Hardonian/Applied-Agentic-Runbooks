@@ -1,6 +1,15 @@
 """CLI commands package."""
 
-from agent_factory.cli.commands import agent, tool, workflow, blueprint, registry, doctor, config, docs
+from agent_factory.cli.commands import (
+    agent,
+    blueprint,
+    config,
+    docs,
+    doctor,
+    registry,
+    tool,
+    workflow,
+)
 
 # Import marketplace if available
 try:
@@ -26,4 +35,17 @@ try:
 except ImportError:
     export = None
 
-__all__ = ["agent", "tool", "workflow", "blueprint", "registry", "marketplace", "execution", "doctor", "config", "docs", "metrics", "export"]
+__all__ = [
+    "agent",
+    "tool",
+    "workflow",
+    "blueprint",
+    "registry",
+    "marketplace",
+    "execution",
+    "doctor",
+    "config",
+    "docs",
+    "metrics",
+    "export",
+]

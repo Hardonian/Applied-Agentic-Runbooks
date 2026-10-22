@@ -2,12 +2,11 @@
 """
 Render Previews - Generate HTML previews and cover images for packs
 """
+import argparse
 import json
 import subprocess
 from pathlib import Path
-from typing import Dict, Any, Optional
-import argparse
-import sys
+from typing import Any
 
 # Try to import PIL for image generation
 try:
@@ -21,7 +20,7 @@ LIBRARY_ROOT = Path(__file__).parent.parent
 PACKS_DIR = LIBRARY_ROOT / "packs"
 
 
-def generate_cover_image(pack_dir: Path, pack_json: Dict[str, Any]) -> Path:
+def generate_cover_image(pack_dir: Path, pack_json: dict[str, Any]) -> Path:
     """Generate cover image for pack."""
     assets_dir = pack_dir / "assets"
     assets_dir.mkdir(exist_ok=True)
@@ -78,7 +77,7 @@ def generate_cover_image(pack_dir: Path, pack_json: Dict[str, Any]) -> Path:
     return cover_path
 
 
-def generate_flow_diagram(pack_dir: Path, pack_json: Dict[str, Any]) -> Path:
+def generate_flow_diagram(pack_dir: Path, pack_json: dict[str, Any]) -> Path:
     """Generate flow diagram SVG."""
     assets_dir = pack_dir / "assets"
     assets_dir.mkdir(exist_ok=True)
@@ -92,7 +91,7 @@ def generate_flow_diagram(pack_dir: Path, pack_json: Dict[str, Any]) -> Path:
     input_names = [inp.get("name", "Input") for inp in inputs[:3]]  # Limit to 3
     output_names = [out.get("name", "Output") for out in outputs[:3]]  # Limit to 3
     
-    svg_content = f'''<svg width="600" height="200" xmlns="http://www.w3.org/2000/svg">
+    svg_content = '''<svg width="600" height="200" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
       <polygon points="0 0, 10 3, 0 6" fill="#64748b"/>
@@ -138,7 +137,7 @@ def generate_flow_diagram(pack_dir: Path, pack_json: Dict[str, Any]) -> Path:
     return flow_path
 
 
-def generate_html_preview(pack_dir: Path, pack_json: Dict[str, Any]) -> Path:
+def generate_html_preview(pack_dir: Path, pack_json: dict[str, Any]) -> Path:
     """Generate HTML preview from notebook."""
     assets_dir = pack_dir / "assets"
     assets_dir.mkdir(exist_ok=True)

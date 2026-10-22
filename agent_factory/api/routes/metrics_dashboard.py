@@ -4,14 +4,12 @@ Metrics dashboard API routes.
 Provides endpoints for metrics dashboard.
 """
 
-from typing import Optional
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Query
 from pydantic import BaseModel
 
 from agent_factory.telemetry import get_analytics
-from agent_factory.telemetry.analytics import AnalyticsEngine
 
 try:
     from agent_factory.telemetry.revenue import get_revenue_tracker
@@ -23,6 +21,7 @@ router = APIRouter(prefix="/api/v1/metrics", tags=["metrics"])
 
 class MetricsSummaryResponse(BaseModel):
     """Response for metrics summary."""
+
     dau: int
     wau: int
     mau: int
@@ -37,6 +36,7 @@ class MetricsSummaryResponse(BaseModel):
 
 class RevenueMetricsResponse(BaseModel):
     """Response for revenue metrics."""
+
     mrr: float
     arr: float
     revenue_by_type: dict
@@ -49,20 +49,20 @@ async def get_metrics_summary(
 ):
     """
     Get overall metrics summary.
-    
+
     Returns:
         Summary metrics (DAU, WAU, MAU, growth, etc.)
     """
     analytics = get_analytics()
-    
+
     end_date = datetime.utcnow()
     start_date = end_date - timedelta(days=days)
-    
+
     summary = analytics.get_growth_summary(start_date, end_date)
-    
+
     # Get growth rate
     growth = analytics.get_growth_rate("users", "month")
-    
+
     return MetricsSummaryResponse(
         dau=summary.get("dau", 0),
         wau=summary.get("wau", 0),
@@ -83,17 +83,17 @@ async def get_conversion_funnel(
 ):
     """
     Get conversion funnel metrics.
-    
+
     Returns:
         Conversion funnel (signup → activated → retained → paying)
     """
     analytics = get_analytics()
-    
+
     end_date = datetime.utcnow()
     start_date = end_date - timedelta(days=days)
-    
+
     funnel = analytics.get_conversion_funnel(start_date, end_date)
-    
+
     return funnel
 
 
@@ -103,17 +103,17 @@ async def get_channel_attribution(
 ):
     """
     Get channel attribution metrics.
-    
+
     Returns:
         Signups and conversions by channel
     """
     analytics = get_analytics()
-    
+
     end_date = datetime.utcnow()
     start_date = end_date - timedelta(days=days)
-    
+
     channels = analytics.get_channel_attribution(start_date, end_date)
-    
+
     return channels
 
 
@@ -123,7 +123,7 @@ async def get_revenue_metrics(
 ):
     """
     Get revenue metrics.
-    
+
     Returns:
         MRR, ARR, revenue by type and plan
     """
@@ -134,12 +134,12 @@ async def get_revenue_metrics(
             revenue_by_type={},
             revenue_by_plan={},
         )
-    
+
     revenue_tracker = get_revenue_tracker()
-    
+
     end_date = datetime.utcnow()
     start_date = end_date - timedelta(days=days)
-    
+
     return RevenueMetricsResponse(
         mrr=revenue_tracker.get_mrr(),
         arr=revenue_tracker.get_arr(),
@@ -155,19 +155,19 @@ async def get_retention(
 ):
     """
     Get retention metrics for a cohort.
-    
+
     Returns:
         Retention rates for specified days
     """
     analytics = get_analytics()
-    
+
     try:
         cohort_dt = datetime.fromisoformat(cohort_date)
     except ValueError:
         cohort_dt = datetime.strptime(cohort_date, "%Y-%m-%d")
-    
+
     retention = analytics.get_retention_cohort(cohort_dt, days)
-    
+
     return {
         "cohort_date": cohort_date,
         "retention": retention,
@@ -181,12 +181,12 @@ async def get_growth_rate(
 ):
     """
     Get growth rate for a metric.
-    
+
     Returns:
         Growth rate and values
     """
     analytics = get_analytics()
-    
+
     growth = analytics.get_growth_rate(metric, period)
-    
+
     return growth

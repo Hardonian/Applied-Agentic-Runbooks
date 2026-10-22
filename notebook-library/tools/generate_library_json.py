@@ -4,7 +4,7 @@ Generate Library JSON - Creates library.json index from all packs
 """
 import json
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import Any
 
 # Get library root
 LIBRARY_ROOT = Path(__file__).parent.parent
@@ -12,7 +12,7 @@ PACKS_DIR = LIBRARY_ROOT / "packs"
 LIBRARY_JSON_PATH = LIBRARY_ROOT / "library.json"
 
 
-def load_pack_metadata(pack_dir: Path) -> Optional[Dict[str, Any]]:
+def load_pack_metadata(pack_dir: Path) -> dict[str, Any] | None:
     """Load pack metadata."""
     pack_json_path = pack_dir / "pack.json"
     if not pack_json_path.exists():
@@ -26,7 +26,7 @@ def load_pack_metadata(pack_dir: Path) -> Optional[Dict[str, Any]]:
         return None
 
 
-def generate_library_json() -> Dict[str, Any]:
+def generate_library_json() -> dict[str, Any]:
     """Generate library.json from all packs."""
     packs = []
     

@@ -1,18 +1,19 @@
 """Tests for analytics engine."""
 
+from datetime import datetime
+from unittest.mock import Mock
+
 import pytest
-from datetime import datetime, timedelta
-from unittest.mock import Mock, patch
 
 from agent_factory.telemetry.analytics import AnalyticsEngine, get_analytics
+from agent_factory.telemetry.collector import TelemetryCollector
 from agent_factory.telemetry.model import (
     AgentRunEvent,
-    WorkflowRunEvent,
     BlueprintInstallEvent,
     ErrorEvent,
     EventType,
+    NotebookConvertedEvent,
 )
-from agent_factory.telemetry.collector import TelemetryCollector
 
 
 @pytest.mark.unit
@@ -20,7 +21,7 @@ def test_analytics_engine_initialization():
     """Test analytics engine initialization."""
     collector = Mock(spec=TelemetryCollector)
     analytics = AnalyticsEngine(collector=collector)
-    
+
     assert analytics.collector == collector
 
 
@@ -28,7 +29,7 @@ def test_analytics_engine_initialization():
 def test_get_growth_summary():
     """Test getting growth summary."""
     collector = Mock(spec=TelemetryCollector)
-    
+
     # Mock events
     events = [
         AgentRunEvent(
@@ -50,12 +51,12 @@ def test_get_growth_summary():
             cost_estimate=0.02,
         ),
     ]
-    
+
     collector.query_events.return_value = events
-    
+
     analytics = AnalyticsEngine(collector=collector)
     summary = analytics.get_growth_summary()
-    
+
     assert "dau" in summary
     assert "wau" in summary
     assert "mau" in summary
@@ -68,7 +69,7 @@ def test_get_growth_summary():
 def test_get_tenant_metrics():
     """Test getting tenant-specific metrics."""
     collector = Mock(spec=TelemetryCollector)
-    
+
     events = [
         AgentRunEvent(
             event_id="1",
@@ -78,12 +79,12 @@ def test_get_tenant_metrics():
             tokens_used=100,
         ),
     ]
-    
+
     collector.query_events.return_value = events
-    
+
     analytics = AnalyticsEngine(collector=collector)
     metrics = analytics.get_tenant_metrics("tenant-1")
-    
+
     assert metrics["tenant_id"] == "tenant-1"
     assert metrics["total_agent_runs"] == 1
     assert "error_rate" in metrics
@@ -93,8 +94,13 @@ def test_get_tenant_metrics():
 def test_get_conversion_funnel():
     """Test getting conversion funnel metrics."""
     collector = Mock(spec=TelemetryCollector)
-    
+
     events = [
+        NotebookConvertedEvent(
+            event_id="0",
+            event_type=EventType.NOTEBOOK_CONVERTED,
+            notebook_path="nb.ipynb",
+        ),
         BlueprintInstallEvent(
             event_id="1",
             event_type=EventType.BLUEPRINT_INSTALL,
@@ -102,23 +108,27 @@ def test_get_conversion_funnel():
             install_type="install",
         ),
     ]
-    
+
     collector.query_events.return_value = events
-    
+
     analytics = AnalyticsEngine(collector=collector)
     funnel = analytics.get_conversion_funnel()
-    
-    assert "notebooks_converted" in funnel
-    assert "agents_created" in funnel
-    assert "blueprints_installed" in funnel
-    assert "conversion_rates" in funnel
+
+    # Funnel is nested: user_funnel (signup→paying) and product_funnel
+    # (notebook→agent→blueprint→project), each with conversion_rates.
+    assert "notebooks_converted" in funnel["product_funnel"]
+    assert "agents_created" in funnel["product_funnel"]
+    assert "blueprints_installed" in funnel["product_funnel"]
+    assert "conversion_rates" in funnel["product_funnel"]
+    assert funnel["product_funnel"]["notebooks_converted"] == 1
+    assert funnel["product_funnel"]["blueprints_installed"] == 1
 
 
 @pytest.mark.unit
 def test_compute_dau():
     """Test computing Daily Active Users."""
     collector = Mock(spec=TelemetryCollector)
-    
+
     now = datetime.utcnow()
     events = [
         AgentRunEvent(
@@ -136,12 +146,12 @@ def test_compute_dau():
             timestamp=now,
         ),
     ]
-    
+
     collector.query_events.return_value = events
-    
+
     analytics = AnalyticsEngine(collector=collector)
     summary = analytics.get_growth_summary(end_date=now)
-    
+
     assert summary["dau"] == 2
 
 
@@ -149,7 +159,7 @@ def test_compute_dau():
 def test_count_unique_agents():
     """Test counting unique agents."""
     collector = Mock(spec=TelemetryCollector)
-    
+
     events = [
         AgentRunEvent(
             event_id="1",
@@ -167,12 +177,12 @@ def test_count_unique_agents():
             agent_id="agent-1",  # Duplicate
         ),
     ]
-    
+
     collector.query_events.return_value = events
-    
+
     analytics = AnalyticsEngine(collector=collector)
     summary = analytics.get_growth_summary()
-    
+
     assert summary["active_agents"] == 2
 
 
@@ -180,7 +190,7 @@ def test_count_unique_agents():
 def test_compute_error_rate():
     """Test computing error rate."""
     collector = Mock(spec=TelemetryCollector)
-    
+
     events = [
         AgentRunEvent(
             event_id="1",
@@ -194,12 +204,12 @@ def test_compute_error_rate():
             error_message="Test",
         ),
     ]
-    
+
     collector.query_events.return_value = events
-    
+
     analytics = AnalyticsEngine(collector=collector)
     metrics = analytics.get_tenant_metrics("tenant-1")
-    
+
     assert metrics["error_rate"] == 0.5  # 1 error / 2 total events
 
 
@@ -208,5 +218,5 @@ def test_get_analytics_singleton():
     """Test get_analytics returns singleton."""
     analytics1 = get_analytics()
     analytics2 = get_analytics()
-    
+
     assert analytics1 is analytics2

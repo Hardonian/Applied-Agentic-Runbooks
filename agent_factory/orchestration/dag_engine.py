@@ -9,12 +9,12 @@ Provides:
 """
 
 import time
-import asyncio
-from typing import Dict, List, Any, Optional, Callable, Set
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
-from agent_factory.agents.agent import Agent, AgentResult, AgentStatus
+from agent_factory.agents.agent import Agent, AgentStatus
 
 
 class StepStatus(str, Enum):
@@ -28,28 +28,30 @@ class StepStatus(str, Enum):
 @dataclass
 class DAGNode:
     """A single executable node in the workflow DAG."""
+
     id: str
     name: str
-    agent: Optional[Agent] = None
-    action_fn: Optional[Callable[[Dict[str, Any]], Any]] = None
-    dependencies: List[str] = field(default_factory=list)
-    condition: Optional[Callable[[Dict[str, Any]], bool]] = None
+    agent: Agent | None = None
+    action_fn: Callable[[dict[str, Any]], Any] | None = None
+    dependencies: list[str] = field(default_factory=list)
+    condition: Callable[[dict[str, Any]], bool] | None = None
     retry_limit: int = 2
     status: StepStatus = StepStatus.PENDING
-    result: Optional[Any] = None
-    error: Optional[str] = None
+    result: Any | None = None
+    error: str | None = None
     execution_time: float = 0.0
 
 
 @dataclass
 class DAGExecutionResult:
     """Full outcome of a DAG workflow execution."""
+
     workflow_id: str
     status: AgentStatus
-    outputs: Dict[str, Any] = field(default_factory=dict)
-    node_results: Dict[str, Any] = field(default_factory=dict)
+    outputs: dict[str, Any] = field(default_factory=dict)
+    node_results: dict[str, Any] = field(default_factory=dict)
     execution_time: float = 0.0
-    error: Optional[str] = None
+    error: str | None = None
 
 
 class DAGWorkflowEngine:
@@ -60,16 +62,16 @@ class DAGWorkflowEngine:
     def __init__(self, workflow_id: str = "workflow-dag", name: str = "DAG Workflow"):
         self.workflow_id = workflow_id
         self.name = name
-        self.nodes: Dict[str, DAGNode] = {}
+        self.nodes: dict[str, DAGNode] = {}
 
     def add_step(
         self,
         step_id: str,
         name: str,
-        agent: Optional[Agent] = None,
-        action_fn: Optional[Callable[[Dict[str, Any]], Any]] = None,
-        depends_on: Optional[List[str]] = None,
-        condition: Optional[Callable[[Dict[str, Any]], bool]] = None,
+        agent: Agent | None = None,
+        action_fn: Callable[[dict[str, Any]], Any] | None = None,
+        depends_on: list[str] | None = None,
+        condition: Callable[[dict[str, Any]], bool] | None = None,
         retry_limit: int = 2,
     ) -> "DAGWorkflowEngine":
         """Add a step to the DAG."""
@@ -84,29 +86,35 @@ class DAGWorkflowEngine:
         )
         return self
 
-    def execute(self, initial_input: str, initial_context: Optional[Dict[str, Any]] = None) -> DAGExecutionResult:
+    def execute(
+        self, initial_input: str, initial_context: dict[str, Any] | None = None
+    ) -> DAGExecutionResult:
         """
         Execute DAG nodes in topological dependency order.
         """
         start_time = time.time()
         context = dict(initial_context or {})
         context["initial_input"] = initial_input
-        node_results: Dict[str, Any] = {}
+        node_results: dict[str, Any] = {}
 
-        completed: Set[str] = set()
-        failed: Set[str] = set()
+        completed: set[str] = set()
+        failed: set[str] = set()
 
         while len(completed) + len(failed) < len(self.nodes):
             # Find nodes whose dependencies are all completed
             ready_nodes = [
-                node for node_id, node in self.nodes.items()
-                if node_id not in completed and node_id not in failed
+                node
+                for node_id, node in self.nodes.items()
+                if node_id not in completed
+                and node_id not in failed
                 and all(dep in completed for dep in node.dependencies)
             ]
 
             if not ready_nodes:
                 # Deadlock or cyclic dependency
-                unresolved = [nid for nid in self.nodes if nid not in completed and nid not in failed]
+                unresolved = [
+                    nid for nid in self.nodes if nid not in completed and nid not in failed
+                ]
                 return DAGExecutionResult(
                     workflow_id=self.workflow_id,
                     status=AgentStatus.ERROR,
@@ -127,7 +135,7 @@ class DAGWorkflowEngine:
                 success = False
                 last_err = None
 
-                for attempt in range(node.retry_limit + 1):
+                for _attempt in range(node.retry_limit + 1):
                     try:
                         if node.agent:
                             # Prepare prompt from prior node outputs or input

@@ -3,9 +3,10 @@ Agent Factory Python SDK Example
 Complete example demonstrating Agent Factory API usage
 """
 
-from agentfactory import AgentFactory, APIError, RateLimitError
 import os
 import time
+
+from agentfactory import AgentFactory, APIError, RateLimitError
 
 # Initialize client
 api_key = os.getenv("AGENTFACTORY_API_KEY", "your_api_key")

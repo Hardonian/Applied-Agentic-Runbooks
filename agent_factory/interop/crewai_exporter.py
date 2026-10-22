@@ -5,7 +5,6 @@ Exports Agent Factory Agents and multi-agent workflows into native CrewAI
 Agent, Task, and Crew configurations.
 """
 
-from typing import List, Dict, Any
 from agent_factory.agents.agent import Agent
 
 
@@ -56,14 +55,14 @@ if __name__ == "__main__":
 '''
 
     @staticmethod
-    def export_swarm(agents: List[Agent], name: str = "AgentFactoryCrew") -> str:
+    def export_swarm(agents: list[Agent], name: str = "AgentFactoryCrew") -> str:
         """Export multi-agent swarm to CrewAI Crew with tasks."""
         agent_defs = []
         task_defs = []
         agent_names = []
         task_names = []
 
-        for idx, a in enumerate(agents):
+        for _idx, a in enumerate(agents):
             clean_id = a.id.replace("-", "_")
             role = a.name.replace('"', '\\"')
             backstory = a.instructions.replace("\n", " ").replace('"', '\\"')
@@ -77,11 +76,11 @@ if __name__ == "__main__":
             agent_defs.append(agent_code)
             agent_names.append(f"{clean_id}_agent")
 
-            task_code = f'''task_{clean_id} = Task(
+            task_code = f"""task_{clean_id} = Task(
     description="Perform {role} contribution for the shared crew objective.",
     expected_output="Domain analysis output.",
     agent={clean_id}_agent,
-)'''
+)"""
             task_defs.append(task_code)
             task_names.append(f"task_{clean_id}")
 

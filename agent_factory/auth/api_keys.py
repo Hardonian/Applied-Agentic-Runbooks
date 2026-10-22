@@ -2,25 +2,25 @@
 API key management for programmatic access.
 """
 
-import secrets
 import hashlib
+import secrets
 from datetime import datetime, timedelta
-from typing import Optional, Dict, Any
+from typing import Any
 
+from agent_factory.database.models import APIKey
 from agent_factory.database.session import get_db
-from agent_factory.database.models import APIKey, User, Tenant
 from agent_factory.security.audit import audit_log
 
 
 def generate_api_key() -> str:
     """
     Generate a new API key.
-    
+
     Returns:
         API key string (format: af_...)
     """
     # Generate 32 bytes of random data
-    random_bytes = secrets.token_bytes(32)
+    secrets.token_bytes(32)
     # Encode as base64-like string, prefixed with af_
     key = "af_" + secrets.token_urlsafe(32)
     return key
@@ -29,10 +29,10 @@ def generate_api_key() -> str:
 def hash_api_key(key: str) -> str:
     """
     Hash an API key for storage.
-    
+
     Args:
         key: API key string
-        
+
     Returns:
         Hashed key
     """
@@ -43,44 +43,44 @@ def create_api_key(
     name: str,
     tenant_id: str,
     user_id: str,
-    permissions: Optional[list] = None,
-    expires_days: Optional[int] = None,
-) -> Dict[str, Any]:
+    permissions: list | None = None,
+    expires_days: int | None = None,
+) -> dict[str, Any]:
     """
     Create a new API key.
-    
+
     Args:
         name: API key name/description
         tenant_id: Tenant ID
         user_id: User ID creating the key
         permissions: Optional list of permissions
         expires_days: Optional expiration in days
-        
+
     Returns:
         Dictionary with api_key and key_id
     """
     db = next(get_db())
-    
+
     try:
         # Generate key
         api_key = generate_api_key()
         key_hash = hash_api_key(api_key)
-        
+
         # Check if hash already exists (extremely unlikely but check anyway)
         existing = db.query(APIKey).filter(APIKey.key_hash == key_hash).first()
         if existing:
             # Regenerate if collision
             api_key = generate_api_key()
             key_hash = hash_api_key(api_key)
-        
+
         # Create key ID
         key_id = f"key_{secrets.token_urlsafe(16)}"
-        
+
         # Set expiration
         expires_at = None
         if expires_days:
             expires_at = datetime.utcnow() + timedelta(days=expires_days)
-        
+
         # Create API key record
         api_key_model = APIKey(
             id=key_id,
@@ -92,10 +92,10 @@ def create_api_key(
             expires_at=expires_at,
             is_active=True,
         )
-        
+
         db.add(api_key_model)
         db.commit()
-        
+
         audit_log(
             event_type="api_key_created",
             user_id=user_id,
@@ -104,7 +104,7 @@ def create_api_key(
             action="create",
             success=True,
         )
-        
+
         return {
             "key_id": key_id,
             "api_key": api_key,  # Only returned once!
@@ -126,38 +126,42 @@ def create_api_key(
         db.close()
 
 
-def verify_api_key(api_key: str) -> Optional[Dict[str, Any]]:
+def verify_api_key(api_key: str) -> dict[str, Any] | None:
     """
     Verify an API key and return associated user/tenant info.
-    
+
     Args:
         api_key: API key string
-        
+
     Returns:
         Dictionary with user_id, tenant_id, permissions, or None if invalid
     """
     db = next(get_db())
-    
+
     try:
         key_hash = hash_api_key(api_key)
-        
+
         # Find API key
-        api_key_model = db.query(APIKey).filter(
-            APIKey.key_hash == key_hash,
-            APIKey.is_active == True,
-        ).first()
-        
+        api_key_model = (
+            db.query(APIKey)
+            .filter(
+                APIKey.key_hash == key_hash,
+                APIKey.is_active,
+            )
+            .first()
+        )
+
         if not api_key_model:
             return None
-        
+
         # Check expiration
         if api_key_model.expires_at and api_key_model.expires_at < datetime.utcnow():
             return None
-        
+
         # Update last used
         api_key_model.last_used_at = datetime.utcnow()
         db.commit()
-        
+
         return {
             "key_id": api_key_model.id,
             "user_id": api_key_model.user_id,
@@ -171,26 +175,27 @@ def verify_api_key(api_key: str) -> Optional[Dict[str, Any]]:
 def revoke_api_key(key_id: str, user_id: str) -> bool:
     """
     Revoke an API key.
-    
+
     Args:
         key_id: API key ID
         user_id: User ID (for authorization check)
-        
+
     Returns:
         True if revoked, False if not found
     """
     db = next(get_db())
-    
+
     try:
         api_key_model = db.query(APIKey).filter(APIKey.id == key_id).first()
-        
+
         if not api_key_model:
             return False
-        
+
         # Check authorization (user must own key or be tenant admin)
         if api_key_model.user_id != user_id:
             # Check if user is tenant admin
-            from agent_factory.database.models import User, Tenant
+            from agent_factory.database.models import Tenant, User
+
             user = db.query(User).filter(User.id == user_id).first()
             if user:
                 tenant = db.query(Tenant).filter(Tenant.id == api_key_model.tenant_id).first()
@@ -201,10 +206,10 @@ def revoke_api_key(key_id: str, user_id: str) -> bool:
                     return False
             else:
                 return False
-        
+
         api_key_model.is_active = False
         db.commit()
-        
+
         audit_log(
             event_type="api_key_revoked",
             user_id=user_id,
@@ -213,7 +218,7 @@ def revoke_api_key(key_id: str, user_id: str) -> bool:
             action="revoke",
             success=True,
         )
-        
+
         return True
     except Exception:
         db.rollback()
@@ -222,30 +227,30 @@ def revoke_api_key(key_id: str, user_id: str) -> bool:
         db.close()
 
 
-def list_api_keys(tenant_id: str, user_id: Optional[str] = None) -> list:
+def list_api_keys(tenant_id: str, user_id: str | None = None) -> list:
     """
     List API keys for a tenant.
-    
+
     Args:
         tenant_id: Tenant ID
         user_id: Optional user ID filter
-        
+
     Returns:
         List of API key info (without actual keys)
     """
     db = next(get_db())
-    
+
     try:
         query = db.query(APIKey).filter(
             APIKey.tenant_id == tenant_id,
-            APIKey.is_active == True,
+            APIKey.is_active,
         )
-        
+
         if user_id:
             query = query.filter(APIKey.user_id == user_id)
-        
+
         keys = query.all()
-        
+
         return [
             {
                 "key_id": k.id,

@@ -1,15 +1,16 @@
 """Database session management."""
 
 import os
+from collections.abc import Generator
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
-from typing import Generator
+from sqlalchemy.orm import Session, sessionmaker
 
 # Database URL from environment
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    f"postgresql://{os.getenv('POSTGRES_USER', 'agent_factory')}:{os.getenv('POSTGRES_PASSWORD', '')}@{os.getenv('POSTGRES_HOST', 'localhost')}:{os.getenv('POSTGRES_PORT', '5432')}/{os.getenv('POSTGRES_DB', 'agent_factory')}"
+    f"postgresql://{os.getenv('POSTGRES_USER', 'agent_factory')}:{os.getenv('POSTGRES_PASSWORD', '')}@{os.getenv('POSTGRES_HOST', 'localhost')}:{os.getenv('POSTGRES_PORT', '5432')}/{os.getenv('POSTGRES_DB', 'agent_factory')}",
 )
 
 # Optimize connection pooling for Supabase
@@ -30,7 +31,7 @@ if is_supabase:
         # Use pooler if SUPABASE_USE_POOLER is set, otherwise direct
         if os.getenv("SUPABASE_USE_POOLER", "true").lower() == "true":
             database_url = pooler_url
-    
+
     engine = create_engine(
         database_url,
         pool_pre_ping=True,
@@ -39,7 +40,7 @@ if is_supabase:
         pool_recycle=3600,  # Recycle connections after 1 hour
         connect_args={
             "sslmode": "require",  # Supabase requires SSL
-        }
+        },
     )
 else:
     # Standard PostgreSQL connection settings
@@ -57,7 +58,7 @@ Base = declarative_base()
 def get_db() -> Generator[Session, None, None]:
     """
     Get database session.
-    
+
     Yields:
         Database session
     """

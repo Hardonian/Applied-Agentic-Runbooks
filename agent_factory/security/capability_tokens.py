@@ -5,12 +5,12 @@ Ensures tools (e.g. database execution, file write, shell commands) can only
 be invoked with valid, time-bounded HMAC-SHA256 capability tokens granted to the agent.
 """
 
-import hmac
-import hashlib
-import time
-import json
 import base64
-from typing import Dict, Any, Optional, List
+import hashlib
+import hmac
+import json
+import time
+from typing import Any
 
 
 class CapabilityTokenManager:
@@ -26,7 +26,7 @@ class CapabilityTokenManager:
         agent_id: str,
         tool_name: str,
         expires_in_seconds: int = 300,
-        allowed_params: Optional[Dict[str, Any]] = None,
+        allowed_params: dict[str, Any] | None = None,
     ) -> str:
         """
         Issue a signed capability token for a specific agent and tool.
@@ -39,7 +39,7 @@ class CapabilityTokenManager:
         }
         raw_json = json.dumps(payload, sort_keys=True)
         signature = hmac.new(self.secret_key, raw_json.encode("utf-8"), hashlib.sha256).hexdigest()
-        
+
         token_data = {
             "payload": payload,
             "signature": signature,
@@ -67,7 +67,9 @@ class CapabilityTokenManager:
 
             # Verify cryptographic signature
             raw_json = json.dumps(payload, sort_keys=True)
-            expected_sig = hmac.new(self.secret_key, raw_json.encode("utf-8"), hashlib.sha256).hexdigest()
+            expected_sig = hmac.new(
+                self.secret_key, raw_json.encode("utf-8"), hashlib.sha256
+            ).hexdigest()
 
             return hmac.compare_digest(signature, expected_sig)
         except Exception:

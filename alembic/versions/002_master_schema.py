@@ -11,9 +11,9 @@ migration and adds missing tables (projects, plans, subscriptions, usage_records
 For new installations, apply this migration directly.
 For existing installations, this migration will add missing tables and fix schema inconsistencies.
 """
-from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = '002'

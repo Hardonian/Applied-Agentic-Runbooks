@@ -1,9 +1,11 @@
 """Tests for Knowledge Pack Loader."""
 
-import pytest
 import tempfile
-import yaml
 from pathlib import Path
+
+import pytest
+import yaml
+
 from agent_factory.knowledge.loader import KnowledgePackLoader
 
 
@@ -11,7 +13,7 @@ from agent_factory.knowledge.loader import KnowledgePackLoader
 def test_load_knowledge_pack():
     """Test loading a knowledge pack from YAML."""
     loader = KnowledgePackLoader()
-    
+
     # Create temporary pack file
     pack_data = {
         "knowledge_pack": {
@@ -42,13 +44,13 @@ def test_load_knowledge_pack():
             "metadata": {},
         }
     }
-    
+
     with tempfile.TemporaryDirectory() as tmpdir:
         pack_path = Path(tmpdir) / "pack.yaml"
         pack_path.write_text(yaml.dump(pack_data))
-        
+
         pack = loader.load(str(pack_path))
-        
+
         assert pack.id == "test-pack"
         assert pack.name == "Test Pack"
         assert pack.version == "1.0.0"
@@ -59,6 +61,6 @@ def test_load_knowledge_pack():
 def test_load_knowledge_pack_not_found():
     """Test loading non-existent knowledge pack."""
     loader = KnowledgePackLoader()
-    
+
     with pytest.raises(FileNotFoundError):
         loader.load("non-existent.yaml")

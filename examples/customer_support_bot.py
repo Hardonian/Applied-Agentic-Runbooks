@@ -76,17 +76,17 @@ def main():
     
     # First question
     result1 = support_bot.run("What's your return policy?", session_id=session_id)
-    print(f"Customer: What's your return policy?")
+    print("Customer: What's your return policy?")
     print(f"Bot: {result1.output}\n")
     
     # Follow-up question (with memory)
     result2 = support_bot.run("How long does shipping take?", session_id=session_id)
-    print(f"Customer: How long does shipping take?")
+    print("Customer: How long does shipping take?")
     print(f"Bot: {result2.output}\n")
     
     # Complex issue (creates ticket)
     result3 = support_bot.run("My order never arrived", session_id=session_id)
-    print(f"Customer: My order never arrived")
+    print("Customer: My order never arrived")
     print(f"Bot: {result3.output}")
 
 

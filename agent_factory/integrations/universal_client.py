@@ -10,13 +10,13 @@ Provides a unified, production-ready interface across:
 - Mock / Sandbox Provider (for zero-cost offline testing)
 """
 
-import os
 import json
-import time
+import os
 import re
-from typing import Dict, List, Optional, Any, Union, Iterator, AsyncIterator
+import time
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
 
 class ProviderType(str, Enum):
@@ -33,19 +33,21 @@ class ProviderType(str, Enum):
 @dataclass
 class StreamChunk:
     """Represents a streaming chunk from an LLM."""
+
     delta: str = ""
     reasoning_delta: str = ""
-    tool_calls: List[Dict[str, Any]] = field(default_factory=list)
-    finish_reason: Optional[str] = None
-    usage: Optional[Dict[str, int]] = None
+    tool_calls: list[dict[str, Any]] = field(default_factory=list)
+    finish_reason: str | None = None
+    usage: dict[str, int] | None = None
 
 
 @dataclass
 class LLMResponse:
     """Standardized response from any LLM provider."""
+
     content: str
-    reasoning_content: Optional[str] = None
-    tool_calls: List[Dict[str, Any]] = field(default_factory=list)
+    reasoning_content: str | None = None
+    tool_calls: list[dict[str, Any]] = field(default_factory=list)
     model: str = ""
     provider: str = ""
     prompt_tokens: int = 0
@@ -54,11 +56,11 @@ class LLMResponse:
     estimated_cost_usd: float = 0.0
     latency_ms: float = 0.0
     finish_reason: str = "stop"
-    raw_response: Optional[Any] = None
+    raw_response: Any | None = None
 
 
 # Pricing per 1M tokens (Input, Output) in USD
-MODEL_PRICING: Dict[str, tuple[float, float]] = {
+MODEL_PRICING: dict[str, tuple[float, float]] = {
     "gpt-4o": (2.50, 10.00),
     "gpt-4o-mini": (0.15, 0.60),
     "o1": (15.00, 60.00),
@@ -83,10 +85,10 @@ class UniversalLLMClient:
     def __init__(
         self,
         default_model: str = "gpt-4o",
-        api_keys: Optional[Dict[str, str]] = None,
+        api_keys: dict[str, str] | None = None,
         timeout: float = 60.0,
         enable_fallback: bool = True,
-        fallback_chain: Optional[List[str]] = None,
+        fallback_chain: list[str] | None = None,
     ):
         self.default_model = default_model
         self.api_keys = api_keys or {}
@@ -130,7 +132,7 @@ class UniversalLLMClient:
         # Default baseline estimate
         return round(((prompt_tokens * 1.0) + (completion_tokens * 3.0)) / 1_000_000, 6)
 
-    def extract_reasoning(self, text: str) -> tuple[str, Optional[str]]:
+    def extract_reasoning(self, text: str) -> tuple[str, str | None]:
         """Extract <think>...</think> reasoning traces from models like DeepSeek R1."""
         think_match = re.search(r"<think>(.*?)</think>", text, flags=re.DOTALL)
         if think_match:
@@ -141,14 +143,14 @@ class UniversalLLMClient:
 
     def generate(
         self,
-        messages: List[Dict[str, Any]],
-        model: Optional[str] = None,
+        messages: list[dict[str, Any]],
+        model: str | None = None,
         temperature: float = 0.7,
         max_tokens: int = 2048,
-        tools: Optional[List[Dict[str, Any]]] = None,
-        tool_choice: Optional[str] = None,
+        tools: list[dict[str, Any]] | None = None,
+        tool_choice: str | None = None,
         stream: bool = False,
-        reasoning_effort: Optional[str] = None,
+        reasoning_effort: str | None = None,
     ) -> LLMResponse:
         """
         Synchronous unified generation call with automatic fallback cascade.
@@ -192,12 +194,12 @@ class UniversalLLMClient:
         self,
         provider: ProviderType,
         model: str,
-        messages: List[Dict[str, Any]],
+        messages: list[dict[str, Any]],
         temperature: float,
         max_tokens: int,
-        tools: Optional[List[Dict[str, Any]]],
-        tool_choice: Optional[str],
-        reasoning_effort: Optional[str],
+        tools: list[dict[str, Any]] | None,
+        tool_choice: str | None,
+        reasoning_effort: str | None,
     ) -> LLMResponse:
         """Internal provider dispatcher."""
         if provider == ProviderType.MOCK:
@@ -243,7 +245,7 @@ class UniversalLLMClient:
         # Fallback to mock simulation if credentials not configured
         return self._execute_mock(messages, model)
 
-    def _execute_mock(self, messages: List[Dict[str, Any]], model: str) -> LLMResponse:
+    def _execute_mock(self, messages: list[dict[str, Any]], model: str) -> LLMResponse:
         """Deterministic mock provider for offline tests and simulations."""
         user_message = ""
         for m in reversed(messages):
@@ -265,17 +267,19 @@ class UniversalLLMClient:
     def _execute_openai(
         self,
         model: str,
-        messages: List[Dict[str, Any]],
+        messages: list[dict[str, Any]],
         temperature: float,
         max_tokens: int,
-        tools: Optional[List[Dict[str, Any]]],
+        tools: list[dict[str, Any]] | None,
+        tool_choice: str | None,
         api_key: str,
     ) -> LLMResponse:
         """Call OpenAI API."""
         try:
             from openai import OpenAI
+
             client = OpenAI(api_key=api_key)
-            kwargs: Dict[str, Any] = {
+            kwargs: dict[str, Any] = {
                 "model": model,
                 "messages": messages,
                 "temperature": temperature,
@@ -294,14 +298,16 @@ class UniversalLLMClient:
             tool_calls = []
             if getattr(choice.message, "tool_calls", None):
                 for tc in choice.message.tool_calls:
-                    tool_calls.append({
-                        "id": tc.id,
-                        "type": tc.type,
-                        "function": {
-                            "name": tc.function.name,
-                            "arguments": tc.function.arguments,
+                    tool_calls.append(
+                        {
+                            "id": tc.id,
+                            "type": tc.type,
+                            "function": {
+                                "name": tc.function.name,
+                                "arguments": tc.function.arguments,
+                            },
                         }
-                    })
+                    )
 
             usage = res.usage
             return LLMResponse(
@@ -317,20 +323,21 @@ class UniversalLLMClient:
                 raw_response=res,
             )
         except Exception as e:
-            raise RuntimeError(f"OpenAI error: {e}")
+            raise RuntimeError(f"OpenAI error: {e}") from e
 
     def _execute_anthropic(
         self,
         model: str,
-        messages: List[Dict[str, Any]],
+        messages: list[dict[str, Any]],
         temperature: float,
         max_tokens: int,
-        tools: Optional[List[Dict[str, Any]]],
+        tools: list[dict[str, Any]] | None,
         api_key: str,
     ) -> LLMResponse:
         """Call Anthropic API with support for Claude 3.7 Thinking."""
         try:
             import anthropic
+
             client = anthropic.Anthropic(api_key=api_key)
 
             # Separate system prompt
@@ -342,7 +349,7 @@ class UniversalLLMClient:
                 else:
                     chat_messages.append({"role": m.get("role"), "content": m.get("content")})
 
-            kwargs: Dict[str, Any] = {
+            kwargs: dict[str, Any] = {
                 "model": model if "claude" in model else "claude-3-5-sonnet-20241022",
                 "messages": chat_messages,
                 "max_tokens": max_tokens,
@@ -362,14 +369,16 @@ class UniversalLLMClient:
                 elif getattr(block, "type", "") == "thinking":
                     reasoning_text = getattr(block, "thinking", "")
                 elif getattr(block, "type", "") == "tool_use":
-                    tool_calls.append({
-                        "id": getattr(block, "id", ""),
-                        "type": "function",
-                        "function": {
-                            "name": getattr(block, "name", ""),
-                            "arguments": json.dumps(getattr(block, "input", {})),
+                    tool_calls.append(
+                        {
+                            "id": getattr(block, "id", ""),
+                            "type": "function",
+                            "function": {
+                                "name": getattr(block, "name", ""),
+                                "arguments": json.dumps(getattr(block, "input", {})),
+                            },
                         }
-                    })
+                    )
 
             usage = getattr(res, "usage", None)
             p_tokens = getattr(usage, "input_tokens", 0) if usage else 0
@@ -388,22 +397,23 @@ class UniversalLLMClient:
                 raw_response=res,
             )
         except Exception as e:
-            raise RuntimeError(f"Anthropic error: {e}")
+            raise RuntimeError(f"Anthropic error: {e}") from e
 
     def _execute_openai_compatible(
         self,
         model: str,
         base_url: str,
         api_key: str,
-        messages: List[Dict[str, Any]],
+        messages: list[dict[str, Any]],
         temperature: float,
         max_tokens: int,
-        tools: Optional[List[Dict[str, Any]]],
+        tools: list[dict[str, Any]] | None,
     ) -> LLMResponse:
         """Call any OpenAI-compatible API endpoint (DeepSeek, Groq, Ollama, vLLM)."""
         from openai import OpenAI
+
         client = OpenAI(base_url=base_url, api_key=api_key)
-        kwargs: Dict[str, Any] = {
+        kwargs: dict[str, Any] = {
             "model": model,
             "messages": messages,
             "temperature": temperature,
@@ -430,7 +440,9 @@ class UniversalLLMClient:
             raw_response=res,
         )
 
-    def _mock_fallback(self, messages: List[Dict[str, Any]], model: str, error_msg: str) -> LLMResponse:
+    def _mock_fallback(
+        self, messages: list[dict[str, Any]], model: str, error_msg: str
+    ) -> LLMResponse:
         """Graceful mock fallback response on error."""
         return LLMResponse(
             content=f"[Agent Factory Gateway Active] Model {model} response simulated. Notice: {error_msg}",

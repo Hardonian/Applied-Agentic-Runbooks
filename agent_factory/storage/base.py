@@ -3,101 +3,102 @@ Base storage backend interface.
 """
 
 from abc import ABC, abstractmethod
-from typing import BinaryIO, Optional, List
 from dataclasses import dataclass
 from datetime import datetime
+from typing import BinaryIO
 
 
 @dataclass
 class StorageFile:
     """Represents a file in storage."""
+
     path: str
     size: int
-    content_type: Optional[str] = None
-    last_modified: Optional[datetime] = None
-    metadata: Optional[dict] = None
+    content_type: str | None = None
+    last_modified: datetime | None = None
+    metadata: dict | None = None
 
 
 class StorageBackend(ABC):
     """Abstract storage backend interface."""
-    
+
     @abstractmethod
-    def upload(self, path: str, file_obj: BinaryIO, content_type: Optional[str] = None) -> str:
+    def upload(self, path: str, file_obj: BinaryIO, content_type: str | None = None) -> str:
         """
         Upload a file.
-        
+
         Args:
             path: Storage path
             file_obj: File-like object
             content_type: Optional content type
-            
+
         Returns:
             Storage URL or path
         """
         pass
-    
+
     @abstractmethod
     def download(self, path: str) -> BinaryIO:
         """
         Download a file.
-        
+
         Args:
             path: Storage path
-            
+
         Returns:
             File-like object
         """
         pass
-    
+
     @abstractmethod
     def delete(self, path: str) -> bool:
         """
         Delete a file.
-        
+
         Args:
             path: Storage path
-            
+
         Returns:
             True if deleted, False if not found
         """
         pass
-    
+
     @abstractmethod
     def exists(self, path: str) -> bool:
         """
         Check if file exists.
-        
+
         Args:
             path: Storage path
-            
+
         Returns:
             True if exists, False otherwise
         """
         pass
-    
+
     @abstractmethod
-    def list_files(self, prefix: str = "", limit: int = 1000) -> List[StorageFile]:
+    def list_files(self, prefix: str = "", limit: int = 1000) -> list[StorageFile]:
         """
         List files.
-        
+
         Args:
             prefix: Path prefix filter
             limit: Maximum number of results
-            
+
         Returns:
             List of storage files
         """
         pass
-    
+
     @abstractmethod
-    def get_url(self, path: str, expires_in: Optional[int] = None) -> str:
+    def get_url(self, path: str, expires_in: int | None = None) -> str:
         """
         Get URL for file access.
-        
+
         Args:
             path: Storage path
             expires_in: Optional expiration in seconds (for signed URLs)
-            
+
         Returns:
             URL string
         """

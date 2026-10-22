@@ -9,11 +9,10 @@ Environment:
     DATABASE_URL: PostgreSQL connection string
 """
 
-import os
 import sys
-from pathlib import Path
-from datetime import datetime, timedelta
 import uuid
+from datetime import datetime, timedelta
+from pathlib import Path
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -21,9 +20,17 @@ sys.path.insert(0, str(project_root))
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 from agent_factory.database.models import (
-    User, Tenant, Agent, Workflow, Blueprint, Execution,
-    Plan, Subscription, Project
+    Agent,
+    Blueprint,
+    Execution,
+    Plan,
+    Project,
+    Subscription,
+    Tenant,
+    User,
+    Workflow,
 )
 from agent_factory.database.session import get_database_url
 
@@ -141,7 +148,7 @@ def create_demo_data(session):
         completed_at=datetime.utcnow() - timedelta(hours=1)
     )
     session.add(execution)
-    print(f"  ✓ Created execution record")
+    print("  ✓ Created execution record")
     
     # Create demo project
     project_id = str(uuid.uuid4())
@@ -191,7 +198,7 @@ def create_demo_data(session):
         updated_at=datetime.utcnow()
     )
     session.add(subscription)
-    print(f"  ✓ Created subscription")
+    print("  ✓ Created subscription")
     
     session.commit()
     print()

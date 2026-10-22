@@ -1,15 +1,18 @@
 """Database models."""
 
 from datetime import datetime
-from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, ForeignKey, JSON, Float
+
+from sqlalchemy import JSON, Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
+
 from agent_factory.database.session import Base
 
 
 class User(Base):
     """User model."""
+
     __tablename__ = "users"
-    
+
     id = Column(String, primary_key=True)
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
@@ -20,14 +23,15 @@ class User(Base):
     permissions = Column(JSON, default=list)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     tenant = relationship("Tenant", back_populates="users")
 
 
 class Tenant(Base):
     """Tenant model for multi-tenancy."""
+
     __tablename__ = "tenants"
-    
+
     id = Column(String, primary_key=True)
     name = Column(String, nullable=False)
     slug = Column(String, unique=True, index=True, nullable=False)
@@ -37,14 +41,15 @@ class Tenant(Base):
     usage = Column(JSON, default=dict)  # {"agents": 0, "workflows": 0}
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     users = relationship("User", back_populates="tenant")
 
 
 class Agent(Base):
     """Agent model."""
+
     __tablename__ = "agents"
-    
+
     id = Column(String, primary_key=True)
     name = Column(String, nullable=False)
     instructions = Column(Text, nullable=False)
@@ -53,15 +58,16 @@ class Agent(Base):
     created_by = Column(String, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     tenant = relationship("Tenant")
     creator = relationship("User")
 
 
 class Workflow(Base):
     """Workflow model."""
+
     __tablename__ = "workflows"
-    
+
     id = Column(String, primary_key=True)
     name = Column(String, nullable=False)
     definition = Column(JSON, nullable=False)
@@ -69,15 +75,16 @@ class Workflow(Base):
     created_by = Column(String, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     tenant = relationship("Tenant")
     creator = relationship("User")
 
 
 class Blueprint(Base):
     """Blueprint model."""
+
     __tablename__ = "blueprints"
-    
+
     id = Column(String, primary_key=True)
     name = Column(String, nullable=False)
     description = Column(Text)
@@ -92,14 +99,15 @@ class Blueprint(Base):
     reviews_count = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     publisher = relationship("User")
 
 
 class Execution(Base):
     """Execution model."""
+
     __tablename__ = "executions"
-    
+
     id = Column(String, primary_key=True)
     execution_type = Column(String, nullable=False)  # agent, workflow
     resource_id = Column(String, nullable=False)
@@ -112,15 +120,16 @@ class Execution(Base):
     created_by = Column(String, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     completed_at = Column(DateTime, nullable=True)
-    
+
     tenant = relationship("Tenant")
     creator = relationship("User")
 
 
 class AuditLog(Base):
     """Audit log model."""
+
     __tablename__ = "audit_logs"
-    
+
     id = Column(Integer, primary_key=True, autoincrement=True)
     event_type = Column(String, nullable=False)
     user_id = Column(String, ForeignKey("users.id"), nullable=True)
@@ -131,14 +140,15 @@ class AuditLog(Base):
     details = Column(JSON)
     ip_address = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
-    
+
     user = relationship("User")
 
 
 class APIKey(Base):
     """API key model for programmatic access."""
+
     __tablename__ = "api_keys"
-    
+
     id = Column(String, primary_key=True)
     key_hash = Column(String, nullable=False, unique=True, index=True)
     name = Column(String, nullable=False)
@@ -150,15 +160,16 @@ class APIKey(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     tenant = relationship("Tenant")
     user = relationship("User")
 
 
 class Project(Base):
     """Project/App model for organizing resources."""
+
     __tablename__ = "projects"
-    
+
     id = Column(String, primary_key=True)
     name = Column(String, nullable=False)
     project_type = Column(String, default="saas_app")  # saas_app, blueprint_deployment, etc.
@@ -168,15 +179,16 @@ class Project(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     tenant = relationship("Tenant")
     creator = relationship("User")
 
 
 class Plan(Base):
     """Billing plan model."""
+
     __tablename__ = "plans"
-    
+
     id = Column(String, primary_key=True)
     name = Column(String, nullable=False)
     plan_type = Column(String, nullable=False)  # free, pro, enterprise
@@ -192,8 +204,9 @@ class Plan(Base):
 
 class Subscription(Base):
     """Subscription model."""
+
     __tablename__ = "subscriptions"
-    
+
     id = Column(String, primary_key=True)
     tenant_id = Column(String, ForeignKey("tenants.id"), nullable=False)
     plan_id = Column(String, ForeignKey("plans.id"), nullable=False)
@@ -205,15 +218,16 @@ class Subscription(Base):
     stripe_customer_id = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     tenant = relationship("Tenant")
     plan = relationship("Plan")
 
 
 class UsageRecord(Base):
     """Usage record for billing."""
+
     __tablename__ = "usage_records"
-    
+
     id = Column(String, primary_key=True)
     tenant_id = Column(String, ForeignKey("tenants.id"), nullable=False)
     subscription_id = Column(String, ForeignKey("subscriptions.id"), nullable=True)
@@ -225,6 +239,6 @@ class UsageRecord(Base):
     period_start = Column(DateTime, nullable=False)
     period_end = Column(DateTime, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
-    
+
     tenant = relationship("Tenant")
     subscription = relationship("Subscription")

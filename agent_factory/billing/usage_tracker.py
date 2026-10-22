@@ -2,42 +2,41 @@
 Usage tracker for billing and quota management.
 """
 
-import uuid
-from typing import Dict, Optional, Any
-from datetime import datetime, timedelta
+from datetime import datetime
+from typing import Any
 
+from agent_factory.database.models import Tenant
+from agent_factory.database.session import get_db
 from agent_factory.telemetry.collector import get_collector
 from agent_factory.telemetry.model import BillingUsageEvent
-from agent_factory.database.session import get_db
-from agent_factory.database.models import UsageRecord as UsageRecordModel, Tenant
 
 
 class UsageTracker:
     """
     Tracks usage for billing purposes.
-    
+
     Consumes telemetry events and aggregates usage by tenant.
-    
+
     Example:
         >>> tracker = UsageTracker()
         >>> tracker.record_agent_run(tenant_id="t1", tokens_used=100)
         >>> summary = tracker.get_usage_summary("t1")
     """
-    
+
     def __init__(self):
         """Initialize usage tracker."""
         self.collector = get_collector()
-    
+
     def record_agent_run(
         self,
         tenant_id: str,
         tokens_used: int = 0,
         cost_estimate: float = 0.0,
-        project_id: Optional[str] = None,
+        project_id: str | None = None,
     ) -> None:
         """
         Record an agent run for billing.
-        
+
         Args:
             tenant_id: Tenant ID
             tokens_used: Tokens used
@@ -53,7 +52,7 @@ class UsageTracker:
             unit_price=0.0,  # Will be calculated based on plan
             total_cost=cost_estimate,
         )
-        
+
         # Also record token usage if applicable
         if tokens_used > 0:
             self.collector.record_billing_usage(
@@ -64,17 +63,17 @@ class UsageTracker:
                 unit_price=0.0,  # Will be calculated based on plan
                 total_cost=cost_estimate,
             )
-    
+
     def record_workflow_run(
         self,
         tenant_id: str,
         tokens_used: int = 0,
         cost_estimate: float = 0.0,
-        project_id: Optional[str] = None,
+        project_id: str | None = None,
     ) -> None:
         """
         Record a workflow run for billing.
-        
+
         Args:
             tenant_id: Tenant ID
             tokens_used: Tokens used
@@ -89,7 +88,7 @@ class UsageTracker:
             unit_price=0.0,
             total_cost=cost_estimate,
         )
-        
+
         if tokens_used > 0:
             self.collector.record_billing_usage(
                 billing_unit="token",
@@ -99,31 +98,31 @@ class UsageTracker:
                 unit_price=0.0,
                 total_cost=cost_estimate,
             )
-    
+
     def get_usage_summary(
         self,
         tenant_id: str,
-        start_date: Optional[datetime] = None,
-        end_date: Optional[datetime] = None,
-    ) -> Dict[str, Any]:
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+    ) -> dict[str, Any]:
         """
         Get usage summary for a tenant.
-        
+
         Args:
             tenant_id: Tenant ID
             start_date: Start date (defaults to start of current billing period)
             end_date: End date (defaults to now)
-            
+
         Returns:
             Usage summary dictionary
         """
         if not end_date:
             end_date = datetime.utcnow()
-        
+
         if not start_date:
             # Default to start of current month
             start_date = end_date.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        
+
         # Query billing events from telemetry
         events = self.collector.query_events(
             event_type="billing_usage",
@@ -132,11 +131,11 @@ class UsageTracker:
             end_time=end_date,
             limit=10000,
         )
-        
+
         # Aggregate by billing unit
         usage_by_unit = {}
         total_cost = 0.0
-        
+
         for event in events:
             if isinstance(event, BillingUsageEvent):
                 unit = event.billing_unit
@@ -146,12 +145,12 @@ class UsageTracker:
                         "total_cost": 0.0,
                         "count": 0,
                     }
-                
+
                 usage_by_unit[unit]["quantity"] += event.quantity
                 usage_by_unit[unit]["total_cost"] += event.total_cost
                 usage_by_unit[unit]["count"] += 1
                 total_cost += event.total_cost
-        
+
         return {
             "tenant_id": tenant_id,
             "period_start": start_date.isoformat(),
@@ -160,38 +159,42 @@ class UsageTracker:
             "total_cost": total_cost,
             "currency": "USD",
         }
-    
+
     def get_billing_summary(
         self,
         tenant_id: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Get comprehensive billing summary for a tenant.
-        
+
         Includes subscription info and usage.
-        
+
         Args:
             tenant_id: Tenant ID
-            
+
         Returns:
             Billing summary
         """
         db = next(get_db())
-        
+
         try:
             # Get tenant
             tenant = db.query(Tenant).filter(Tenant.id == tenant_id).first()
             if not tenant:
                 return {"error": "Tenant not found"}
-            
+
             # Get subscription (if exists)
-            from agent_factory.database.models import Subscription, Plan
-            
-            subscription = db.query(Subscription).filter(
-                Subscription.tenant_id == tenant_id,
-                Subscription.status == "active",
-            ).first()
-            
+            from agent_factory.database.models import Plan, Subscription
+
+            subscription = (
+                db.query(Subscription)
+                .filter(
+                    Subscription.tenant_id == tenant_id,
+                    Subscription.status == "active",
+                )
+                .first()
+            )
+
             plan_info = None
             if subscription:
                 plan = db.query(Plan).filter(Plan.id == subscription.plan_id).first()
@@ -204,7 +207,7 @@ class UsageTracker:
                         "current_period_start": subscription.current_period_start.isoformat(),
                         "current_period_end": subscription.current_period_end.isoformat(),
                     }
-            
+
             # Get usage for current period
             if subscription:
                 usage = self.get_usage_summary(
@@ -214,7 +217,7 @@ class UsageTracker:
                 )
             else:
                 usage = self.get_usage_summary(tenant_id=tenant_id)
-            
+
             return {
                 "tenant_id": tenant_id,
                 "plan": plan_info or {"plan_type": tenant.plan or "free"},
@@ -225,13 +228,13 @@ class UsageTracker:
 
 
 # Global usage tracker instance
-_usage_tracker: Optional[UsageTracker] = None
+_usage_tracker: UsageTracker | None = None
 
 
 def get_usage_tracker() -> UsageTracker:
     """
     Get global usage tracker instance.
-    
+
     Returns:
         Usage tracker
     """

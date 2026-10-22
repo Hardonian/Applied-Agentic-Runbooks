@@ -2,10 +2,22 @@
 Main CLI entry point for Agent Factory Platform.
 """
 
-import typer
-from typing import Optional
+# ruff: noqa: E402 — routers are imported after app creation by design
 
-from agent_factory.cli.commands import agent, tool, workflow, blueprint, registry, marketplace, doctor, config, docs
+
+import typer
+
+from agent_factory.cli.commands import (
+    agent,
+    blueprint,
+    config,
+    docs,
+    doctor,
+    marketplace,
+    registry,
+    tool,
+    workflow,
+)
 
 app = typer.Typer(
     name="agent-factory",
@@ -26,10 +38,12 @@ app.add_typer(docs.app, name="docs")
 
 # Add execution commands
 from agent_factory.cli.commands.execution import app as execution_app
+
 app.add_typer(execution_app, name="execution")
 
 # Add new command groups
-from agent_factory.cli.commands import notebook, promptlog, eval, ui, saas, metrics, export
+from agent_factory.cli.commands import eval, export, metrics, notebook, promptlog, saas, ui
+
 app.add_typer(notebook.app, name="notebook")
 app.add_typer(promptlog.app, name="promptlog")
 app.add_typer(eval.app, name="eval")
@@ -43,27 +57,27 @@ app.add_typer(export.app, name="export")
 def version():
     """Show version information."""
     from agent_factory import __version__
+
     typer.echo(f"Agent Factory Platform v{__version__}")
 
 
 @app.command()
 def init(
     project_name: str = typer.Option("my_agent_project", "--name", "-n", help="Project name"),
-    path: Optional[str] = typer.Option(None, "--path", "-p", help="Project path"),
+    path: str | None = typer.Option(None, "--path", "-p", help="Project path"),
 ):
     """Initialize a new Agent Factory project."""
-    import os
     from pathlib import Path
-    
+
     project_path = Path(path) if path else Path(project_name)
     project_path.mkdir(parents=True, exist_ok=True)
-    
+
     # Create directory structure
     (project_path / "agents").mkdir(exist_ok=True)
     (project_path / "tools").mkdir(exist_ok=True)
     (project_path / "workflows").mkdir(exist_ok=True)
     (project_path / "blueprints").mkdir(exist_ok=True)
-    
+
     # Create .env.example
     env_example = """# Agent Factory Configuration
 OPENAI_API_KEY=
@@ -73,7 +87,7 @@ ANTHROPIC_API_KEY=
 ENVIRONMENT=development
 """
     (project_path / ".env.example").write_text(env_example)
-    
+
     # Create README
     readme = f"""# {project_name}
 
@@ -86,7 +100,7 @@ Agent Factory project.
 3. Run agents: `agent-factory agent run <agent-id>`
 """
     (project_path / "README.md").write_text(readme)
-    
+
     typer.echo(f"✅ Project initialized at {project_path.absolute()}")
 
 
@@ -100,6 +114,7 @@ def serve(
     Launch Agent Factory API and Visual Studio web dashboard.
     """
     import uvicorn
+
     typer.echo(f"🚀 Starting Agent Factory Studio at http://{host}:{port}")
     uvicorn.run("agent_factory.api.main:app", host=host, port=port, reload=reload)
 
@@ -113,13 +128,17 @@ def chat(
     Start interactive terminal chat session with an agent.
     """
     from agent_factory.agents.agent import Agent
-    from agent_factory.integrations.universal_client import UniversalLLMClient
-    
+
     typer.echo(f"💬 Agent Factory Interactive Chat Session [{agent_id}] (Model: {model})")
     typer.echo("Type 'exit' or 'quit' to terminate.\n" + "=" * 50)
-    
-    agent = Agent(id=agent_id, name=agent_id, instructions=f"You are {agent_id}, a helpful assistant.", model=model)
-    
+
+    agent = Agent(
+        id=agent_id,
+        name=agent_id,
+        instructions=f"You are {agent_id}, a helpful assistant.",
+        model=model,
+    )
+
     while True:
         try:
             user_input = input("\n👤 You: ")
@@ -128,7 +147,7 @@ def chat(
                 break
             if not user_input.strip():
                 continue
-                
+
             res = agent.run(user_input)
             if res.reasoning_content:
                 typer.echo(f"\n🧠 Thinking:\n{res.reasoning_content}")
@@ -147,10 +166,10 @@ def audit(
     """
     from agent_factory.agents.agent import Agent
     from agent_factory.security.owasp_scanner import OWASPSecurityScanner
-    
+
     agent = Agent(id=agent_id, name=agent_id, instructions="Autonomous agent instance.")
     report = OWASPSecurityScanner.audit_agent(agent)
-    
+
     typer.echo(f"\n🛡️  OWASP Top 10 Security Audit Report for Agent: [{agent_id}]")
     typer.echo(f"Score: {report.score}/100 | Status: {report.overall_status}")
     typer.echo("-" * 60)
@@ -161,19 +180,20 @@ def audit(
 @app.command()
 def pack(
     blueprint_dir: str = typer.Argument(..., help="Path to blueprint directory"),
-    output: Optional[str] = typer.Option(None, "--output", "-o", help="Output .afpkg path"),
+    output: str | None = typer.Option(None, "--output", "-o", help="Output .afpkg path"),
 ):
     """
     Pack a blueprint into a cryptographically signed .afpkg archive.
     """
     from pathlib import Path
+
     from agent_factory.marketplace.packager import BlueprintPackager, PackageManifest
-    
+
     src = Path(blueprint_dir)
     if not src.exists():
         typer.echo(f"❌ Directory not found: {src}", err=True)
         raise typer.Exit(1)
-        
+
     out = Path(output) if output else src.with_suffix(".afpkg")
     manifest = PackageManifest(
         id=src.name,
@@ -182,7 +202,7 @@ def pack(
         author="Agent Factory Creator",
         description=f"Packaged blueprint from {src.name}",
     )
-    
+
     out_path, checksum = BlueprintPackager.pack_directory(src, out, manifest)
     typer.echo(f"📦 Successfully packaged [{src.name}] into {out_path}")
     typer.echo(f"🔑 SHA-256 Checksum: {checksum}")

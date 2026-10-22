@@ -9,11 +9,12 @@ Provides unified streaming abstractions with:
 - WebSocket event frame serialization
 """
 
-import json
 import asyncio
-from typing import AsyncIterator, Dict, Any, Optional, List, Callable
+import json
+from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 from enum import Enum
+from typing import Any
 
 
 class StreamEventType(str, Enum):
@@ -30,23 +31,30 @@ class StreamEventType(str, Enum):
 @dataclass
 class AgentStreamEvent:
     """Standardized event emitted during agent streaming execution."""
+
     event: StreamEventType
     data: Any
-    agent_id: Optional[str] = None
-    step_id: Optional[str] = None
-    timestamp: float = field(default_factory=lambda: asyncio.get_event_loop().time() if asyncio.get_event_loop().is_running() else 0.0)
+    agent_id: str | None = None
+    step_id: str | None = None
+    timestamp: float = field(
+        default_factory=lambda: (
+            asyncio.get_event_loop().time() if asyncio.get_event_loop().is_running() else 0.0
+        )
+    )
 
     def to_sse(self) -> str:
         """Format as Server-Sent Event (SSE) message."""
-        payload = json.dumps({
-            "type": self.event.value,
-            "data": self.data,
-            "agent_id": self.agent_id,
-            "step_id": self.step_id,
-        })
+        payload = json.dumps(
+            {
+                "type": self.event.value,
+                "data": self.data,
+                "agent_id": self.agent_id,
+                "step_id": self.step_id,
+            }
+        )
         return f"event: {self.event.value}\ndata: {payload}\n\n"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert event to dictionary for WebSocket frames."""
         return {
             "type": self.event.value,
@@ -68,10 +76,10 @@ class StreamingAgentRuntime:
     async def stream_tokens(
         self,
         full_text: str,
-        reasoning: Optional[str] = None,
+        reasoning: str | None = None,
         chunk_size: int = 4,
         delay_seconds: float = 0.01,
-        agent_id: Optional[str] = None,
+        agent_id: str | None = None,
     ) -> AsyncIterator[AgentStreamEvent]:
         """
         Simulate or relay token streaming with reasoning extraction.
@@ -79,7 +87,7 @@ class StreamingAgentRuntime:
         # First stream reasoning tokens if present
         if reasoning:
             for i in range(0, len(reasoning), chunk_size * 2):
-                chunk = reasoning[i:i + (chunk_size * 2)]
+                chunk = reasoning[i : i + (chunk_size * 2)]
                 yield AgentStreamEvent(
                     event=StreamEventType.REASONING,
                     data={"reasoning_delta": chunk},
@@ -90,7 +98,7 @@ class StreamingAgentRuntime:
 
         # Stream content tokens
         for i in range(0, len(full_text), chunk_size):
-            chunk = full_text[i:i + chunk_size]
+            chunk = full_text[i : i + chunk_size]
             yield AgentStreamEvent(
                 event=StreamEventType.TOKEN,
                 data={"delta": chunk},

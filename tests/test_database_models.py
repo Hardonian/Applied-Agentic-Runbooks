@@ -1,15 +1,25 @@
 """Tests for database models."""
 
 import pytest
-from datetime import datetime
+
 from agent_factory.database.models import (
-    User,
-    Tenant,
     Agent as AgentModel,
-    Workflow as WorkflowModel,
-    Blueprint as BlueprintModel,
-    Execution as ExecutionModel,
+)
+from agent_factory.database.models import (
     AuditLog as AuditLogModel,
+)
+from agent_factory.database.models import (
+    Blueprint as BlueprintModel,
+)
+from agent_factory.database.models import (
+    Execution as ExecutionModel,
+)
+from agent_factory.database.models import (
+    Tenant,
+    User,
+)
+from agent_factory.database.models import (
+    Workflow as WorkflowModel,
 )
 
 
@@ -21,11 +31,12 @@ def test_user_model():
         email="test@example.com",
         hashed_password="hashed",
     )
-    
+
     assert user.id == "user-1"
     assert user.email == "test@example.com"
-    assert user.is_active is True
-    assert user.is_superuser is False
+    # Column defaults apply at INSERT, not construction — assert the schema.
+    assert User.__table__.c.is_active.default.arg is True
+    assert User.__table__.c.is_superuser.default.arg is False
 
 
 @pytest.mark.unit
@@ -36,12 +47,14 @@ def test_tenant_model():
         name="Test Tenant",
         slug="test-tenant",
     )
-    
+
     assert tenant.id == "tenant-1"
     assert tenant.name == "Test Tenant"
     assert tenant.slug == "test-tenant"
-    assert tenant.plan == "free"
-    assert tenant.is_active is True
+    # SQLAlchemy column defaults apply at INSERT, not construction —
+    # assert the schema contract instead.
+    assert Tenant.__table__.c.plan.default.arg == "free"
+    assert Tenant.__table__.c.is_active.default.arg is True
 
 
 @pytest.mark.unit
@@ -52,11 +65,12 @@ def test_agent_model():
         name="Test Agent",
         instructions="Test instructions",
     )
-    
+
     assert agent.id == "agent-1"
     assert agent.name == "Test Agent"
     assert agent.instructions == "Test instructions"
-    assert agent.model == "gpt-4o"
+    # schema-level default (applies at INSERT)
+    assert AgentModel.__table__.c.model.default.arg == "gpt-4o"
 
 
 @pytest.mark.unit
@@ -67,7 +81,7 @@ def test_workflow_model():
         name="Test Workflow",
         definition={"steps": []},
     )
-    
+
     assert workflow.id == "workflow-1"
     assert workflow.name == "Test Workflow"
     assert isinstance(workflow.definition, dict)
@@ -83,12 +97,13 @@ def test_blueprint_model():
         description="Test description",
         definition={"agents": []},
     )
-    
+
     assert blueprint.id == "blueprint-1"
     assert blueprint.name == "Test Blueprint"
     assert blueprint.version == "1.0.0"
-    assert blueprint.pricing_model == "free"
-    assert blueprint.price == 0.0
+    # schema-level defaults (apply at INSERT)
+    assert BlueprintModel.__table__.c.pricing_model.default.arg == "free"
+    assert BlueprintModel.__table__.c.price.default.arg == 0.0
 
 
 @pytest.mark.unit
@@ -100,7 +115,7 @@ def test_execution_model():
         resource_id="agent-1",
         status="pending",
     )
-    
+
     assert execution.id == "exec-1"
     assert execution.execution_type == "agent"
     assert execution.resource_id == "agent-1"
@@ -115,7 +130,7 @@ def test_audit_log_model():
         action="create",
         success=True,
     )
-    
+
     assert audit_log.event_type == "test_event"
     assert audit_log.action == "create"
     assert audit_log.success is True

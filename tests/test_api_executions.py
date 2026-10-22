@@ -1,9 +1,10 @@
 """Tests for execution API routes."""
 
+from datetime import datetime
+from unittest.mock import patch
+
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import Mock, patch
-from datetime import datetime
 
 from agent_factory.api.main import app
 from agent_factory.runtime.engine import Execution
@@ -14,7 +15,7 @@ client = TestClient(app)
 @pytest.mark.unit
 def test_get_execution_not_found():
     """Test getting non-existent execution."""
-    with patch('agent_factory.api.routes.executions.runtime') as mock_runtime:
+    with patch("agent_factory.api.routes.executions.runtime") as mock_runtime:
         mock_runtime.get_execution.return_value = None
         response = client.get("/api/v1/executions/nonexistent")
         assert response.status_code == 404
@@ -32,10 +33,10 @@ def test_get_execution():
         completed_at=datetime.now(),
         result="success",
         error=None,
-        metadata={}
+        metadata={},
     )
-    
-    with patch('agent_factory.api.routes.executions.runtime') as mock_runtime:
+
+    with patch("agent_factory.api.routes.executions.runtime") as mock_runtime:
         mock_runtime.get_execution.return_value = mock_execution
         response = client.get("/api/v1/executions/test-execution")
         assert response.status_code == 200
@@ -55,10 +56,10 @@ def test_get_execution_logs():
         completed_at=datetime.now(),
         result=None,
         error="Test error",
-        metadata={}
+        metadata={},
     )
-    
-    with patch('agent_factory.api.routes.executions.runtime') as mock_runtime:
+
+    with patch("agent_factory.api.routes.executions.runtime") as mock_runtime:
         mock_runtime.get_execution.return_value = mock_execution
         response = client.get("/api/v1/executions/test-execution/logs")
         assert response.status_code == 200

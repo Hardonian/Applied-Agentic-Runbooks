@@ -4,9 +4,9 @@ Notebook Pack Generator - Creates a new pack from template
 """
 import json
 import shutil
-from pathlib import Path
-from typing import Dict, Any
 import sys
+from pathlib import Path
+from typing import Any
 
 # Get library root
 LIBRARY_ROOT = Path(__file__).parent.parent
@@ -33,7 +33,7 @@ def get_pack_id() -> str:
         return "pack_0001"
 
 
-def prompt_user() -> Dict[str, Any]:
+def prompt_user() -> dict[str, Any]:
     """Prompt user for pack details."""
     print("=" * 70)
     print("📦 NOTEBOOK PACK GENERATOR")
@@ -79,7 +79,7 @@ def prompt_user() -> Dict[str, Any]:
     }
 
 
-def create_pack(metadata: Dict[str, Any]) -> Path:
+def create_pack(metadata: dict[str, Any]) -> Path:
     """Create pack from template."""
     pack_id = metadata["id"]
     pack_dir = PACKS_DIR / pack_id
@@ -136,9 +136,9 @@ def create_pack(metadata: Dict[str, Any]) -> Path:
     changelog_content = changelog_content.replace("YYYY-MM-DD", "2025-01-XX")
     changelog_path.write_text(changelog_content)
     
-    print(f"✅ Pack created successfully!")
+    print("✅ Pack created successfully!")
     print(f"\n📂 Location: {pack_dir}")
-    print(f"\n📝 Next steps:")
+    print("\n📝 Next steps:")
     print(f"   1. Edit {pack_dir / 'main.ipynb'} with your notebook content")
     print(f"   2. Update {pack_dir / 'pack.json'} with inputs/outputs")
     print(f"   3. Add sample data to {pack_dir / 'data'}/")

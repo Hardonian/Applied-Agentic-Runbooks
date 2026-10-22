@@ -9,7 +9,7 @@ This example shows:
 5. Running the workflow
 """
 
-from agent_factory import Agent, function_tool, Workflow, WorkflowStep
+from agent_factory import Agent, Workflow, WorkflowStep, function_tool
 
 
 # Step 1: Create a minimal tool

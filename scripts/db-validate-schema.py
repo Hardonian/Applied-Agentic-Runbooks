@@ -24,8 +24,6 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from sqlalchemy import create_engine, inspect, text
-from agent_factory.database.models import Base
-
 
 # Expected core tables
 CORE_TABLES = [
@@ -90,7 +88,7 @@ def validate_schema():
         print("Set DATABASE_URL environment variable or POSTGRES_* variables")
         return False
     
-    print(f"Connecting to database...")
+    print("Connecting to database...")
     print(f"URL: {db_url.split('@')[1] if '@' in db_url else '***'}")
     print()
     

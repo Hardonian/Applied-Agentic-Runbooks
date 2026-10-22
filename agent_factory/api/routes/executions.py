@@ -1,32 +1,29 @@
 """Execution API routes."""
 
-from fastapi import APIRouter, HTTPException, Depends
-from typing import List, Optional, Dict, Any
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException
 
 from agent_factory.runtime.engine import RuntimeEngine
 from agent_factory.security.auth import get_current_user
-from agent_factory.security.rbac import require_permission, Permission
+from agent_factory.security.rbac import Permission, require_permission
 
 router = APIRouter()
 runtime = RuntimeEngine()
 
 
-@router.get("/", response_model=List[Dict[str, Any]])
+@router.get("/", response_model=list[dict[str, Any]])
 def list_executions(
-    entity_id: Optional[str] = None,
-    status: Optional[str] = None,
+    entity_id: str | None = None,
+    status: str | None = None,
     limit: int = 100,
-    user=Depends(get_current_user)
+    user=Depends(get_current_user),
 ):
     """List executions with optional filters."""
     require_permission(Permission.READ_AGENTS)(lambda: None)()
-    
-    executions = runtime.list_executions(
-        entity_id=entity_id,
-        status=status,
-        limit=limit
-    )
-    
+
+    executions = runtime.list_executions(entity_id=entity_id, status=status, limit=limit)
+
     return [
         {
             "id": ex.id,
@@ -42,14 +39,14 @@ def list_executions(
     ]
 
 
-@router.get("/{execution_id}", response_model=Dict[str, Any])
+@router.get("/{execution_id}", response_model=dict[str, Any])
 def get_execution(execution_id: str):
     """Get execution by ID."""
     execution = runtime.get_execution(execution_id)
-    
+
     if not execution:
         raise HTTPException(status_code=404, detail="Execution not found")
-    
+
     return {
         "id": execution.id,
         "type": execution.type,
@@ -63,56 +60,64 @@ def get_execution(execution_id: str):
     }
 
 
-@router.get("/{execution_id}/logs", response_model=Dict[str, Any])
+@router.get("/{execution_id}/logs", response_model=dict[str, Any])
 def get_execution_logs(execution_id: str):
     """Get execution logs."""
     execution = runtime.get_execution(execution_id)
-    
+
     if not execution:
         raise HTTPException(status_code=404, detail="Execution not found")
-    
+
     # In production, logs would be stored separately
     # For now, return execution metadata as logs
     logs = []
     if execution.metadata and "logs" in execution.metadata:
         logs = execution.metadata["logs"]
     elif execution.error:
-        logs = [{"level": "error", "message": execution.error, "timestamp": execution.completed_at.isoformat() if execution.completed_at else execution.created_at.isoformat()}]
-    
+        logs = [
+            {
+                "level": "error",
+                "message": execution.error,
+                "timestamp": (
+                    execution.completed_at.isoformat()
+                    if execution.completed_at
+                    else execution.created_at.isoformat()
+                ),
+            }
+        ]
+
     return {
         "execution_id": execution_id,
         "logs": logs,
     }
 
 
-@router.post("/{execution_id}/retry", response_model=Dict[str, Any])
-async def retry_execution(
-    execution_id: str,
-    user=Depends(get_current_user)
-):
+@router.post("/{execution_id}/retry", response_model=dict[str, Any])
+async def retry_execution(execution_id: str, user=Depends(get_current_user)):
     """Retry a failed execution."""
     require_permission(Permission.WRITE_AGENTS)(lambda: None)()
-    
+
     execution = runtime.get_execution(execution_id)
     if not execution:
         raise HTTPException(status_code=404, detail="Execution not found")
-    
+
     if execution.status != "error":
         raise HTTPException(status_code=400, detail="Can only retry failed executions")
-    
+
     # Retry execution based on type
     if execution.type == "agent":
         # Get agent and retry
         from agent_factory.registry.local_registry import LocalRegistry
+
         reg = LocalRegistry()
         agent = reg.get_agent(execution.entity_id)
         if not agent:
             raise HTTPException(status_code=404, detail="Agent not found")
-        
+
         # Get original input from metadata
         original_input = execution.metadata.get("input_text", "") if execution.metadata else ""
         session_id = execution.metadata.get("session_id") if execution.metadata else None
-        
+
         new_execution_id = runtime.run_agent(
             execution.entity_id,
             original_input,
@@ -121,43 +126,42 @@ async def retry_execution(
     elif execution.type == "workflow":
         # Get workflow and retry
         from agent_factory.registry.local_registry import LocalRegistry
+
         reg = LocalRegistry()
         workflow = reg.get_workflow(execution.entity_id)
         if not workflow:
             raise HTTPException(status_code=404, detail="Workflow not found")
-        
+
         # Get original context from metadata
         original_context = execution.metadata.get("context", {}) if execution.metadata else {}
-        
+
         new_execution_id = runtime.run_workflow(
             execution.entity_id,
             original_context,
         )
     else:
         raise HTTPException(status_code=400, detail="Unknown execution type")
-    
+
     return {"execution_id": new_execution_id, "status": "retrying"}
 
 
 @router.delete("/{execution_id}")
-async def cancel_execution(
-    execution_id: str,
-    user=Depends(get_current_user)
-):
+async def cancel_execution(execution_id: str, user=Depends(get_current_user)):
     """Cancel a running execution."""
     require_permission(Permission.WRITE_AGENTS)(lambda: None)()
-    
+
     execution = runtime.get_execution(execution_id)
     if not execution:
         raise HTTPException(status_code=404, detail="Execution not found")
-    
+
     if execution.status not in ["running", "pending"]:
         raise HTTPException(status_code=400, detail="Can only cancel running or pending executions")
-    
+
     # Update execution status
     execution.status = "cancelled"
     from datetime import datetime
+
     execution.completed_at = datetime.now()
     execution.error = "Cancelled by user"
-    
+
     return {"execution_id": execution_id, "status": "cancelled"}

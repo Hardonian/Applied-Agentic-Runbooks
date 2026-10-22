@@ -1,7 +1,6 @@
 """Execution CLI commands."""
 
 import typer
-from typing import Optional
 
 from agent_factory.runtime.engine import RuntimeEngine
 
@@ -13,11 +12,11 @@ def get(execution_id: str = typer.Argument(..., help="Execution ID")):
     """Get execution details."""
     runtime = RuntimeEngine()
     execution = runtime.get_execution(execution_id)
-    
+
     if not execution:
         typer.echo(f"❌ Execution not found: {execution_id}")
         raise typer.Exit(1)
-    
+
     typer.echo(f"Execution: {execution_id}")
     typer.echo(f"  Type: {execution.type}")
     typer.echo(f"  Entity ID: {execution.entity_id}")
@@ -31,22 +30,18 @@ def get(execution_id: str = typer.Argument(..., help="Execution ID")):
 
 @app.command()
 def list(
-    entity_id: Optional[str] = typer.Option(None, "--entity", "-e", help="Filter by entity ID"),
-    status: Optional[str] = typer.Option(None, "--status", "-s", help="Filter by status"),
+    entity_id: str | None = typer.Option(None, "--entity", "-e", help="Filter by entity ID"),
+    status: str | None = typer.Option(None, "--status", "-s", help="Filter by status"),
     limit: int = typer.Option(10, "--limit", "-l", help="Results limit"),
 ):
     """List executions."""
     runtime = RuntimeEngine()
-    executions = runtime.list_executions(
-        entity_id=entity_id,
-        status=status,
-        limit=limit
-    )
-    
+    executions = runtime.list_executions(entity_id=entity_id, status=status, limit=limit)
+
     if not executions:
         typer.echo("No executions found.")
         return
-    
+
     typer.echo(f"Executions ({len(executions)}):")
     for ex in executions:
         status_icon = "✅" if ex.status == "completed" else "❌" if ex.status == "error" else "⏳"

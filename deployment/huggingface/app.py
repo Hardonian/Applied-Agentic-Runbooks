@@ -4,10 +4,12 @@ HuggingFace Spaces deployment for Agent Factory.
 This file should be placed in the root of your HuggingFace Space.
 """
 
+
 import gradio as gr
+
 from agent_factory.agents.agent import Agent
 from agent_factory.tools.decorator import function_tool
-import os
+
 
 # Create a simple agent
 @function_tool

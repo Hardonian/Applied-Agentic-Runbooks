@@ -1,8 +1,9 @@
 """Tests for Anthropic client integration."""
 
-import pytest
-from unittest.mock import Mock, patch
 import os
+from unittest.mock import Mock, patch
+
+import pytest
 
 from agent_factory.integrations.anthropic_client import AnthropicAgentClient
 
@@ -28,18 +29,13 @@ def test_anthropic_client_run_agent():
     """Test running agent with Anthropic client."""
     with patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-key"}):
         client = AnthropicAgentClient()
-        
+
         mock_response = Mock()
-        mock_response.content = [
-            Mock(type="text", text="Test response")
-        ]
+        mock_response.content = [Mock(type="text", text="Test response")]
         mock_response.usage = Mock(input_tokens=10, output_tokens=20)
-        
-        with patch.object(client.client.messages, 'create', return_value=mock_response):
-            result = client.run_agent(
-                instructions="You are a test agent",
-                input_text="Hello"
-            )
-            
+
+        with patch.object(client.client.messages, "create", return_value=mock_response):
+            result = client.run_agent(instructions="You are a test agent", input_text="Hello")
+
             assert result["output"] == "Test response"
             assert result["tokens_used"] == 30

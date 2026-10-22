@@ -8,19 +8,19 @@ Provides:
 - License key validation and creator revenue share metadata
 """
 
-import os
-import json
-import zipfile
 import hashlib
+import json
+import os
 import time
-from pathlib import Path
-from typing import Dict, Any, Optional, Tuple, List
+import zipfile
 from dataclasses import dataclass, field
+from pathlib import Path
 
 
 @dataclass
 class PackageManifest:
     """Metadata manifest for an Agent Factory package."""
+
     id: str
     name: str
     version: str
@@ -28,9 +28,9 @@ class PackageManifest:
     description: str
     license: str = "MIT"
     category: str = "general"
-    dependencies: List[str] = field(default_factory=list)
-    tags: List[str] = field(default_factory=list)
-    sha256_checksum: Optional[str] = None
+    dependencies: list[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
+    sha256_checksum: str | None = None
     created_at: float = field(default_factory=time.time)
 
 
@@ -40,7 +40,9 @@ class BlueprintPackager:
     """
 
     @staticmethod
-    def pack_directory(source_dir: Path, output_file: Path, manifest: PackageManifest) -> Tuple[Path, str]:
+    def pack_directory(
+        source_dir: Path, output_file: Path, manifest: PackageManifest
+    ) -> tuple[Path, str]:
         """
         Pack blueprint directory into a signed `.afpkg` archive.
         """
@@ -92,7 +94,7 @@ class BlueprintPackager:
         return output_file, checksum
 
     @staticmethod
-    def unpack_and_verify(package_path: Path, extract_to: Path) -> Tuple[bool, PackageManifest]:
+    def unpack_and_verify(package_path: Path, extract_to: Path) -> tuple[bool, PackageManifest]:
         """
         Unpack and verify the integrity of an `.afpkg` bundle.
         """
@@ -107,7 +109,7 @@ class BlueprintPackager:
         if not manifest_file.exists():
             raise ValueError("Invalid package: missing manifest.json")
 
-        with open(manifest_file, "r") as f:
+        with open(manifest_file) as f:
             data = json.load(f)
 
         manifest = PackageManifest(

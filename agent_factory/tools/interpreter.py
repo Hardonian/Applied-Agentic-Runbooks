@@ -8,27 +8,40 @@ Provides:
 - Stdout/stderr capture and return value serialization
 """
 
-import io
-import sys
 import ast
-import math
-import json
-import re
 import datetime
+import io
+import json
+import math
+import re
 import statistics
-import traceback
-from typing import Dict, Any, Optional
-from dataclasses import dataclass
+import sys
+from typing import Any
 
 from agent_factory.tools.base import Tool, ToolResult
 
-
 # Forbidden AST node types and names
 FORBIDDEN_NAMES = {
-    "eval", "exec", "compile", "__import__", "open", "file",
-    "input", "raw_input", "reload", "globals", "locals", "vars",
-    "subprocess", "shutil", "socket", "requests", "urllib", "os"
+    "eval",
+    "exec",
+    "compile",
+    "__import__",
+    "open",
+    "file",
+    "input",
+    "raw_input",
+    "reload",
+    "globals",
+    "locals",
+    "vars",
+    "subprocess",
+    "shutil",
+    "socket",
+    "requests",
+    "urllib",
+    "os",
 }
+
 
 def _safe_import(name, globals=None, locals=None, fromlist=(), level=0):
     if name in {"math", "json", "re", "datetime", "statistics"}:
@@ -36,7 +49,7 @@ def _safe_import(name, globals=None, locals=None, fromlist=(), level=0):
     raise ImportError(f"Import of module '{name}' is forbidden in sandbox.")
 
 
-SAFE_GLOBALS: Dict[str, Any] = {
+SAFE_GLOBALS: dict[str, Any] = {
     "__builtins__": {
         "__import__": _safe_import,
         "abs": abs,
@@ -121,7 +134,7 @@ class SandboxedPythonInterpreter:
     def __init__(self, timeout_seconds: float = 5.0):
         self.timeout_seconds = timeout_seconds
 
-    def execute(self, code: str) -> Dict[str, Any]:
+    def execute(self, code: str) -> dict[str, Any]:
         """
         Execute code safely and capture output and return variables.
         """
@@ -149,7 +162,7 @@ class SandboxedPythonInterpreter:
         stderr_capture = io.StringIO()
         old_stdout, old_stderr = sys.stdout, sys.stderr
 
-        local_scope: Dict[str, Any] = {}
+        local_scope: dict[str, Any] = {}
         global_scope = SAFE_GLOBALS.copy()
 
         try:
@@ -160,7 +173,11 @@ class SandboxedPythonInterpreter:
             if tree.body and isinstance(tree.body[-1], ast.Expr):
                 last_expr = tree.body.pop()
                 exec(compile(tree, "<sandbox>", "exec"), global_scope, local_scope)
-                eval_val = eval(compile(ast.Expression(last_expr.value), "<sandbox>", "eval"), global_scope, local_scope)
+                eval_val = eval(
+                    compile(ast.Expression(last_expr.value), "<sandbox>", "eval"),
+                    global_scope,
+                    local_scope,
+                )
                 if eval_val is not None:
                     print(eval_val)
             else:
@@ -204,12 +221,9 @@ def create_code_interpreter_tool() -> Tool:
         parameters={
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "string",
-                    "description": "Python code to execute safely"
-                }
+                "code": {"type": "string", "description": "Python code to execute safely"}
             },
-            "required": ["code"]
+            "required": ["code"],
         },
         func=run_code,
     )

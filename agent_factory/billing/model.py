@@ -4,21 +4,22 @@ Billing data models.
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, Optional, Any
+from typing import Any
 
 
 @dataclass
 class Plan:
     """Billing plan."""
+
     id: str
     name: str
     plan_type: str  # free, pro, enterprise
     price_monthly: float = 0.0
     price_yearly: float = 0.0
     currency: str = "USD"
-    features: Dict[str, Any] = None
-    limits: Dict[str, Any] = None
-    
+    features: dict[str, Any] = None
+    limits: dict[str, Any] = None
+
     def __post_init__(self):
         if self.features is None:
             self.features = {}
@@ -29,6 +30,7 @@ class Plan:
 @dataclass
 class Subscription:
     """Subscription to a plan."""
+
     id: str
     tenant_id: str
     plan_id: str
@@ -36,9 +38,9 @@ class Subscription:
     billing_cycle: str = "monthly"  # monthly, yearly
     current_period_start: datetime = None
     current_period_end: datetime = None
-    stripe_subscription_id: Optional[str] = None
-    stripe_customer_id: Optional[str] = None
-    
+    stripe_subscription_id: str | None = None
+    stripe_customer_id: str | None = None
+
     def __post_init__(self):
         if self.current_period_start is None:
             self.current_period_start = datetime.utcnow()
@@ -49,6 +51,7 @@ class Subscription:
 @dataclass
 class UsageRecord:
     """Usage record for billing."""
+
     id: str
     tenant_id: str
     billing_unit: str  # agent_run, workflow_run, token, etc.
@@ -58,7 +61,7 @@ class UsageRecord:
     currency: str = "USD"
     period_start: datetime = None
     period_end: datetime = None
-    
+
     def __post_init__(self):
         if self.period_start is None:
             self.period_start = datetime.utcnow()

@@ -3,14 +3,14 @@ Workflow model, execution, and visualization.
 """
 
 from agent_factory.workflows.model import (
-    Workflow,
-    WorkflowStep,
-    WorkflowResult,
+    Condition,
     Trigger,
     TriggerType,
-    Condition,
+    Workflow,
+    WorkflowResult,
+    WorkflowStep,
 )
-from agent_factory.workflows.visualizer import to_mermaid, to_graphviz, visualize
+from agent_factory.workflows.visualizer import to_graphviz, to_mermaid, visualize
 
 __all__ = [
     "Workflow",

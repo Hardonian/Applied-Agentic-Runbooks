@@ -1,7 +1,6 @@
 """Agent CLI commands."""
 
 import typer
-from typing import Optional
 
 from agent_factory.agents.agent import Agent
 from agent_factory.registry.local_registry import LocalRegistry
@@ -23,10 +22,10 @@ def create(
         instructions=instructions,
         model=model,
     )
-    
+
     registry = LocalRegistry()
     registry.register_agent(agent)
-    
+
     typer.echo(f"✅ Created agent: {agent_id}")
 
 
@@ -35,11 +34,11 @@ def list():
     """List all agents."""
     registry = LocalRegistry()
     agents = registry.list_agents()
-    
+
     if not agents:
         typer.echo("No agents found.")
         return
-    
+
     typer.echo("Agents:")
     for agent_id in agents:
         agent = registry.get_agent(agent_id)
@@ -51,22 +50,22 @@ def list():
 def run(
     agent_id: str = typer.Argument(..., help="Agent ID"),
     input_text: str = typer.Option(..., "--input", "-i", help="Input text"),
-    session_id: Optional[str] = typer.Option(None, "--session", "-s", help="Session ID"),
+    session_id: str | None = typer.Option(None, "--session", "-s", help="Session ID"),
 ):
     """Run an agent."""
     registry = LocalRegistry()
     agent = registry.get_agent(agent_id)
-    
+
     if not agent:
         typer.echo(f"❌ Agent not found: {agent_id}")
         raise typer.Exit(1)
-    
+
     result = agent.run(input_text, session_id=session_id)
-    
+
     if result.status.value == "error":
         typer.echo(f"❌ Error: {result.error}")
         raise typer.Exit(1)
-    
+
     typer.echo(result.output)
 
 
@@ -76,7 +75,7 @@ def delete(
 ):
     """Delete an agent."""
     registry = LocalRegistry()
-    
+
     if registry.delete_agent(agent_id):
         typer.echo(f"✅ Deleted agent: {agent_id}")
     else:

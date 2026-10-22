@@ -16,19 +16,17 @@ Options:
     --fix: Automatically fix inconsistencies where possible
 """
 
-import os
-import sys
 import re
-from pathlib import Path
-from typing import List, Dict, Tuple
+import sys
 from collections import defaultdict
+from pathlib import Path
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 
-def check_api_docs() -> List[str]:
+def check_api_docs() -> list[str]:
     """Check if API documentation matches actual endpoints."""
     issues = []
     
@@ -44,7 +42,7 @@ def check_api_docs() -> List[str]:
             continue
         
         try:
-            with open(route_file, 'r') as f:
+            with open(route_file) as f:
                 content = f.read()
                 # Find router decorators
                 route_pattern = r'@router\.(get|post|put|delete|patch)\(["\']([^"\']+)["\']'
@@ -60,7 +58,7 @@ def check_api_docs() -> List[str]:
     api_doc = project_root / "docs" / "api.md"
     if api_doc.exists():
         try:
-            with open(api_doc, 'r') as f:
+            with open(api_doc) as f:
                 doc_content = f.read()
                 # Check if endpoints are documented
                 for route_file, endpoint_list in endpoints.items():
@@ -76,7 +74,7 @@ def check_api_docs() -> List[str]:
     return issues
 
 
-def check_env_docs() -> List[str]:
+def check_env_docs() -> list[str]:
     """Check if environment variable documentation matches .env.example."""
     issues = []
     
@@ -89,7 +87,7 @@ def check_env_docs() -> List[str]:
     
     # Read .env.example
     env_vars = set()
-    with open(env_example, 'r') as f:
+    with open(env_example) as f:
         for line in f:
             line = line.strip()
             if line and not line.startswith('#') and '=' in line:
@@ -99,7 +97,7 @@ def check_env_docs() -> List[str]:
     # Check if documented
     if env_doc.exists():
         try:
-            with open(env_doc, 'r') as f:
+            with open(env_doc) as f:
                 doc_content = f.read()
                 missing_docs = []
                 for var in env_vars:
@@ -115,7 +113,7 @@ def check_env_docs() -> List[str]:
     return issues
 
 
-def check_schema_docs() -> List[str]:
+def check_schema_docs() -> list[str]:
     """Check if schema documentation matches database models."""
     issues = []
     
@@ -129,7 +127,7 @@ def check_schema_docs() -> List[str]:
     # Read models
     tables = set()
     try:
-        with open(models_file, 'r') as f:
+        with open(models_file) as f:
             content = f.read()
             # Find table definitions
             table_pattern = r'__tablename__\s*=\s*["\']([^"\']+)["\']'
@@ -143,7 +141,7 @@ def check_schema_docs() -> List[str]:
     # Check if documented
     if schema_doc.exists():
         try:
-            with open(schema_doc, 'r') as f:
+            with open(schema_doc) as f:
                 doc_content = f.read()
                 missing_docs = []
                 for table in tables:
@@ -159,7 +157,7 @@ def check_schema_docs() -> List[str]:
     return issues
 
 
-def check_ci_docs() -> List[str]:
+def check_ci_docs() -> list[str]:
     """Check if CI/CD documentation matches workflows."""
     issues = []
     
@@ -177,7 +175,7 @@ def check_ci_docs() -> List[str]:
     # Check if documented
     if ci_doc.exists():
         try:
-            with open(ci_doc, 'r') as f:
+            with open(ci_doc) as f:
                 doc_content = f.read()
                 missing_docs = []
                 for workflow in workflows:

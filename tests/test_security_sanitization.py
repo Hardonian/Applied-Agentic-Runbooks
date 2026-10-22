@@ -29,10 +29,7 @@ def test_sanitize_input_sql():
 @pytest.mark.unit
 def test_sanitize_output_dict():
     """Test sanitizing dictionary output."""
-    data = {
-        "text": "<script>alert('xss')</script>",
-        "number": 123
-    }
+    data = {"text": "<script>alert('xss')</script>", "number": 123}
     result = sanitize_output(data)
     assert "<script>" not in result["text"]
     assert result["number"] == 123

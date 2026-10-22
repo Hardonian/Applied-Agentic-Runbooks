@@ -1,13 +1,16 @@
 """Role-based access control (RBAC) and enterprise permission management."""
 
+from collections.abc import Callable
 from enum import Enum
-from typing import List, Callable, Optional, Union, Dict, Any
 from functools import wraps
-from fastapi import HTTPException, status, Request
+from typing import Any
+
+from fastapi import HTTPException, Request, status
 
 
 class Permission(str, Enum):
     """Permission types across Agent Factory entities."""
+
     READ_AGENTS = "agents:read"
     WRITE_AGENTS = "agents:write"
     DELETE_AGENTS = "agents:delete"
@@ -26,6 +29,7 @@ class Permission(str, Enum):
 
 class Role(str, Enum):
     """System and workspace role levels."""
+
     VIEWER = "viewer"
     USER = "user"
     CREATOR = "creator"
@@ -33,7 +37,7 @@ class Role(str, Enum):
 
 
 # Role to permissions mapping
-ROLE_PERMISSIONS: Dict[Role, List[Permission]] = {
+ROLE_PERMISSIONS: dict[Role, list[Permission]] = {
     Role.VIEWER: [
         Permission.READ_AGENTS,
         Permission.READ_WORKFLOWS,
@@ -80,19 +84,19 @@ ROLE_PERMISSIONS: Dict[Role, List[Permission]] = {
 }
 
 
-def get_user_permissions(request: Request) -> List[Permission]:
+def get_user_permissions(request: Request) -> list[Permission]:
     """
     Get user permissions from request state.
-    
+
     Args:
         request: FastAPI request
-        
+
     Returns:
         List of granted permissions
     """
     user_roles = getattr(request.state, "user_roles", [Role.USER])
     permissions = []
-    
+
     for role in user_roles:
         if isinstance(role, str):
             try:
@@ -101,19 +105,23 @@ def get_user_permissions(request: Request) -> List[Permission]:
                 continue
         if role in ROLE_PERMISSIONS:
             permissions.extend(ROLE_PERMISSIONS[role])
-            
+
     return list(set(permissions))
 
 
-def check_permission(user: Union[Dict[str, Any], Any], permission: Union[Permission, str], resource_id: Optional[str] = None) -> bool:
+def check_permission(
+    user: dict[str, Any] | Any,
+    permission: Permission | str,
+    resource_id: str | None = None,
+) -> bool:
     """
     Check if user has a specific permission.
-    
+
     Args:
         user: User dict or user model object
         permission: Permission enum or string
         resource_id: Optional target resource ID
-        
+
     Returns:
         True if user has permission or is admin, else False
     """
@@ -121,8 +129,8 @@ def check_permission(user: Union[Dict[str, Any], Any], permission: Union[Permiss
         user_roles = user.get("roles", [Role.USER])
     else:
         user_roles = getattr(user, "roles", [Role.USER])
-        
-    user_perms: List[Permission] = []
+
+    user_perms: list[Permission] = []
     for role in user_roles:
         if isinstance(role, str):
             try:
@@ -131,10 +139,10 @@ def check_permission(user: Union[Dict[str, Any], Any], permission: Union[Permiss
                 continue
         if role in ROLE_PERMISSIONS:
             user_perms.extend(ROLE_PERMISSIONS[role])
-            
+
     if Permission.ADMIN in user_perms:
         return True
-        
+
     target_perm = Permission(permission) if isinstance(permission, str) else permission
     return target_perm in user_perms
 
@@ -143,6 +151,7 @@ def require_permission(permission: Permission):
     """
     Decorator for FastAPI endpoint handlers to enforce required permissions.
     """
+
     def decorator(func: Callable):
         @wraps(func)
         async def wrapper(*args, **kwargs):
@@ -153,16 +162,18 @@ def require_permission(permission: Permission):
                     break
             if request is None and "request" in kwargs:
                 request = kwargs["request"]
-                
+
             if request:
                 perms = get_user_permissions(request)
                 if Permission.ADMIN not in perms and permission not in perms:
                     raise HTTPException(
                         status_code=status.HTTP_403_FORBIDDEN,
-                        detail=f"Permission required: {permission.value}"
+                        detail=f"Permission required: {permission.value}",
                     )
             return await func(*args, **kwargs)
+
         return wrapper
+
     return decorator
 
 
@@ -170,6 +181,7 @@ def require_role(role: Role):
     """
     Decorator for FastAPI endpoint handlers to enforce required role level.
     """
+
     def decorator(func: Callable):
         @wraps(func)
         async def wrapper(*args, **kwargs):
@@ -180,14 +192,15 @@ def require_role(role: Role):
                     break
             if request is None and "request" in kwargs:
                 request = kwargs["request"]
-                
+
             if request:
                 user_roles = getattr(request.state, "user_roles", [])
                 if Role.ADMIN not in user_roles and role not in user_roles:
                     raise HTTPException(
-                        status_code=status.HTTP_403_FORBIDDEN,
-                        detail=f"Role required: {role.value}"
+                        status_code=status.HTTP_403_FORBIDDEN, detail=f"Role required: {role.value}"
                     )
             return await func(*args, **kwargs)
+
         return wrapper
+
     return decorator

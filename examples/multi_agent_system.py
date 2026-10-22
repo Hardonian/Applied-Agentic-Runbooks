@@ -4,8 +4,7 @@ Example: Multi-Agent System with Handoffs
 Refactored from Agentic_Notebook.ipynb Cell 5
 """
 
-from agent_factory import Agent, function_tool, Handoff
-
+from agent_factory import Agent, Handoff, function_tool
 
 # Create specialist agents
 data_analyst = Agent(

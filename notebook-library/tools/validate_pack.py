@@ -2,21 +2,21 @@
 """
 Pack Validator - Validates pack structure and executes notebooks
 """
+import argparse
 import json
 import subprocess
 import sys
 import tempfile
 import venv
 from pathlib import Path
-from typing import Dict, Any, List, Optional
-import argparse
+from typing import Any
 
 # Get library root
 LIBRARY_ROOT = Path(__file__).parent.parent
 PACKS_DIR = LIBRARY_ROOT / "packs"
 
 
-def validate_pack_json(pack_dir: Path) -> tuple[bool, List[str]]:
+def validate_pack_json(pack_dir: Path) -> tuple[bool, list[str]]:
     """Validate pack.json schema."""
     errors = []
     pack_json_path = pack_dir / "pack.json"
@@ -59,7 +59,7 @@ def validate_pack_json(pack_dir: Path) -> tuple[bool, List[str]]:
     return len(errors) == 0, errors
 
 
-def validate_structure(pack_dir: Path) -> tuple[bool, List[str]]:
+def validate_structure(pack_dir: Path) -> tuple[bool, list[str]]:
     """Validate pack directory structure."""
     errors = []
     
@@ -80,7 +80,7 @@ def validate_structure(pack_dir: Path) -> tuple[bool, List[str]]:
     return len(errors) == 0, errors
 
 
-def execute_notebook(pack_dir: Path, pack_json: Dict[str, Any], timeout: int = 900) -> tuple[bool, str]:
+def execute_notebook(pack_dir: Path, pack_json: dict[str, Any], timeout: int = 900) -> tuple[bool, str]:
     """Execute notebook in isolated environment."""
     entrypoint = pack_json.get("entrypoint", "main.ipynb")
     notebook_path = pack_dir / entrypoint
@@ -115,7 +115,7 @@ def execute_notebook(pack_dir: Path, pack_json: Dict[str, Any], timeout: int = 9
             install_cmd = f"{pip_exe} install -e {pack_dir}"
         
         if deps_file or (pack_dir / "pyproject.toml").exists():
-            print(f"  Installing dependencies...")
+            print("  Installing dependencies...")
             try:
                 result = subprocess.run(
                     install_cmd,
@@ -133,7 +133,7 @@ def execute_notebook(pack_dir: Path, pack_json: Dict[str, Any], timeout: int = 9
                 return False, f"Dependency installation error: {e}"
         
         # Install jupyter and nbconvert
-        print(f"  Installing jupyter and nbconvert...")
+        print("  Installing jupyter and nbconvert...")
         subprocess.run(
             [str(pip_exe), "install", "-q", "jupyter", "nbconvert", "ipykernel"],
             capture_output=True,
@@ -141,7 +141,7 @@ def execute_notebook(pack_dir: Path, pack_json: Dict[str, Any], timeout: int = 9
         )
         
         # Execute notebook
-        print(f"  Executing notebook...")
+        print("  Executing notebook...")
         run_cmd = pack_json.get("run", {}).get("command", f"jupyter nbconvert --to notebook --execute {notebook_path}")
         
         # Replace jupyter with full path
@@ -167,7 +167,7 @@ def execute_notebook(pack_dir: Path, pack_json: Dict[str, Any], timeout: int = 9
             return False, f"Notebook execution error: {e}"
 
 
-def check_outputs(pack_dir: Path, pack_json: Dict[str, Any]) -> tuple[bool, List[str]]:
+def check_outputs(pack_dir: Path, pack_json: dict[str, Any]) -> tuple[bool, list[str]]:
     """Check that expected outputs exist."""
     errors = []
     outputs = pack_json.get("outputs", [])
@@ -195,7 +195,7 @@ def validate_pack(pack_id: str, execute: bool = False) -> bool:
     # Load pack.json
     pack_json_path = pack_dir / "pack.json"
     if not pack_json_path.exists():
-        print(f"❌ pack.json not found")
+        print("❌ pack.json not found")
         return False
     
     with open(pack_json_path) as f:
@@ -213,7 +213,7 @@ def validate_pack(pack_id: str, execute: bool = False) -> bool:
     if valid:
         print("   ✅ Structure valid")
     else:
-        print(f"   ❌ Structure errors:")
+        print("   ❌ Structure errors:")
         for error in errors:
             print(f"      - {error}")
         all_valid = False
@@ -224,7 +224,7 @@ def validate_pack(pack_id: str, execute: bool = False) -> bool:
     if valid:
         print("   ✅ Schema valid")
     else:
-        print(f"   ❌ Schema errors:")
+        print("   ❌ Schema errors:")
         for error in errors:
             print(f"      - {error}")
         all_valid = False
@@ -245,7 +245,7 @@ def validate_pack(pack_id: str, execute: bool = False) -> bool:
         if valid:
             print("   ✅ All outputs present")
         else:
-            print(f"   ⚠️  Missing outputs:")
+            print("   ⚠️  Missing outputs:")
             for error in errors:
                 print(f"      - {error}")
             # Don't fail validation for missing outputs (they may be optional)

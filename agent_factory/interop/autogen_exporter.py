@@ -4,7 +4,6 @@ AutoGen / AG2 Code Exporter for Agent Factory.
 Exports Agent Factory agents into AutoGen ConversableAgent and GroupChat configurations.
 """
 
-from typing import List
 from agent_factory.agents.agent import Agent
 
 
@@ -50,7 +49,7 @@ if __name__ == "__main__":
 '''
 
     @staticmethod
-    def export_group_chat(agents: List[Agent], name: str = "AgentFactoryGroupChat") -> str:
+    def export_group_chat(agents: list[Agent], name: str = "AgentFactoryGroupChat") -> str:
         """Export multi-agent group to AutoGen GroupChat."""
         agent_inits = []
         agent_vars = []
@@ -58,12 +57,12 @@ if __name__ == "__main__":
         for a in agents:
             var_name = a.id.replace("-", "_")
             msg = a.instructions.replace('"', '\\"').replace("\n", "\\n")
-            code = f'''{var_name} = autogen.ConversableAgent(
+            code = f"""{var_name} = autogen.ConversableAgent(
     name="{a.name.replace(' ', '_')}",
     system_message="{msg}",
     llm_config=llm_config,
     human_input_mode="NEVER",
-)'''
+)"""
             agent_inits.append(code)
             agent_vars.append(var_name)
 

@@ -1,20 +1,17 @@
 """Tests for registry deserialization."""
 
-import pytest
 import json
-from pathlib import Path
-from unittest.mock import Mock, patch
+
+import pytest
 
 from agent_factory.registry.local_registry import LocalRegistry
-from agent_factory.tools.base import Tool
-from agent_factory.workflows.model import Workflow, WorkflowStep
 
 
 @pytest.mark.unit
 def test_get_tool_deserialization():
     """Test tool deserialization from registry."""
     registry = LocalRegistry()
-    
+
     # Create a test tool file
     tool_data = {
         "id": "test-tool",
@@ -24,23 +21,16 @@ def test_get_tool_deserialization():
             "type": "function",
             "parameters": {
                 "type": "object",
-                "properties": {
-                    "x": {"type": "string", "description": "Input x"}
-                },
-                "required": ["x"]
-            }
+                "properties": {"x": {"type": "string", "description": "Input x"}},
+                "required": ["x"],
+            },
         },
-        "metadata": {
-            "version": "1.0.0",
-            "author": "test",
-            "category": "test",
-            "tags": ["test"]
-        }
+        "metadata": {"version": "1.0.0", "author": "test", "category": "test", "tags": ["test"]},
     }
-    
+
     tool_file = registry.base_path / "tools" / "test-tool.json"
     tool_file.write_text(json.dumps(tool_data))
-    
+
     try:
         tool = registry.get_tool("test-tool")
         assert tool is not None
@@ -57,7 +47,7 @@ def test_get_tool_deserialization():
 def test_get_workflow_deserialization():
     """Test workflow deserialization from registry."""
     registry = LocalRegistry()
-    
+
     # Create a test workflow file
     workflow_data = {
         "id": "test-workflow",
@@ -68,27 +58,18 @@ def test_get_workflow_deserialization():
                 "agent_id": "agent1",
                 "input_mapping": {},
                 "output_mapping": {},
-                "condition": {
-                    "expression": "true",
-                    "description": "Always run"
-                },
+                "condition": {"expression": "true", "description": "Always run"},
                 "timeout": 30,
-                "retry_attempts": 3
+                "retry_attempts": 3,
             }
         ],
-        "triggers": [
-            {
-                "type": "manual",
-                "config": {},
-                "enabled": True
-            }
-        ],
-        "branching": {}
+        "triggers": [{"type": "manual", "config": {}, "enabled": True}],
+        "branching": {},
     }
-    
+
     workflow_file = registry.base_path / "workflows" / "test-workflow.json"
     workflow_file.write_text(json.dumps(workflow_data))
-    
+
     try:
         workflow = registry.get_workflow("test-workflow")
         assert workflow is not None

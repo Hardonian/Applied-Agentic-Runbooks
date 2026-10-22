@@ -1,12 +1,13 @@
 """Tests for billing system."""
 
-import pytest
-from unittest.mock import Mock, patch
 from datetime import datetime
+from unittest.mock import Mock, patch
+
+import pytest
 
 from agent_factory.billing.model import Plan, Subscription, UsageRecord
-from agent_factory.billing.usage_tracker import UsageTracker, get_usage_tracker
 from agent_factory.billing.plans import get_plan, list_plans
+from agent_factory.billing.usage_tracker import UsageTracker, get_usage_tracker
 
 
 @pytest.mark.unit
@@ -15,13 +16,14 @@ def test_plan_model():
     plan = Plan(
         id="free",
         name="Free Plan",
-        price=0.0,
+        plan_type="free",
+        price_monthly=0.0,
         currency="USD",
         features={"max_agents": 5},
     )
-    
+
     assert plan.id == "free"
-    assert plan.price == 0.0
+    assert plan.price_monthly == 0.0
     assert plan.features["max_agents"] == 5
 
 
@@ -35,7 +37,7 @@ def test_subscription_model():
         status="active",
         current_period_start=datetime.utcnow(),
     )
-    
+
     assert subscription.id == "sub-123"
     assert subscription.status == "active"
 
@@ -50,45 +52,48 @@ def test_usage_record_model():
         quantity=10.0,
         period_start=datetime.utcnow(),
     )
-    
+
     assert record.tenant_id == "tenant-1"
     assert record.quantity == 10.0
 
 
 @pytest.mark.unit
-@patch('agent_factory.billing.usage_tracker.get_collector')
+@patch("agent_factory.billing.usage_tracker.get_collector")
 def test_usage_tracker_record_agent_run(mock_get_collector):
     """Test recording an agent run."""
     mock_collector = Mock()
     mock_get_collector.return_value = mock_collector
-    
+
     tracker = UsageTracker()
     tracker.record_agent_run(
         tenant_id="tenant-1",
         tokens_used=100,
         cost_estimate=0.01,
     )
-    
-    # Should record billing usage
+
+    # Should record billing usage: first an agent_run unit, then a token unit
     assert mock_collector.record_billing_usage.called
-    call_args = mock_collector.record_billing_usage.call_args
-    assert call_args[1]["billing_unit"] == "agent_run"
-    assert call_args[1]["quantity"] == 1.0
+    first = mock_collector.record_billing_usage.call_args_list[0]
+    assert first[1]["billing_unit"] == "agent_run"
+    assert first[1]["quantity"] == 1.0
+    token = mock_collector.record_billing_usage.call_args_list[1]
+    assert token[1]["billing_unit"] == "token"
+    assert token[1]["quantity"] == 100.0
 
 
 @pytest.mark.unit
-@patch('agent_factory.billing.usage_tracker.get_collector')
+@patch("agent_factory.billing.usage_tracker.get_collector")
 def test_usage_tracker_record_workflow_run(mock_get_collector):
     """Test recording a workflow run."""
     mock_collector = Mock()
     mock_get_collector.return_value = mock_collector
-    
+
     tracker = UsageTracker()
     tracker.record_workflow_run(
         tenant_id="tenant-1",
         tokens_used=200,
     )
-    
+
     assert mock_collector.record_billing_usage.called
 
 
@@ -97,12 +102,12 @@ def test_get_usage_tracker_singleton():
     """Test get_usage_tracker returns singleton."""
     tracker1 = get_usage_tracker()
     tracker2 = get_usage_tracker()
-    
+
     assert tracker1 is tracker2
 
 
 @pytest.mark.unit
-@patch('agent_factory.billing.plans.get_db')
+@patch("agent_factory.billing.plans.get_db")
 def test_get_plan(mock_get_db):
     """Test getting a plan."""
     mock_db = Mock()
@@ -111,22 +116,22 @@ def test_get_plan(mock_get_db):
     mock_plan.name = "Free Plan"
     mock_db.query.return_value.filter.return_value.first.return_value = mock_plan
     mock_get_db.return_value = iter([mock_db])
-    
+
     plan = get_plan("free")
-    
+
     assert plan is not None
 
 
 @pytest.mark.unit
-@patch('agent_factory.billing.plans.get_db')
+@patch("agent_factory.billing.plans.get_db")
 def test_list_plans(mock_get_db):
     """Test listing plans."""
     mock_db = Mock()
     mock_plan = Mock()
     mock_plan.id = "free"
-    mock_db.query.return_value.all.return_value = [mock_plan]
+    mock_db.query.return_value.filter.return_value.all.return_value = [mock_plan]
     mock_get_db.return_value = iter([mock_db])
-    
+
     plans = list_plans()
-    
+
     assert len(plans) == 1

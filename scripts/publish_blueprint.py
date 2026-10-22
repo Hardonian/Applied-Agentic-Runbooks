@@ -6,13 +6,15 @@ Helps publish blueprints to the marketplace with versioning, hashing, and signin
 """
 
 import argparse
-import json
 import hashlib
-import yaml
-from pathlib import Path
-from typing import Dict, Any
-from datetime import datetime
+import json
 import sys
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+import yaml
+
 
 # Placeholder for signing (implement with actual signing library)
 def generate_signature(content: str, private_key: str = None) -> str:
@@ -34,9 +36,9 @@ def calculate_hash(content: str) -> str:
     return f"sha256:{hashlib.sha256(content.encode()).hexdigest()}"
 
 
-def load_blueprint(blueprint_path: Path) -> Dict[str, Any]:
+def load_blueprint(blueprint_path: Path) -> dict[str, Any]:
     """Load blueprint from YAML file."""
-    with open(blueprint_path, 'r') as f:
+    with open(blueprint_path) as f:
         return yaml.safe_load(f)
 
 
@@ -45,7 +47,7 @@ def update_blueprints_index(
     index_path: Path,
     version: str = None,
     private_key: str = None
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Update blueprints_index.json with new blueprint.
     
@@ -67,7 +69,7 @@ def update_blueprints_index(
         raise ValueError("Blueprint must have an 'id' field")
     
     # Read blueprint content for hashing
-    with open(blueprint_path, 'r') as f:
+    with open(blueprint_path) as f:
         blueprint_content = f.read()
     
     # Calculate hash
@@ -105,7 +107,7 @@ def update_blueprints_index(
     
     # Load existing index
     if index_path.exists():
-        with open(index_path, 'r') as f:
+        with open(index_path) as f:
             index = json.load(f)
     else:
         index = {
@@ -188,7 +190,7 @@ def main():
     # Load private key if provided
     private_key = None
     if args.private_key:
-        with open(args.private_key, 'r') as f:
+        with open(args.private_key) as f:
             private_key = f.read()
     
     try:
@@ -199,7 +201,7 @@ def main():
             private_key=private_key
         )
         
-        print(f"\n📦 Blueprint published:")
+        print("\n📦 Blueprint published:")
         print(f"   ID: {entry['id']}")
         print(f"   Version: {entry['version']}")
         print(f"   Hash: {entry['hash']}")

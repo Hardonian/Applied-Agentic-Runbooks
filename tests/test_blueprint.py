@@ -1,9 +1,11 @@
 """Tests for Blueprint class."""
 
-import pytest
-from pathlib import Path
 import tempfile
-from agent_factory.blueprints.model import Blueprint, BlueprintConfig
+from pathlib import Path
+
+import pytest
+
+from agent_factory.blueprints.model import Blueprint, PricingInfo, PricingModel
 
 
 @pytest.mark.unit
@@ -16,7 +18,7 @@ def test_blueprint_creation():
         description="A test blueprint",
         author="Test Author",
     )
-    
+
     assert blueprint.id == "test-blueprint"
     assert blueprint.name == "Test Blueprint"
     assert blueprint.version == "1.0.0"
@@ -31,7 +33,7 @@ def test_blueprint_pricing():
         currency="USD",
         period="monthly",
     )
-    
+
     blueprint = Blueprint(
         id="test-blueprint",
         name="Test Blueprint",
@@ -40,7 +42,7 @@ def test_blueprint_pricing():
         author="Test",
         pricing=pricing,
     )
-    
+
     assert blueprint.pricing.model == PricingModel.SUBSCRIPTION
     assert blueprint.pricing.price == 99.0
 
@@ -55,10 +57,10 @@ def test_blueprint_package():
         description="Test",
         author="Test",
     )
-    
+
     with tempfile.TemporaryDirectory() as tmpdir:
         package_path = blueprint.package(tmpdir)
-        
+
         assert Path(package_path).exists()
         assert (Path(package_path) / "blueprint.yaml").exists()
 
@@ -73,10 +75,10 @@ def test_blueprint_install():
         description="Test",
         author="Test",
     )
-    
+
     with tempfile.TemporaryDirectory() as tmpdir:
         result = blueprint.install(tmpdir)
-        
+
         assert result is True
         assert (Path(tmpdir) / "agents").exists()
         assert (Path(tmpdir) / "tools").exists()

@@ -14,16 +14,13 @@ This script verifies the product is REALITY MODE ready.
 
 import os
 import sys
-import json
 import time
-from typing import Dict, Any, Optional
 
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import httpx
-from datetime import datetime
 
+import httpx
 
 BASE_URL = os.getenv("API_URL", "http://localhost:8000")
 TEST_EMAIL = f"test_{int(time.time())}@example.com"
@@ -74,9 +71,9 @@ class ProductVerifier:
     def __init__(self, base_url: str):
         self.base_url = base_url
         self.client = httpx.Client(base_url=base_url, timeout=30.0)
-        self.token: Optional[str] = None
-        self.user_id: Optional[str] = None
-        self.tenant_id: Optional[str] = None
+        self.token: str | None = None
+        self.user_id: str | None = None
+        self.tenant_id: str | None = None
     
     def step1_signup(self) -> bool:
         """Step 1: Sign up a new user."""
@@ -167,7 +164,7 @@ class ProductVerifier:
             limit = data.get("limit")
             remaining = data.get("remaining")
             
-            print_success(f"Usage info retrieved")
+            print_success("Usage info retrieved")
             print_info(f"Plan: {plan}")
             print_info(f"Used: {used}/{limit}")
             print_info(f"Remaining: {remaining}")

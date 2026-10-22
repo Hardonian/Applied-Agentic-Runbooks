@@ -4,15 +4,17 @@ Alerting system for Agent Factory Platform.
 Supports multiple alert channels and alert rules.
 """
 
+import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Callable, Any
 from datetime import datetime
 from enum import Enum
-import logging
+from typing import Any
 
 
 class AlertSeverity(str, Enum):
     """Alert severity levels."""
+
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
@@ -22,6 +24,7 @@ class AlertSeverity(str, Enum):
 
 class AlertChannel(str, Enum):
     """Alert channels."""
+
     EMAIL = "email"
     SLACK = "slack"
     PAGERDUTY = "pagerduty"
@@ -32,24 +35,26 @@ class AlertChannel(str, Enum):
 @dataclass
 class AlertRule:
     """Alert rule definition."""
+
     id: str
     name: str
-    condition: Callable[[Dict[str, Any]], bool]
+    condition: Callable[[dict[str, Any]], bool]
     severity: AlertSeverity
-    channels: List[AlertChannel]
+    channels: list[AlertChannel]
     enabled: bool = True
     cooldown_seconds: int = 300  # Prevent spam
-    last_triggered: Optional[datetime] = None
+    last_triggered: datetime | None = None
 
 
 @dataclass
 class Alert:
     """Alert instance."""
+
     id: str
     rule_id: str
     severity: AlertSeverity
     message: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.utcnow)
     acknowledged: bool = False
     resolved: bool = False
@@ -58,7 +63,7 @@ class Alert:
 class AlertManager:
     """
     Manages alerts and alerting rules.
-    
+
     Example:
         >>> manager = AlertManager()
         >>> rule = manager.create_rule(
@@ -69,37 +74,38 @@ class AlertManager:
         ... )
         >>> manager.check_alerts({"error_rate": 0.1})
     """
-    
+
     def __init__(self):
         """Initialize alert manager."""
-        self.rules: Dict[str, AlertRule] = {}
-        self.alerts: List[Alert] = []
+        self.rules: dict[str, AlertRule] = {}
+        self.alerts: list[Alert] = []
         self.logger = logging.getLogger(__name__)
-    
+
     def create_rule(
         self,
         name: str,
-        condition: Callable[[Dict[str, Any]], bool],
+        condition: Callable[[dict[str, Any]], bool],
         severity: AlertSeverity,
-        channels: List[AlertChannel],
+        channels: list[AlertChannel],
         cooldown_seconds: int = 300,
     ) -> AlertRule:
         """
         Create an alert rule.
-        
+
         Args:
             name: Rule name
             condition: Condition function that takes metrics dict
             severity: Alert severity
             channels: List of alert channels
             cooldown_seconds: Cooldown period between alerts
-            
+
         Returns:
             Created rule
         """
         import uuid
+
         rule_id = str(uuid.uuid4())
-        
+
         rule = AlertRule(
             id=rule_id,
             name=name,
@@ -108,32 +114,32 @@ class AlertManager:
             channels=channels,
             cooldown_seconds=cooldown_seconds,
         )
-        
+
         self.rules[rule_id] = rule
         return rule
-    
-    def check_alerts(self, metrics: Dict[str, Any]) -> List[Alert]:
+
+    def check_alerts(self, metrics: dict[str, Any]) -> list[Alert]:
         """
         Check metrics against alert rules and trigger alerts.
-        
+
         Args:
             metrics: Metrics dictionary
-            
+
         Returns:
             List of triggered alerts
         """
         triggered_alerts = []
-        
+
         for rule in self.rules.values():
             if not rule.enabled:
                 continue
-            
+
             # Check cooldown
             if rule.last_triggered:
                 elapsed = (datetime.utcnow() - rule.last_triggered).total_seconds()
                 if elapsed < rule.cooldown_seconds:
                     continue
-            
+
             # Check condition
             try:
                 if rule.condition(metrics):
@@ -142,16 +148,17 @@ class AlertManager:
                     rule.last_triggered = datetime.utcnow()
             except Exception as e:
                 self.logger.error(f"Error evaluating alert rule {rule.id}: {e}")
-        
+
         return triggered_alerts
-    
-    def _trigger_alert(self, rule: AlertRule, metrics: Dict[str, Any]) -> Alert:
+
+    def _trigger_alert(self, rule: AlertRule, metrics: dict[str, Any]) -> Alert:
         """Trigger an alert."""
         import uuid
+
         alert_id = str(uuid.uuid4())
-        
+
         message = f"Alert: {rule.name} triggered"
-        
+
         alert = Alert(
             id=alert_id,
             rule_id=rule.id,
@@ -159,15 +166,15 @@ class AlertManager:
             message=message,
             metadata=metrics,
         )
-        
+
         self.alerts.append(alert)
-        
+
         # Send to channels
         for channel in rule.channels:
             self._send_alert(channel, alert)
-        
+
         return alert
-    
+
     def _send_alert(self, channel: AlertChannel, alert: Alert) -> None:
         """Send alert to a channel."""
         if channel == AlertChannel.LOG:
@@ -178,57 +185,57 @@ class AlertManager:
                 AlertSeverity.LOW: logging.WARNING,
                 AlertSeverity.INFO: logging.INFO,
             }.get(alert.severity, logging.WARNING)
-            
+
             self.logger.log(level, alert.message, extra=alert.metadata)
-        
+
         elif channel == AlertChannel.EMAIL:
             # Would integrate with email service
             self.logger.info(f"Email alert: {alert.message}")
-        
+
         elif channel == AlertChannel.SLACK:
             # Would integrate with Slack API
             self.logger.info(f"Slack alert: {alert.message}")
-        
+
         elif channel == AlertChannel.PAGERDUTY:
             # Would integrate with PagerDuty API
             self.logger.info(f"PagerDuty alert: {alert.message}")
-        
+
         elif channel == AlertChannel.WEBHOOK:
             # Would send HTTP POST to webhook URL
             self.logger.info(f"Webhook alert: {alert.message}")
-    
+
     def acknowledge_alert(self, alert_id: str) -> None:
         """Acknowledge an alert."""
         alert = next((a for a in self.alerts if a.id == alert_id), None)
         if alert:
             alert.acknowledged = True
-    
+
     def resolve_alert(self, alert_id: str) -> None:
         """Resolve an alert."""
         alert = next((a for a in self.alerts if a.id == alert_id), None)
         if alert:
             alert.resolved = True
-    
+
     def get_active_alerts(
         self,
-        severity: Optional[AlertSeverity] = None,
-    ) -> List[Alert]:
+        severity: AlertSeverity | None = None,
+    ) -> list[Alert]:
         """
         Get active (unresolved) alerts.
-        
+
         Args:
             severity: Filter by severity
-            
+
         Returns:
             List of active alerts
         """
         alerts = [a for a in self.alerts if not a.resolved]
-        
+
         if severity:
             alerts = [a for a in alerts if a.severity == severity]
-        
+
         return sorted(alerts, key=lambda x: x.timestamp, reverse=True)
-    
+
     def setup_default_rules(self) -> None:
         """Setup default alert rules."""
         # High error rate
@@ -238,7 +245,7 @@ class AlertManager:
             severity=AlertSeverity.HIGH,
             channels=[AlertChannel.EMAIL, AlertChannel.SLACK],
         )
-        
+
         # High latency
         self.create_rule(
             name="High Latency",
@@ -246,7 +253,7 @@ class AlertManager:
             severity=AlertSeverity.MEDIUM,
             channels=[AlertChannel.EMAIL],
         )
-        
+
         # Low availability
         self.create_rule(
             name="Low Availability",
@@ -254,7 +261,7 @@ class AlertManager:
             severity=AlertSeverity.CRITICAL,
             channels=[AlertChannel.EMAIL, AlertChannel.PAGERDUTY],
         )
-        
+
         # Budget exceeded
         self.create_rule(
             name="Budget Exceeded",
@@ -265,7 +272,7 @@ class AlertManager:
 
 
 # Global instance
-_alert_manager: Optional[AlertManager] = None
+_alert_manager: AlertManager | None = None
 
 
 def get_alert_manager() -> AlertManager:

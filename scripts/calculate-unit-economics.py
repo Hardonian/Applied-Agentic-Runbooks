@@ -4,9 +4,9 @@ Unit Economics Calculator
 Calculates CAC, LTV, payback period, and gross margin
 """
 
-import json
 from datetime import datetime
 from pathlib import Path
+
 
 def calculate_unit_economics():
     """Calculate unit economics based on inputs"""

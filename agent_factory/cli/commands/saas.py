@@ -2,9 +2,9 @@
 CLI commands for SaaS scaffold generation - Complete implementation.
 """
 
-import typer
 from pathlib import Path
-import yaml
+
+import typer
 
 from agent_factory.blueprints.loader import BlueprintLoader
 
@@ -18,7 +18,7 @@ def create(
 ):
     """Create SaaS scaffold from blueprint."""
     output_path = Path(output) / blueprint_id
-    
+
     try:
         # Try to load blueprint
         blueprint_path = Path(f"blueprints/{blueprint_id}/blueprint.yaml")
@@ -28,36 +28,36 @@ def create(
         else:
             # Create placeholder blueprint
             blueprint = None
-        
+
         output_path.mkdir(parents=True, exist_ok=True)
-        
+
         # Generate backend
         _generate_backend(output_path, blueprint_id, blueprint)
-        
+
         # Generate frontend
         _generate_frontend(output_path, blueprint_id, blueprint)
-        
+
         # Generate Docker configs
         _generate_docker(output_path, blueprint_id)
-        
+
         # Generate README
         _generate_readme(output_path, blueprint_id, blueprint)
-        
+
         typer.echo(f"✅ SaaS scaffold created at: {output_path}")
-        typer.echo(f"\nNext steps:")
+        typer.echo("\nNext steps:")
         typer.echo(f"  1. cd {output_path}")
-        typer.echo(f"  2. Copy .env.example to .env and configure")
-        typer.echo(f"  3. docker-compose up")
+        typer.echo("  2. Copy .env.example to .env and configure")
+        typer.echo("  3. docker-compose up")
     except Exception as e:
         typer.echo(f"❌ Error: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 def _generate_backend(output_path: Path, blueprint_id: str, blueprint) -> None:
     """Generate FastAPI backend."""
     backend_dir = output_path / "backend"
     backend_dir.mkdir(exist_ok=True)
-    
+
     # main.py
     main_py = """from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -142,7 +142,7 @@ if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
 """
     (backend_dir / "main.py").write_text(main_py)
-    
+
     # requirements.txt
     requirements = """fastapi>=0.100.0
 uvicorn>=0.23.0
@@ -151,7 +151,7 @@ python-dotenv>=1.0.0
 agent-factory>=0.1.0
 """
     (backend_dir / "requirements.txt").write_text(requirements)
-    
+
     # Dockerfile
     dockerfile = """FROM python:3.11-slim
 
@@ -173,11 +173,12 @@ def _generate_frontend(output_path: Path, blueprint_id: str, blueprint) -> None:
     """Generate React frontend."""
     frontend_dir = output_path / "frontend"
     frontend_dir.mkdir(exist_ok=True)
-    
+
     # Use UI generator
     from agent_factory.ui.generator import generate_ui
+
     generate_ui(blueprint_id, str(frontend_dir), template="react")
-    
+
     # Add Dockerfile
     dockerfile = """FROM node:18-alpine as build
 
@@ -222,7 +223,7 @@ services:
     restart: unless-stopped
 """
     (output_path / "docker-compose.yml").write_text(docker_compose)
-    
+
     # .env.example
     env_example = """# API Keys
 OPENAI_API_KEY=your-openai-api-key-here

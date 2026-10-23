@@ -97,8 +97,13 @@ class ApprovalAuthority:
                 )
             ):
                 raise RuntimeError("Persisted approval ticket is incomplete")
-            assert record.created_at is not None
-            assert record.expires_at is not None
+            # Not `assert`: these guard a security-critical receipt, and
+            # asserts are stripped entirely under `python -O`, which would let
+            # a malformed ticket produce a signed receipt with garbage fields.
+            if record.created_at is None:
+                raise RuntimeError("Persisted approval ticket is missing created_at")
+            if record.expires_at is None:
+                raise RuntimeError("Persisted approval ticket is missing expires_at")
             return HumanApprovalTicket(
                 ticket_id=str(record.id),
                 tool_name=str(record.tool_name),
@@ -138,7 +143,10 @@ class ApprovalAuthority:
                 raise KeyError("Approval ticket not found")
             if not all((record.id, record.tenant_id, record.request_hash, record.expires_at)):
                 raise RuntimeError("Persisted approval ticket is incomplete")
-            assert record.expires_at is not None
+            # Explicit rather than `assert`: stripped under `python -O`, and the
+            # comparison on expires_at below must not run against None.
+            if record.expires_at is None:
+                raise RuntimeError("Persisted approval ticket is missing expires_at")
             if record.status != "pending":
                 raise ValueError("Approval ticket has already been resolved")
             if record.expires_at < now:

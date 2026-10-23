@@ -18,7 +18,7 @@ from typing import Any
 
 
 class StreamEventType(str, Enum):
-    TOKEN = "token"
+    TOKEN = "token"  # nosec B105 -- enum member value for a stream event kind, not a credential
     REASONING = "reasoning"
     TOOL_CALL_START = "tool_call_start"
     TOOL_CALL_PROGRESS = "tool_call_progress"

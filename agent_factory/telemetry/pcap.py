@@ -40,7 +40,7 @@ class PCAPFrameType(str, Enum):
 class PathologyType(str, Enum):
     RETRY_STORM = "retry_storm"  # Repetitive tool failures with identical args
     PING_PONG_LOOP = "ping_pong_loop"  # Agents bouncing messages without progression
-    TOKEN_BURNING = "token_burning"  # Massive token consumption with minimal output
+    TOKEN_BURNING = "token_burning"  # Massive token consumption with minimal output  # nosec B105 -- anomaly taxonomy label, not a credential
     SLOW_DRAIN = "slow_drain"  # Latency spikes without tool execution progress
 
 

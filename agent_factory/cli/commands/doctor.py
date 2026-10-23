@@ -178,5 +178,5 @@ def run(
         try:
             from agent_factory import __version__
             typer.echo(f"  Agent Factory: {__version__}")
-        except Exception:
+        except Exception:  # nosec B110 -- cosmetic version display in a doctor command; missing metadata must not abort diagnostics
             pass

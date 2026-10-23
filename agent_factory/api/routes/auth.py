@@ -134,7 +134,7 @@ async def signup(request: SignupRequest):
         
         return TokenResponse(
             access_token=access_token,
-            token_type="bearer",
+            token_type="bearer",  # nosec B106 -- OAuth2 token_type response field required by RFC 6749, not a credential
             user_id=user_id,
             email=request.email,
             tenant_id=tenant_id
@@ -191,7 +191,7 @@ async def login(request: LoginRequest):
         
         return TokenResponse(
             access_token=access_token,
-            token_type="bearer",
+            token_type="bearer",  # nosec B106 -- OAuth2 token_type response field required by RFC 6749, not a credential
             user_id=str(user.id),
             email=str(user.email or ""),
             tenant_id=user.tenant_id or ""

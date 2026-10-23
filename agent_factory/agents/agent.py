@@ -302,7 +302,7 @@ class Agent:
                 cost_estimate=0.0,  # Would calculate from tokens
             )
             self.prompt_log_storage.save_run(run)
-        except Exception:
+        except Exception:  # nosec B110 -- prompt-log persistence is best-effort; a logging failure must not fail the agent run (comment on the line below states this)
             # Silently fail if logging fails
             pass
     
@@ -335,7 +335,7 @@ class Agent:
             out = result.get("output", "")
             if out:
                 return out
-        except Exception:
+        except Exception:  # nosec B110 -- cached-output lookup falls back to recomputation; swallowing here is the documented fallback path
             pass
 
         try:

@@ -41,7 +41,7 @@ SECRET_PATTERNS = {
     "OPENAI_KEY": r"sk-[a-zA-Z0-9]{20,48}",
     "ANTHROPIC_KEY": r"sk-ant-[a-zA-Z0-9_\-]{20,100}",
     "AWS_KEY": r"AKIA[0-9A-Z]{16}",
-    "JWT_TOKEN": r"eyJ[a-zA-Z0-9_\-]+\.eyJ[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+",
+    "JWT_TOKEN": r"eyJ[a-zA-Z0-9_\-]+\.eyJ[a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+",  # nosec B105 -- regex PATTERN used to DETECT JWTs for redaction -- the opposite of a secret
     "CREDIT_CARD": r"\b(?:\d{4}[-\s]?){3}\d{4}\b",
     "SSN": r"\b\d{3}-\d{2}-\d{4}\b",
     "EMAIL": r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b",

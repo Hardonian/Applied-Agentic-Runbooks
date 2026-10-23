@@ -77,7 +77,7 @@ def capture_exception(error: Exception, **kwargs) -> None:
             for key, value in kwargs.items():
                 scope.set_context(key, value)
             sentry_sdk.capture_exception(error)
-    except Exception:
+    except Exception:  # nosec B110 -- error reporting must never raise: Sentry may be unconfigured or down, and failing here would mask the original error
         # Sentry not available or failed, ignore
         pass
 
@@ -97,6 +97,6 @@ def capture_message(message: str, level: str = "info", **kwargs) -> None:
             for key, value in kwargs.items():
                 scope.set_context(key, value)
             sentry_sdk.capture_message(message, level=level)
-    except Exception:
+    except Exception:  # nosec B110 -- message reporting must never raise: Sentry may be unconfigured or down
         # Sentry not available or failed, ignore
         pass

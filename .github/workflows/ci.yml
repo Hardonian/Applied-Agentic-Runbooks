@@ -37,7 +37,10 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        # 3.8/3.9 removed: requires-python is now >=3.10 and the code uses
+        # 3.10+ syntax, so those cells could never install/pass. The floor
+        # lives in pyproject.toml -- keep this matrix in sync with it.
+        python-version: ["3.10", "3.11", "3.12"]
     
     steps:
     - uses: actions/checkout@v4
@@ -114,7 +117,10 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install pip-audit
-        pip-audit --strict --progress-spinner off
+        # --skip-editable: the repo itself installs as editable (agent-factory)
+        # and is not published to PyPI, so auditing it fails with
+        # "Dependency not found on PyPI" -- we only want third-party deps.
+        pip-audit --strict --skip-editable --progress-spinner off
     
     - name: Run bandit
       run: |

@@ -10,7 +10,14 @@ FROM python:3.12-slim AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PATH=/home/agent/.local/bin:$PATH
 RUN groupadd --gid 10001 agent && useradd --uid 10001 --gid agent --create-home agent
 COPY --from=builder /wheels /wheels
-RUN python -m pip install --no-cache-dir /wheels/*.whl && rm -rf /wheels
+# python:3.12-slim ships pip 25.0.1, which carries CVE-2026-8643 (HIGH)
+# plus CVE-2026-6357/3219/13346/8869 (medium) -- enough on their own to
+# fail the trivy image-security gate (severity CRITICAL,HIGH; exit-code 1).
+# pip is not a runtime dependency of this app beyond installing the wheel,
+# so refreshing it costs nothing and clears those advisories.
+RUN python -m pip install --no-cache-dir --upgrade pip \
+    && python -m pip install --no-cache-dir /wheels/*.whl \
+    && rm -rf /wheels
 WORKDIR /app
 COPY alembic.ini ./
 COPY alembic ./alembic

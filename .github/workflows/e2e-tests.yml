@@ -73,6 +73,17 @@ jobs:
             API_URL="http://localhost:8000"
           fi
           
+          # Secrets can be absent. An empty URL poisons both later steps:
+          # 'Start local API' guards on url == 'http://localhost:8000' so it
+          # is SKIPPED, while 'Wait for API' curls "/health" with no host and
+          # fails after 60s -- with nothing ever having started. Fall back to
+          # localhost so this job self-hosts (verified: the app serves
+          # /health from a bare checkout with no external services).
+          if [ -z "$API_URL" ]; then
+            echo "::warning::No API URL configured for '$ENV'; starting a local API."
+            API_URL="http://localhost:8000"
+          fi
+          
           echo "url=$API_URL" >> $GITHUB_OUTPUT
           echo "API URL: $API_URL"
       

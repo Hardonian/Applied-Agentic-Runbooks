@@ -2,7 +2,7 @@
 CLI commands for UI generation.
 """
 
-import subprocess
+import subprocess  # nosec B404 -- subprocess is required to launch the Streamlit UI in a child process
 import sys
 from pathlib import Path
 
@@ -50,7 +50,7 @@ def demo(
     typer.echo("   Press Ctrl+C to stop")
     
     try:
-        subprocess.run([
+        subprocess.run([  # nosec B603 -- argv is a fixed literal list (sys.executable -m streamlit); shell never used, so there is no shell-parsing surface
             sys.executable, "-m", "streamlit", "run",
             str(demo_path),
             "--server.port", str(port),

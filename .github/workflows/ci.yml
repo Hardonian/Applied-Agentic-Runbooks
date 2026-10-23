@@ -37,7 +37,10 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        # 3.8/3.9 removed: requires-python is now >=3.10 and the code uses
+        # 3.10+ syntax, so those cells could never install/pass. The floor
+        # lives in pyproject.toml -- keep this matrix in sync with it.
+        python-version: ["3.10", "3.11", "3.12"]
     
     steps:
     - uses: actions/checkout@v4
@@ -114,7 +117,17 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install pip-audit
-        pip-audit --strict --progress-spinner off
+        # Two pitfalls, both hit on earlier runs:
+        #  - auditing the live environment fails with
+        #      "agent-factory: distribution marked as editable"
+        #    even WITH --skip-editable (that flag does not apply to
+        #    environment-mode scans in pip-audit 2.10), and
+        #  - pointing pip-audit at this repo as a project fails because
+        #    agent-factory is not published to PyPI.
+        # Audit a frozen requirements list instead, with the editable
+        # self-reference removed by pip itself.
+        python -m pip freeze --exclude-editable > /tmp/requirements.audit.txt
+        pip-audit --strict --progress-spinner off -r /tmp/requirements.audit.txt
     
     - name: Run bandit
       run: |

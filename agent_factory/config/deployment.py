@@ -47,7 +47,7 @@ class DeploymentConfig:
     object_storage_url: str | None = None
     
     # API
-    api_host: str = "0.0.0.0"
+    api_host: str = "0.0.0.0"  # nosec B104 -- intentional default for a containerized service (Dockerfile EXPOSEs 8000); bind is configurable via API_HOST, not a fixed exposure
     api_port: int = 8000
     api_workers: int = 1
     
@@ -93,7 +93,7 @@ class DeploymentConfig:
             job_queue_url=os.getenv("JOB_QUEUE_URL"),
             object_storage_type=os.getenv("OBJECT_STORAGE_TYPE", "local"),
             object_storage_url=os.getenv("OBJECT_STORAGE_URL"),
-            api_host=os.getenv("API_HOST", "0.0.0.0"),
+            api_host=os.getenv("API_HOST", "0.0.0.0"),  # nosec B104 -- read from API_HOST with this default; deployers override it to bind loopback where the service is not containerized
             api_port=int(os.getenv("API_PORT", "8000")),
             api_workers=int(os.getenv("API_WORKERS", "1")),
             worker_enabled=os.getenv("WORKER_ENABLED", "true").lower() == "true",

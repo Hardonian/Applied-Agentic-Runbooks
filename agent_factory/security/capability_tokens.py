@@ -9,6 +9,7 @@ import base64
 import hashlib
 import hmac
 import json
+import os
 import time
 from typing import Any
 
@@ -18,7 +19,21 @@ class CapabilityTokenManager:
     Issues and verifies time-bounded cryptographic capability tokens for tool execution.
     """
 
-    def __init__(self, secret_key: str = "agent-factory-capability-secret-key-2026"):
+    def __init__(self, secret_key: str | None = None):
+        # No default secret. A hardcoded fallback here would be a public,
+        # forgeable HMAC key: anyone who can read this file could mint
+        # capability tokens for tool execution (database exec, file write,
+        # shell). The key must be supplied explicitly -- or via the
+        # AGENT_FACTORY_CAPABILITY_SECRET environment variable, which is the
+        # documented deployment path.
+        if secret_key is None:
+            secret_key = os.environ.get("AGENT_FACTORY_CAPABILITY_SECRET", "")
+        if not secret_key:
+            raise ValueError(
+                "CapabilityTokenManager requires an explicit secret_key "
+                "(or the AGENT_FACTORY_CAPABILITY_SECRET environment variable); "
+                "refusing to default to a public value."
+            )
         self.secret_key = secret_key.encode("utf-8")
 
     def issue_token(

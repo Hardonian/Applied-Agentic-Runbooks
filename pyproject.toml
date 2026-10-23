@@ -38,6 +38,10 @@ dependencies = [
     "pyyaml>=6.0",
     "python-dotenv>=1.0.0",
     "httpx>=0.24.0",
+    # CVE floor: certifi is transitive via httpx/httpcore/requests, and
+    # 2026.7.22 carries PYSEC-2026-4320 (fix released 2026.10.19).
+    # Pinned directly because none of the importers raise the floor themselves.
+    "certifi>=2026.10.19",
     "schedule>=1.2.0",
     "duckduckgo-search>=3.0.0",
     "sqlalchemy>=2.0.0",
@@ -78,8 +82,18 @@ dev = [
     "pre-commit>=3.5.0",
     "isort>=5.13.0",
     "bandit>=1.7.5",
-    "safety>=2.3.5",
+    # safety REMOVED: its `check` subcommand was deprecated upstream and
+    # unsupported after 2024-06-01 (that is why ci.yml moved to pip-audit).
+    # It was also nltk's ONLY consumer in this environment -- nltk has an
+    # unpatched PYSEC-2026-3740 with no fix released, so keeping safety
+    # guaranteed pip-audit --strict could never pass. Dropping safety removes
+    # the unfixed advisory at its source rather than suppressing it.
+    # Workflows that still call safety install it explicitly and are
+    # non-blocking (`|| true`).
     "httpx>=0.24.0",
+    # CVE floors for transitive dev tools:
+    #   virtualenv 21.14.6 <- CVE-2026-113725 (fix 21.14.7), CVE-2026-113722 (fix 21.14.9)
+    "virtualenv>=21.14.9",
 ]
 e2e = [
     "pytest>=7.0.0",
@@ -104,7 +118,7 @@ agent_factory = ["py.typed", "ui/studio/*", "ui/embed/*"]
 
 [tool.black]
 line-length = 100
-target-version = ['py310', 'py311', 'py312']
+target-version = ['py38', 'py39', 'py310', 'py311']
 
 [tool.ruff]
 line-length = 100

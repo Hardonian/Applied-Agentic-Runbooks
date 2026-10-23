@@ -10,12 +10,12 @@ import typer
 if hasattr(sys.stdout, "reconfigure"):
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:  # noqa: BLE001, S110
+    except Exception:  # noqa: BLE001, S110  # nosec B110 -- stdout reconfigure is best-effort: on terminals lacking UTF-8 the CLI must keep working (already noqa'd for ruff BLE001/S110)
         pass
 if hasattr(sys.stderr, "reconfigure"):
     try:
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:  # noqa: BLE001, S110
+    except Exception:  # noqa: BLE001, S110  # nosec B110 -- stderr reconfigure is best-effort: on terminals lacking UTF-8 the CLI must keep working (already noqa'd for ruff BLE001/S110)
         pass
 
 from agent_factory.cli.commands import (

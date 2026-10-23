@@ -280,7 +280,9 @@ def test_llm_firewall_and_capability_tokens():
     assert "[REDACTED_OPENAI_KEY]" in v_clean.sanitized_text
 
     # Zero-Trust capability token check
-    token_mgr = CapabilityTokenManager()
+    # Explicit test-only key: CapabilityTokenManager refuses to default to a
+    # hardcoded secret (a published default would let anyone forge tokens).
+    token_mgr = CapabilityTokenManager(secret_key="unit-test-capability-secret")
     token = token_mgr.issue_token(agent_id="test_agent", tool_name="python_interpreter", expires_in_seconds=60)
     assert token_mgr.verify_token(token, agent_id="test_agent", tool_name="python_interpreter") is True
     assert token_mgr.verify_token(token, agent_id="other_agent", tool_name="python_interpreter") is False

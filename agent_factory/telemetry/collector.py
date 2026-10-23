@@ -53,7 +53,7 @@ class TelemetryCollector:
         
         try:
             self.backend.store_event(event)
-        except Exception:
+        except Exception:  # nosec B110 -- telemetry write is best-effort by design (comment: never break main execution)
             # Silently fail telemetry to avoid breaking main execution
             # In production, log to error tracking system
             pass

@@ -22,10 +22,26 @@ from agent_factory.tools.base import Tool, ToolResult
 
 # Forbidden AST node types and names
 FORBIDDEN_NAMES = {
-    "eval", "exec", "compile", "__import__", "open", "file",
-    "input", "raw_input", "reload", "globals", "locals", "vars",
-    "subprocess", "shutil", "socket", "requests", "urllib", "os"
+    "eval",
+    "exec",
+    "compile",
+    "__import__",
+    "open",
+    "file",
+    "input",
+    "raw_input",
+    "reload",
+    "globals",
+    "locals",
+    "vars",
+    "subprocess",
+    "shutil",
+    "socket",
+    "requests",
+    "urllib",
+    "os",
 }
+
 
 def _safe_import(name, globals=None, locals=None, fromlist=(), level=0):
     if name in {"math", "json", "re", "datetime", "statistics"}:
@@ -156,13 +172,23 @@ class SandboxedPythonInterpreter:
             # If last statement is an expression, evaluate it
             if tree.body and isinstance(tree.body[-1], ast.Expr):
                 last_expr = tree.body.pop()
-                assert isinstance(last_expr, ast.Expr)
-                exec(compile(tree, "<sandbox>", "exec"), global_scope, local_scope)
-                eval_val = eval(compile(ast.Expression(last_expr.value), "<sandbox>", "eval"), global_scope, local_scope)
+                if not isinstance(
+                    last_expr, ast.Expr
+                ):  # pragma: no cover - pop() above guarantees it
+                    raise TypeError("Expected an expression statement in sandbox AST")
+                # Code execution is THIS TOOL'S PURPOSE: it is a sandboxed
+                # interpreter, so exec/eval are the feature, not an accident.
+                # Constrained to the sandbox namespaces on the lines below.
+                exec(compile(tree, "<sandbox>", "exec"), global_scope, local_scope)  # nosec B102
+                eval_val = eval(
+                    compile(ast.Expression(last_expr.value), "<sandbox>", "eval"),
+                    global_scope,
+                    local_scope,
+                )  # nosec B307
                 if eval_val is not None:
                     print(eval_val)
             else:
-                exec(compile(tree, "<sandbox>", "exec"), global_scope, local_scope)
+                exec(compile(tree, "<sandbox>", "exec"), global_scope, local_scope)  # nosec B102
 
             out = stdout_capture.getvalue()
             err = stderr_capture.getvalue()
@@ -202,12 +228,9 @@ def create_code_interpreter_tool() -> Tool:
         parameters={
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "string",
-                    "description": "Python code to execute safely"
-                }
+                "code": {"type": "string", "description": "Python code to execute safely"}
             },
-            "required": ["code"]
+            "required": ["code"],
         },
         func=run_code,
     )

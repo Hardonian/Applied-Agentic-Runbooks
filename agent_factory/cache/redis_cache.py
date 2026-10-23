@@ -81,7 +81,7 @@ class RedisCache:
         
         try:
             self.client.setex(key, ttl, json.dumps(value))
-        except Exception:
+        except Exception:  # nosec B110 -- cache write failure is degradative only -- callers treat the cache as optional, so a Redis error must not fail the request
             pass
     
     def delete(self, key: str):
@@ -96,7 +96,7 @@ class RedisCache:
         
         try:
             self.client.delete(key)
-        except Exception:
+        except Exception:  # nosec B110 -- cache invalidation is best-effort; stale entry is corrected on next write
             pass
     
     def clear(self, pattern: str = "*"):
@@ -113,7 +113,7 @@ class RedisCache:
             keys = self.client.keys(pattern)
             if keys:
                 self.client.delete(*keys)
-        except Exception:
+        except Exception:  # nosec B110 -- bulk cache invalidation is best-effort; must not fail the caller
             pass
 
 

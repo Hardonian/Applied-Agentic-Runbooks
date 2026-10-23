@@ -173,6 +173,23 @@ class MCPWall:
                         allowed=False,
                         reason="Path traversal sequence detected in arguments.",
                     )
+                # Foreign-platform absolute paths cannot be contained by a POSIX
+                # root. On POSIX, Path("C:\\Windows\\...").resolve() treats the
+                # whole string as a SINGLE relative filename under cwd, so the
+                # containment check below would falsely succeed and let a Windows
+                # absolute path through. Reject them as escapes instead: they are
+                # not valid inside our roots, and they become absolute the moment
+                # the target tool interprets them on Windows.
+                if raw_arg.startswith("\\\\") or (  # UNC: \\server\share
+                    len(raw_arg) >= 3
+                    and raw_arg[0].isalpha()
+                    and raw_arg[1] == ":"
+                    and raw_arg[2] in ("/", "\\")  # drive letter: C:\ or C:/
+                ):
+                    return MCPWallVerdict(
+                        allowed=False,
+                        reason="Path escapes authorized root boundaries.",
+                    )
                 target_path = Path(raw_arg).resolve()
                 is_contained = False
                 for root in self.path_roots:

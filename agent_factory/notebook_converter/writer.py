@@ -114,7 +114,7 @@ class ToolWriter:
             # Try to use ast.unparse if available (Python 3.9+)
             if hasattr(ast, "unparse"):
                 return ast.unparse(func_node)
-        except Exception:
+        except Exception:  # nosec B110 -- ast.unparse fallback path -- guarded by hasattr above, returns None to fall back to source text
             pass
         
         # Fallback: extract using line numbers

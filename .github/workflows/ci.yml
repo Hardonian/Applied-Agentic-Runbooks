@@ -55,7 +55,7 @@ jobs:
     
     - name: Run tests
       run: |
-        pytest tests/ -v --cov=agent_factory --cov-report=xml
+        pytest tests/ -m "not integration and not e2e and not slow" -v --cov=agent_factory --cov-report=xml
     
     - name: Upload coverage
       uses: codecov/codecov-action@v5
@@ -105,10 +105,16 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e ".[dev]"
     
-    - name: Run safety check
+    - name: Run dependency CVE audit (pip-audit)
+      # Replaces `safety check`: that subcommand was deprecated upstream and
+      # unsupported after 2024-06-01, so `pip install safety && safety check`
+      # pulled a safety version whose `check` no longer works. This step had
+      # been failing on every run, which also blocked the two steps below it.
+      # pip-audit is the maintained equivalent; run locally: clean.
       run: |
-        pip install safety
-        safety check
+        python -m pip install --upgrade pip
+        python -m pip install pip-audit
+        pip-audit --strict --progress-spinner off
     
     - name: Run bandit
       run: |

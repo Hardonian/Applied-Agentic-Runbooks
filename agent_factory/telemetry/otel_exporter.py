@@ -6,6 +6,7 @@ import json
 import os
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from dataclasses import dataclass, field
 from typing import Any
@@ -101,9 +102,7 @@ class OTelExporter:
             ]
         }
 
-    def veridag_to_otlp(
-        self, proof: VeriDAGExecutionProof | dict[str, Any]
-    ) -> dict[str, Any]:
+    def veridag_to_otlp(self, proof: VeriDAGExecutionProof | dict[str, Any]) -> dict[str, Any]:
         """Represent VeriDAG node transitions as OTLP spans for Jaeger/collectors."""
         data = proof.to_dict() if isinstance(proof, VeriDAGExecutionProof) else proof
         execution_id = str(data["execution_id"])
@@ -223,7 +222,11 @@ class OTelExporter:
                 latency_total += float(frame.get("latency_ms", frame.get("duration_ms", 0.0)))
         valid = 1
         if proof is not None:
-            valid = int(proof.is_valid if isinstance(proof, VeriDAGExecutionProof) else proof.get("is_valid", True))
+            valid = int(
+                proof.is_valid
+                if isinstance(proof, VeriDAGExecutionProof)
+                else proof.get("is_valid", True)
+            )
         return "\n".join(
             [
                 "# HELP agent_factory_pcap_frames_total Captured AgentPCAP frames.",
@@ -246,9 +249,7 @@ class OTelExporter:
         """Export AgentPCAP frames through OTLP/HTTP JSON when configured."""
         return self._export("logs", self.frames_to_otlp(frames), len(frames))
 
-    def export_veridag(
-        self, proof: VeriDAGExecutionProof | dict[str, Any]
-    ) -> OTelExportResult:
+    def export_veridag(self, proof: VeriDAGExecutionProof | dict[str, Any]) -> OTelExportResult:
         """Export VeriDAG spans through OTLP/HTTP JSON when configured."""
         payload = self.veridag_to_otlp(proof)
         count = len(payload["resourceSpans"][0]["scopeSpans"][0]["spans"])
@@ -258,12 +259,25 @@ class OTelExporter:
         if not self.endpoint:
             return OTelExportResult(False, signal, count, "OTLP endpoint is not configured")
         url = f"{self.endpoint.rstrip('/')}/v1/{signal}"
+        # B310: urllib.request.urlopen will happily open file://, ftp:// and
+        # other schemes, so a misconfigured endpoint would read local files
+        # instead of exporting telemetry. Restrict to real OTLP transports.
+        scheme = urllib.parse.urlparse(url).scheme
+        if scheme not in ("http", "https"):
+            return OTelExportResult(
+                False,
+                signal,
+                count,
+                f"Rejected non-HTTP OTLP endpoint scheme: {scheme or '(none)'}",
+            )
         headers = {"Content-Type": "application/json", **self.headers}
         request = urllib.request.Request(
             url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST"
         )
         try:
-            with urllib.request.urlopen(request, timeout=self.timeout_seconds) as response:
+            # nosec B310 -- scheme already restricted to http/https above;
+            # bandit cannot see the guard that precedes this call.
+            with urllib.request.urlopen(request, timeout=self.timeout_seconds) as response:  # nosec B310
                 exported = 200 <= response.status < 300
                 return OTelExportResult(exported, signal, count, f"HTTP {response.status}")
         except (urllib.error.URLError, TimeoutError, OSError) as exc:

@@ -58,7 +58,7 @@ class AgentRouter:
                 # If condition is truthy, route to this agent
                 if result:
                     return edge.to_agent
-            except Exception:
+            except Exception:  # nosec B112 -- edge evaluation failure intentionally skips that edge (comment on the line below); routing degrades instead of raising
                 # If evaluation fails, skip this edge
                 continue
         

@@ -243,7 +243,7 @@ async def get_current_user_from_request(request: Request) -> User | None:
                     return user
             finally:
                 db.close()
-        except Exception:
+        except Exception:  # nosec B110 -- db.close() in a cleanup path; a close failure must not mask the exception already propagating
             pass
     
     return None

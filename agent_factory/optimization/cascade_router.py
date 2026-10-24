@@ -257,7 +257,7 @@ class SpeculativeCascadeRouter:
                 if hasattr(res, "content"):
                     return res.content
                 return str(res)
-            except Exception:  # noqa: BLE001, S110
+            except Exception:  # noqa: BLE001, S110  # nosec B110 -- response-content extraction fallback to str(res); already noqa'd for ruff BLE001/S110
                 pass
 
         # High-fidelity simulated execution

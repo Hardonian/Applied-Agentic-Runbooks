@@ -242,7 +242,7 @@ class RuntimeEngine:
                 cost_estimate=0.0,
             )
             self.prompt_log_storage.save_run(run)
-        except Exception:
+        except Exception:  # nosec B110 -- prompt-log persistence is best-effort and must not fail an execution
             pass
     
     def _log_workflow_execution(
@@ -265,7 +265,7 @@ class RuntimeEngine:
                 cost_estimate=0.0,
             )
             self.prompt_log_storage.save_run(run)
-        except Exception:
+        except Exception:  # nosec B110 -- prompt-log persistence is best-effort and must not fail an execution
             pass
     
     def _track_activation_if_first_run(self, agent_id: str) -> None:
@@ -316,7 +316,7 @@ class RuntimeEngine:
                 )
                 
                 self.telemetry_collector.record_event(activation_event)
-        except Exception:
+        except Exception:  # nosec B110 -- activation telemetry is best-effort (comment: tracking failure must not fail execution)
             # Don't fail execution if activation tracking fails
             pass
     

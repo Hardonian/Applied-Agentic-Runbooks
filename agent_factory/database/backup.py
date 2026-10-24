@@ -3,7 +3,7 @@ Database backup and restore system for Agent Factory Platform.
 """
 
 import os
-import subprocess
+import subprocess  # nosec B404 -- subprocess is required to invoke pg_dump/psql for backup/restore
 from datetime import datetime
 from pathlib import Path
 
@@ -63,7 +63,11 @@ class BackupManager:
             backup_path = self.backup_dir / f"{backup_name}.sql"
             
             try:
-                subprocess.run(
+                # Reason: fixed two-element argv with no shell parsing, so
+                # there is no command-injection surface; pg_dump is resolved
+                # from the operator's PATH by design and the only argument is
+                # server config -- no untrusted input reaches argv.
+                subprocess.run(  # nosec B603, B607
                     ["pg_dump", self.database_url],
                     stdout=open(backup_path, "w"),
                     check=True,
@@ -106,7 +110,11 @@ class BackupManager:
             # PostgreSQL restore using psql
             try:
                 with open(backup_file, "r") as f:
-                    subprocess.run(
+                    # Reason: fixed two-element argv with no shell parsing, so
+                    # there is no command-injection surface; psql is resolved
+                    # from the operator's PATH by design and the only argument
+                    # is server config -- no untrusted input reaches argv.
+                    subprocess.run(  # nosec B603, B607
                         ["psql", self.database_url],
                         stdin=f,
                         check=True,

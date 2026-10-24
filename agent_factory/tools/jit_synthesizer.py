@@ -24,6 +24,7 @@ class ToolSecurityViolation(Exception):
 @dataclass
 class ToolSynthesisSpec:
     """Specification for JIT tool synthesis."""
+
     name: str
     description: str
     code: str | None = None
@@ -110,12 +111,24 @@ class JITToolSynthesizer:
             if isinstance(node, ast.Import):
                 for alias in node.names:
                     root_mod = alias.name.split(".")[0]
-                    if root_mod in FORBIDDEN_NAMES or root_mod not in {"math", "json", "re", "datetime", "statistics"}:
+                    if root_mod in FORBIDDEN_NAMES or root_mod not in {
+                        "math",
+                        "json",
+                        "re",
+                        "datetime",
+                        "statistics",
+                    }:
                         raise ToolSecurityViolation(f"Forbidden module import: '{alias.name}'")
 
             elif isinstance(node, ast.ImportFrom):
                 mod = (node.module or "").split(".")[0]
-                if mod in FORBIDDEN_NAMES or mod not in {"math", "json", "re", "datetime", "statistics"}:
+                if mod in FORBIDDEN_NAMES or mod not in {
+                    "math",
+                    "json",
+                    "re",
+                    "datetime",
+                    "statistics",
+                }:
                     raise ToolSecurityViolation(f"Forbidden from-import: '{node.module}'")
 
             # Check calls to forbidden builtins
@@ -150,7 +163,10 @@ class JITToolSynthesizer:
         # 2. Compile within safe isolated namespace
         sandbox_scope: dict[str, Any] = dict(SAFE_GLOBALS)
         try:
-            exec(compile(spec.code, f"<jit_tool_{spec.name}>", "exec"), sandbox_scope)
+            # Deliberate: a JIT synthesizer exists to compile generated tool
+            # code. Guarded by the AST audit above, the SAFE_GLOBALS-only
+            # namespace, and the exception mapping below -- not unconstrained.
+            exec(compile(spec.code, f"<jit_tool_{spec.name}>", "exec"), sandbox_scope)  # nosec B102
         except Exception as e:
             raise ToolSecurityViolation(f"Compilation error in sandbox: {e}")
 
@@ -173,6 +189,7 @@ class JITToolSynthesizer:
                     raise ToolSecurityViolation(f"Verification test case {idx} failed: {e}")
 
         import hashlib
+
         integrity = hashlib.sha256(spec.code.encode("utf-8")).hexdigest()
 
         return DynamicSynthesizedTool(
@@ -189,7 +206,7 @@ class JITToolSynthesizer:
         """Provide verified default code template based on spec."""
         return (
             f"def {spec.name}(**kwargs):\n"
-            f"    \"\"\"{spec.description}\"\"\"\n"
+            f'    """{spec.description}"""\n'
             f"    # JIT synthesized logic\n"
             f"    return {{'status': 'success', 'processed': kwargs}}\n"
         )

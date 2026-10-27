@@ -47,10 +47,7 @@ def test_api_cascade_execute(client):
 @pytest.mark.unit
 def test_api_jit_synthesize(client):
     """Verify JIT tool synthesis REST endpoint."""
-    code = (
-        "def multiply_by_three(val: int) -> int:\n"
-        "    return val * 3\n"
-    )
+    code = "def multiply_by_three(val: int) -> int:\n" "    return val * 3\n"
     payload = {
         "name": "multiply_by_three",
         "description": "Multiplies input by 3",

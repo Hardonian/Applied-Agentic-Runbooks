@@ -54,7 +54,7 @@ class CapabilityTokenManager:
         }
         raw_json = json.dumps(payload, sort_keys=True)
         signature = hmac.new(self.secret_key, raw_json.encode("utf-8"), hashlib.sha256).hexdigest()
-        
+
         token_data = {
             "payload": payload,
             "signature": signature,
@@ -82,7 +82,9 @@ class CapabilityTokenManager:
 
             # Verify cryptographic signature
             raw_json = json.dumps(payload, sort_keys=True)
-            expected_sig = hmac.new(self.secret_key, raw_json.encode("utf-8"), hashlib.sha256).hexdigest()
+            expected_sig = hmac.new(
+                self.secret_key, raw_json.encode("utf-8"), hashlib.sha256
+            ).hexdigest()
 
             return hmac.compare_digest(signature, expected_sig)
         except Exception:

@@ -20,7 +20,9 @@ _global_mcpwall = MCPWall(ticket_store=approval_authority)
 
 
 class MCTSSearchRequest(BaseModel):
-    problem: str = Field(..., description="Problem statement to resolve via speculative tree search")
+    problem: str = Field(
+        ..., description="Problem statement to resolve via speculative tree search"
+    )
     max_depth: int = Field(3, ge=1, le=6)
     branching_factor: int = Field(3, ge=2, le=5)
     num_simulations: int = Field(8, ge=2, le=20)
@@ -158,10 +160,14 @@ async def validate_mcp_call(request: MCPWallValidateRequest, http_request: Reque
         "allowed": verdict.allowed,
         "reason": verdict.reason,
         "requires_approval": verdict.requires_approval,
-        "ticket": {
-            "ticket_id": verdict.ticket.ticket_id,
-            "tool_name": verdict.ticket.tool_name,
-            "request_hash": verdict.ticket.request_hash,
-            "expires_at": verdict.ticket.expires_at,
-        } if verdict.ticket else None,
+        "ticket": (
+            {
+                "ticket_id": verdict.ticket.ticket_id,
+                "tool_name": verdict.ticket.tool_name,
+                "request_hash": verdict.ticket.request_hash,
+                "expires_at": verdict.ticket.expires_at,
+            }
+            if verdict.ticket
+            else None
+        ),
     }

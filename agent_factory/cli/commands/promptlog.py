@@ -2,7 +2,6 @@
 CLI commands for prompt logging, replay, and diff.
 """
 
-
 import typer
 
 from agent_factory.promptlog import SQLiteStorage, diff_runs, replay_run
@@ -28,17 +27,17 @@ def list_runs(
 ):
     """List recent runs."""
     storage = get_storage()
-    
+
     filters = {}
     if agent_id:
         filters["agent_id"] = agent_id
-    
+
     runs = storage.list_runs(filters=filters, limit=limit)
-    
+
     if not runs:
         typer.echo("No runs found.")
         return
-    
+
     typer.echo(f"\nFound {len(runs)} runs:\n")
     for run in runs:
         typer.echo(f"  {run.run_id}")
@@ -56,14 +55,15 @@ def replay(
 ):
     """Replay a run with optional configuration overrides."""
     storage = get_storage()
-    
+
     # Load config override if provided
     config_override_dict = None
     if config_override:
         import yaml
+
         with open(config_override, "r") as f:
             config_override_dict = yaml.safe_load(f)
-    
+
     try:
         new_run = replay_run(run_id, storage, config_override_dict)
         typer.echo(f"✅ Replayed run: {new_run.run_id}")
@@ -81,21 +81,21 @@ def diff(
 ):
     """Compare two runs."""
     storage = get_storage()
-    
+
     try:
         diff_result = diff_runs(run_id_1, run_id_2, storage)
-        
+
         typer.echo("\nComparing runs:")
         typer.echo(f"  Run 1: {run_id_1}")
         typer.echo(f"  Run 2: {run_id_2}\n")
-        
+
         typer.echo("Metrics:")
         for metric, values in diff_result["metrics_diff"].items():
             typer.echo(f"  {metric}:")
             typer.echo(f"    Run 1: {values['run1']}")
             typer.echo(f"    Run 2: {values['run2']}")
             typer.echo(f"    Diff: {values['diff']}")
-        
+
         typer.echo(f"\nOutput similarity: {diff_result['output_diff']['similarity']:.2%}")
     except Exception as e:
         typer.echo(f"❌ Error: {e}", err=True)

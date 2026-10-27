@@ -27,6 +27,7 @@ class SwarmPattern(str, Enum):
 @dataclass
 class SwarmMessage:
     """A message exchange within the multi-agent swarm."""
+
     agent_id: str
     agent_name: str
     role: str  # supervisor, worker, debater, voter
@@ -38,6 +39,7 @@ class SwarmMessage:
 @dataclass
 class SwarmResult:
     """Final result from multi-agent swarm execution."""
+
     final_output: str
     pattern: SwarmPattern
     messages: list[SwarmMessage] = field(default_factory=list)
@@ -101,7 +103,9 @@ class SwarmOrchestrator:
                 error=str(e),
             )
 
-    def _run_hierarchical(self, task: str, context: dict[str, Any], start_time: float) -> SwarmResult:
+    def _run_hierarchical(
+        self, task: str, context: dict[str, Any], start_time: float
+    ) -> SwarmResult:
         """Supervisor plans, delegates to workers, and synthesizes final answer."""
         messages: list[SwarmMessage] = []
         total_tokens = 0
@@ -112,12 +116,14 @@ class SwarmOrchestrator:
             agent_res = agent.run(task, context=context)
             total_tokens += agent_res.tokens_used
             worker_outputs[agent.name] = agent_res.output
-            messages.append(SwarmMessage(
-                agent_id=agent.id,
-                agent_name=agent.name,
-                role="worker",
-                content=agent_res.output,
-            ))
+            messages.append(
+                SwarmMessage(
+                    agent_id=agent.id,
+                    agent_name=agent.name,
+                    role="worker",
+                    content=agent_res.output,
+                )
+            )
 
         # Step 2: Synthesis
         if self.supervisor:
@@ -128,14 +134,18 @@ class SwarmOrchestrator:
             sup_res = self.supervisor.run(synth_prompt)
             total_tokens += sup_res.tokens_used
             final_output = sup_res.output
-            messages.append(SwarmMessage(
-                agent_id=self.supervisor.id,
-                agent_name=self.supervisor.name,
-                role="supervisor",
-                content=final_output,
-            ))
+            messages.append(
+                SwarmMessage(
+                    agent_id=self.supervisor.id,
+                    agent_name=self.supervisor.name,
+                    role="supervisor",
+                    content=final_output,
+                )
+            )
         else:
-            final_output = "\n\n---\n\n".join([f"### {name}\n{out}" for name, out in worker_outputs.items()])
+            final_output = "\n\n---\n\n".join(
+                [f"### {name}\n{out}" for name, out in worker_outputs.items()]
+            )
 
         return SwarmResult(
             final_output=final_output,
@@ -146,7 +156,9 @@ class SwarmOrchestrator:
             status=AgentStatus.COMPLETED,
         )
 
-    def _run_peer_debate(self, task: str, context: dict[str, Any], start_time: float) -> SwarmResult:
+    def _run_peer_debate(
+        self, task: str, context: dict[str, Any], start_time: float
+    ) -> SwarmResult:
         """Agents critique and refine solutions across multiple rounds."""
         messages: list[SwarmMessage] = []
         total_tokens = 0
@@ -165,13 +177,15 @@ class SwarmOrchestrator:
                 res = agent.run(debate_prompt, context=context)
                 total_tokens += res.tokens_used
                 current_solution = res.output
-                messages.append(SwarmMessage(
-                    agent_id=agent.id,
-                    agent_name=agent.name,
-                    role="debater",
-                    content=res.output,
-                    metadata={"round": round_idx + 1},
-                ))
+                messages.append(
+                    SwarmMessage(
+                        agent_id=agent.id,
+                        agent_name=agent.name,
+                        role="debater",
+                        content=res.output,
+                        metadata={"round": round_idx + 1},
+                    )
+                )
 
         return SwarmResult(
             final_output=current_solution,
@@ -182,7 +196,9 @@ class SwarmOrchestrator:
             status=AgentStatus.COMPLETED,
         )
 
-    def _run_voting_consensus(self, task: str, context: dict[str, Any], start_time: float) -> SwarmResult:
+    def _run_voting_consensus(
+        self, task: str, context: dict[str, Any], start_time: float
+    ) -> SwarmResult:
         """Collects proposed answers from each agent and synthesizes consensus score."""
         messages: list[SwarmMessage] = []
         total_tokens = 0
@@ -192,15 +208,20 @@ class SwarmOrchestrator:
             res = agent.run(task, context=context)
             total_tokens += res.tokens_used
             candidates.append(res.output)
-            messages.append(SwarmMessage(
-                agent_id=agent.id,
-                agent_name=agent.name,
-                role="candidate_author",
-                content=res.output,
-            ))
+            messages.append(
+                SwarmMessage(
+                    agent_id=agent.id,
+                    agent_name=agent.name,
+                    role="candidate_author",
+                    content=res.output,
+                )
+            )
 
         # Synthesize consensus
-        final_output = f"Consensus synthesized from {len(candidates)} agent evaluations.\n\n" + "\n\n".join(candidates)
+        final_output = (
+            f"Consensus synthesized from {len(candidates)} agent evaluations.\n\n"
+            + "\n\n".join(candidates)
+        )
         consensus_score = 0.95 if len(candidates) > 0 else 0.0
 
         return SwarmResult(
@@ -213,7 +234,9 @@ class SwarmOrchestrator:
             status=AgentStatus.COMPLETED,
         )
 
-    def _run_dynamic_router(self, task: str, context: dict[str, Any], start_time: float) -> SwarmResult:
+    def _run_dynamic_router(
+        self, task: str, context: dict[str, Any], start_time: float
+    ) -> SwarmResult:
         """Route task to most specialized agent based on instruction affinity."""
         messages: list[SwarmMessage] = []
         agents_list = list(self.agents.values())
@@ -228,12 +251,14 @@ class SwarmOrchestrator:
                 break
 
         res = selected_agent.run(task, context=context)
-        messages.append(SwarmMessage(
-            agent_id=selected_agent.id,
-            agent_name=selected_agent.name,
-            role="specialist",
-            content=res.output,
-        ))
+        messages.append(
+            SwarmMessage(
+                agent_id=selected_agent.id,
+                agent_name=selected_agent.name,
+                role="specialist",
+                content=res.output,
+            )
+        )
 
         return SwarmResult(
             final_output=res.output,

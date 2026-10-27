@@ -25,7 +25,10 @@ class SwarmAgentSpec(BaseModel):
 
 class SwarmExecuteRequest(BaseModel):
     task: str = Field(..., description="Objective for multi-agent swarm")
-    pattern: str = Field("hierarchical", description="Swarm topology: hierarchical, peer_debate, voting_consensus, dynamic_router")
+    pattern: str = Field(
+        "hierarchical",
+        description="Swarm topology: hierarchical, peer_debate, voting_consensus, dynamic_router",
+    )
     agents: list[SwarmAgentSpec] | None = None
     supervisor: SwarmAgentSpec | None = None
     max_rounds: int = Field(4, ge=1, le=10)
@@ -35,7 +38,9 @@ class SwarmExecuteRequest(BaseModel):
 class AgentCertifyRequest(BaseModel):
     agent_id: str = Field(..., description="Agent unique identifier")
     name: str | None = None
-    instructions: str = Field("Enterprise Autonomous Agent", description="System prompt instructions")
+    instructions: str = Field(
+        "Enterprise Autonomous Agent", description="System prompt instructions"
+    )
     model: str = Field("gpt-4o", description="Target foundation model")
     enable_guardrails: bool = Field(True, description="Attach enterprise safety guardrails")
 
@@ -56,9 +61,19 @@ def execute_swarm(request: SwarmExecuteRequest):
 
     # Initialize worker agents
     worker_specs = request.agents or [
-        SwarmAgentSpec(id="researcher", name="Lead Researcher", instructions="Conduct in-depth fact finding."),
-        SwarmAgentSpec(id="analyst", name="Strategic Analyst", instructions="Synthesize and evaluate strategic risk."),
-        SwarmAgentSpec(id="synthesizer", name="Chief Synthesizer", instructions="Integrate consensus decisions into clear action items."),
+        SwarmAgentSpec(
+            id="researcher", name="Lead Researcher", instructions="Conduct in-depth fact finding."
+        ),
+        SwarmAgentSpec(
+            id="analyst",
+            name="Strategic Analyst",
+            instructions="Synthesize and evaluate strategic risk.",
+        ),
+        SwarmAgentSpec(
+            id="synthesizer",
+            name="Chief Synthesizer",
+            instructions="Integrate consensus decisions into clear action items.",
+        ),
     ]
     swarm_agents = [
         Agent(

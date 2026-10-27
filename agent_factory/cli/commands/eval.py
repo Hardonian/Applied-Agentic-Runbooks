@@ -2,7 +2,6 @@
 CLI commands for evaluation, benchmarking, and autotune.
 """
 
-
 import typer
 
 from agent_factory.eval import BenchmarkRunner, autotune_agent
@@ -29,15 +28,15 @@ def benchmark(
             ),
         ],
     )
-    
+
     runner = BenchmarkRunner()
     results = runner.run_benchmark(agent_id, suite)
-    
+
     typer.echo(f"\nBenchmark Results for {agent_id}:")
     typer.echo(f"  Scenarios: {len(results)}")
     typer.echo(f"  Successful: {sum(1 for r in results if r.success)}")
     typer.echo(f"  Failed: {sum(1 for r in results if not r.success)}")
-    
+
     if results:
         avg_latency = sum(r.latency for r in results) / len(results)
         typer.echo(f"  Avg Latency: {avg_latency:.2f}s")
@@ -52,7 +51,7 @@ def stress_test(
     """Run stress test (load testing) on an agent."""
     runner = BenchmarkRunner()
     results = runner.stress_test(agent_id, concurrent, duration)
-    
+
     typer.echo(f"\nStress Test Results for {agent_id}:")
     typer.echo(f"  Concurrent Requests: {results['concurrent_requests']}")
     typer.echo(f"  Duration: {results['duration']}s")
@@ -81,9 +80,9 @@ def autotune(
             ),
         ],
     )
-    
+
     output_path = output or f"./agent_factory/agents/{agent_id}_tuned.yaml"
-    
+
     try:
         tuned_config = autotune_agent(agent_id, suite, output_path=output_path)
         typer.echo("✅ Autotune complete!")

@@ -43,13 +43,16 @@ except ImportError:
     RevenueTracker = None  # type: ignore[assignment,misc]
     get_revenue_tracker = None  # type: ignore[assignment]
 
+
 # Lazy import for PostgresTelemetryBackend
 def __getattr__(name: str):
     """Lazy import for PostgresTelemetryBackend."""
     if name == "PostgresTelemetryBackend":
         from agent_factory.telemetry.backends import PostgresTelemetryBackend
+
         return PostgresTelemetryBackend
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 __all__ = [
     "AgentPCAPTracer",

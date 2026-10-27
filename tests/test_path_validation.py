@@ -27,7 +27,7 @@ def test_valid_relative_path(temp_workdir):
     """Test validation of valid relative paths."""
     test_file = Path("test.txt")
     test_file.write_text("test content")
-    
+
     path = _validate_path("test.txt", allow_write=False)
     assert path.exists()
     assert path.name == "test.txt"
@@ -39,11 +39,11 @@ def test_path_traversal_prevention(temp_workdir):
     # Try to access parent directory
     with pytest.raises(ToolValidationError, match="Path traversal detected"):
         _validate_path("../etc/passwd", allow_write=False)
-    
+
     # Try with multiple ..
     with pytest.raises(ToolValidationError, match="Path traversal detected"):
         _validate_path("../../etc/passwd", allow_write=False)
-    
+
     # Try with absolute path outside sandbox
     with pytest.raises(ToolValidationError, match="Path traversal detected"):
         _validate_path("/etc/passwd", allow_write=False)
@@ -58,9 +58,12 @@ def test_system_directory_protection(temp_workdir):
         "/bin/sh",
         "C:\\Windows\\System32",
     ]
-    
+
     for path_str in forbidden_paths:
-        with pytest.raises(ToolValidationError, match="(Access to system directory not allowed|Path traversal detected)"):
+        with pytest.raises(
+            ToolValidationError,
+            match="(Access to system directory not allowed|Path traversal detected)",
+        ):
             _validate_path(path_str, allow_write=False)
 
 
@@ -72,7 +75,7 @@ def test_sandbox_directory(temp_workdir):
     try:
         test_file = Path(sandbox) / "test.txt"
         test_file.write_text("test")
-        
+
         path = _validate_path("test.txt", allow_write=False)
         assert str(path).lower().startswith(sandbox.lower())
     finally:
@@ -84,7 +87,7 @@ def test_read_file_valid(temp_workdir):
     """Test reading a valid file."""
     test_file = Path("test.txt")
     test_file.write_text("Hello, World!")
-    
+
     content = read_file("test.txt")
     assert content == "Hello, World!"
 
@@ -131,10 +134,10 @@ def test_invalid_path_type():
     """Test that non-string paths are rejected."""
     with pytest.raises(ToolValidationError, match="File path must be a non-empty string"):
         _validate_path(None, allow_write=False)
-    
+
     with pytest.raises(ToolValidationError, match="File path must be a non-empty string"):
         _validate_path("", allow_write=False)
-    
+
     with pytest.raises(ToolValidationError, match="File path must be a non-empty string"):
         _validate_path(123, allow_write=False)
 

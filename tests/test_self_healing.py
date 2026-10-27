@@ -56,9 +56,7 @@ def test_self_healing_recovers_after_transient_error():
         ),
     ]
 
-    executor = SelfHealingAgentExecutor(
-        agent=mock_agent, max_retries=3, initial_backoff=0.01
-    )
+    executor = SelfHealingAgentExecutor(agent=mock_agent, max_retries=3, initial_backoff=0.01)
     result = executor.execute("Process data")
 
     assert result.status == AgentStatus.COMPLETED
@@ -95,9 +93,7 @@ def test_self_healing_schema_correction():
         "required": ["decision", "score"],
     }
 
-    executor = SelfHealingAgentExecutor(
-        agent=mock_agent, max_retries=3, initial_backoff=0.01
-    )
+    executor = SelfHealingAgentExecutor(agent=mock_agent, max_retries=3, initial_backoff=0.01)
     result = executor.execute("Evaluate candidate", expected_schema=schema)
 
     assert result.status == AgentStatus.COMPLETED
@@ -119,6 +115,7 @@ def test_self_healing_circuit_breaker_halts():
     )
 
     from agent_factory.security.circuit_breaker import CircuitBreakerConfig
+
     cb = CircuitBreaker("test_cb", CircuitBreakerConfig(failure_threshold=2, timeout=60.0))
     executor = SelfHealingAgentExecutor(
         agent=mock_agent, max_retries=4, circuit_breaker=cb, initial_backoff=0.01

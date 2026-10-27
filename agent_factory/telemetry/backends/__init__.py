@@ -10,6 +10,7 @@ def __getattr__(name: str):
     if name == "PostgresTelemetryBackend":
         try:
             from agent_factory.telemetry.backends.postgres import PostgresTelemetryBackend
+
             return PostgresTelemetryBackend
         except ImportError:
             raise ImportError(
@@ -17,6 +18,7 @@ def __getattr__(name: str):
                 "Install with: pip install sqlalchemy psycopg2-binary"
             )
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 __all__ = [
     "PostgresTelemetryBackend",

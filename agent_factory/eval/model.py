@@ -10,7 +10,7 @@ from typing import Any
 class Scenario:
     """
     Evaluation scenario.
-    
+
     Example:
         >>> scenario = Scenario(
         ...     id="tip-calculation",
@@ -19,6 +19,7 @@ class Scenario:
         ...     expected_outputs={"result": 15.0},
         ... )
     """
+
     id: str
     name: str
     inputs: dict[str, Any]
@@ -31,7 +32,7 @@ class Scenario:
 class EvaluationResult:
     """
     Result of evaluating an agent on a scenario.
-    
+
     Example:
         >>> result = EvaluationResult(
         ...     scenario_id="tip-calculation",
@@ -43,6 +44,7 @@ class EvaluationResult:
         ...     cost_estimate=0.001,
         ... )
     """
+
     scenario_id: str
     agent_id: str
     success: bool
@@ -59,7 +61,7 @@ class EvaluationResult:
 class BenchmarkSuite:
     """
     Collection of evaluation scenarios.
-    
+
     Example:
         >>> suite = BenchmarkSuite(
         ...     id="math-basics",
@@ -68,8 +70,11 @@ class BenchmarkSuite:
         ...     metrics=["accuracy", "latency", "cost"],
         ... )
     """
+
     id: str
     name: str
     scenarios: list[Scenario]
-    metrics: list[str] = field(default_factory=lambda: ["accuracy", "latency", "cost", "error_rate"])
+    metrics: list[str] = field(
+        default_factory=lambda: ["accuracy", "latency", "cost", "error_rate"]
+    )
     metadata: dict[str, Any] = field(default_factory=dict)

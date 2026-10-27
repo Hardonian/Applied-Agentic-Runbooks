@@ -24,6 +24,7 @@ if TYPE_CHECKING:
 @dataclass
 class MCTSNode:
     """Represents a discrete thought/state in the reasoning tree."""
+
     id: str = field(default_factory=lambda: str(uuid.uuid4())[:8])
     thought: str = ""
     depth: int = 0
@@ -52,7 +53,9 @@ class MCTSNode:
         """
         if self.pruned:
             return -float("inf")
-        exploration = c_puct * self.prior_prob * (math.sqrt(max(1, parent_visits)) / (1 + self.visits))
+        exploration = (
+            c_puct * self.prior_prob * (math.sqrt(max(1, parent_visits)) / (1 + self.visits))
+        )
         return self.q_value + exploration
 
     def to_dict(self) -> dict[str, Any]:
@@ -73,6 +76,7 @@ class MCTSNode:
 @dataclass
 class MCTSSearchResult:
     """Encapsulates the Pareto-optimal solution path and search telemetry."""
+
     best_trajectory: list[str]
     final_solution: str
     confidence_score: float
@@ -100,12 +104,14 @@ class MCTSSearchResult:
         ]
         for idx, step in enumerate(self.best_trajectory, 1):
             lines.append(f"{idx}. {step}")
-        lines.extend([
-            "",
-            "## 🏁 Final Synthesized Solution",
-            "",
-            self.final_solution,
-        ])
+        lines.extend(
+            [
+                "",
+                "## 🏁 Final Synthesized Solution",
+                "",
+                self.final_solution,
+            ]
+        )
         return "\n".join(lines)
 
 
@@ -199,7 +205,10 @@ class SpeculativeMCTSEngine:
             depth_reached=max(n.depth for n in best_nodes) if best_nodes else 0,
             execution_time_seconds=round(execution_time, 4),
             tree_visualization=root.to_dict(),
-            metadata={"simulations": self.num_simulations, "branching_factor": self.branching_factor},
+            metadata={
+                "simulations": self.num_simulations,
+                "branching_factor": self.branching_factor,
+            },
         )
 
     def _select(self, node: MCTSNode) -> MCTSNode:
@@ -243,7 +252,7 @@ class SpeculativeMCTSEngine:
             res = self.agent.run(prompt)
             raw_text = res.output if hasattr(res, "output") else str(res)
             parts = [p.strip() for p in raw_text.split("---") if p.strip()]
-            candidates = parts[:self.branching_factor]
+            candidates = parts[: self.branching_factor]
 
         # Deterministic rich heuristic fallback for high reliability
         if len(candidates) < self.branching_factor:
@@ -282,9 +291,13 @@ class SpeculativeMCTSEngine:
 
         # Quality indicators
         score = 0.55
-        if any(w in thought_lower for w in ["decompose", "verify", "boundary", "atomic", "validate"]):
+        if any(
+            w in thought_lower for w in ["decompose", "verify", "boundary", "atomic", "validate"]
+        ):
             score += 0.20
-        if any(w in thought_lower for w in ["stress-test", "counter-factual", "optimize", "synthesis"]):
+        if any(
+            w in thought_lower for w in ["stress-test", "counter-factual", "optimize", "synthesis"]
+        ):
             score += 0.15
         if any(w in thought_lower for w in ["error", "hallucination", "fail", "invalid"]):
             score -= 0.35

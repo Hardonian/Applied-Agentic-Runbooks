@@ -20,6 +20,7 @@ def generate(
     """Generate UI for an agent."""
     try:
         from agent_factory.ui import generate_ui
+
         generate_ui(agent_id, output, template)
         typer.echo(f"✅ UI generated at: {output}")
     except Exception as e:
@@ -39,22 +40,29 @@ def demo(
         typer.echo("❌ Streamlit not installed. Install with: pip install streamlit")
         typer.echo("   Or install demo dependencies: pip install 'agent-factory[demo]'")
         raise typer.Exit(1)
-    
+
     demo_path = Path(__file__).parent.parent.parent / "demo" / "app.py"
-    
+
     if not demo_path.exists():
         typer.echo(f"❌ Demo UI not found at: {demo_path}")
         raise typer.Exit(1)
-    
+
     typer.echo(f"🚀 Starting Agent Factory Demo UI on http://{host}:{port}")
     typer.echo("   Press Ctrl+C to stop")
-    
+
     try:
-        subprocess.run([  # nosec B603 -- argv is a fixed literal list (sys.executable -m streamlit); shell never used, so there is no shell-parsing surface
-            sys.executable, "-m", "streamlit", "run",
-            str(demo_path),
-            "--server.port", str(port),
-            "--server.address", host,
-        ])
+        subprocess.run(
+            [  # nosec B603 -- argv is a fixed literal list (sys.executable -m streamlit); shell never used, so there is no shell-parsing surface
+                sys.executable,
+                "-m",
+                "streamlit",
+                "run",
+                str(demo_path),
+                "--server.port",
+                str(port),
+                "--server.address",
+                host,
+            ]
+        )
     except KeyboardInterrupt:
         typer.echo("\n👋 Demo UI stopped")

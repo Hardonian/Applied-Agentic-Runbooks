@@ -30,7 +30,11 @@ def run_command(
         "healing": GauntletSuite.SELF_HEALING,
         "settler": GauntletSuite.SETTLER_ACCOUNTING,
     }
-    selected = [aliases[item] if item in aliases else GauntletSuite(item) for item in suite] if suite else None
+    selected = (
+        [aliases[item] if item in aliases else GauntletSuite(item) for item in suite]
+        if suite
+        else None
+    )
     artifact_dir = output.parent if output else None
     summary = asyncio.run(
         ArenaRunner(artifact_dir=artifact_dir).run(selected, concurrency=concurrency)

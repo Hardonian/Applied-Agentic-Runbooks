@@ -10,6 +10,7 @@ from typing import Any
 @dataclass
 class Plan:
     """Billing plan."""
+
     id: str
     name: str
     plan_type: str = "free"  # free, pro, enterprise
@@ -21,7 +22,7 @@ class Plan:
     currency: str = "USD"
     features: dict[str, Any] | None = None
     limits: dict[str, Any] | None = None
-    
+
     def __post_init__(self):
         if self.price is not None and self.price_monthly == 0.0:
             self.price_monthly = self.price
@@ -36,6 +37,7 @@ class Plan:
 @dataclass
 class Subscription:
     """Subscription to a plan."""
+
     id: str
     tenant_id: str
     plan_id: str
@@ -45,7 +47,7 @@ class Subscription:
     current_period_end: datetime | None = None
     stripe_subscription_id: str | None = None
     stripe_customer_id: str | None = None
-    
+
     def __post_init__(self):
         if self.current_period_start is None:
             self.current_period_start = datetime.utcnow()
@@ -56,6 +58,7 @@ class Subscription:
 @dataclass
 class UsageRecord:
     """Usage record for billing."""
+
     id: str
     tenant_id: str
     billing_unit: str  # agent_run, workflow_run, token, etc.
@@ -65,7 +68,7 @@ class UsageRecord:
     currency: str = "USD"
     period_start: datetime | None = None
     period_end: datetime | None = None
-    
+
     def __post_init__(self):
         if self.period_start is None:
             self.period_start = datetime.utcnow()

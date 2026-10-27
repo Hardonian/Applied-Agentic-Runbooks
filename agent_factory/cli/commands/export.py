@@ -27,15 +27,15 @@ def metrics(
 ):
     """
     Export metrics to file.
-    
+
     Example:
         agent-factory export metrics --output metrics.json --format json --days 30
     """
     analytics = get_analytics()
-    
+
     end_date = datetime.utcnow()
     start_date = end_date - timedelta(days=days)
-    
+
     # Get all metrics
     metrics_data = {
         "export_date": datetime.utcnow().isoformat(),
@@ -53,7 +53,7 @@ def metrics(
             "revenue": analytics.get_growth_rate("revenue", "month"),
         },
     }
-    
+
     # Add revenue metrics if available
     if get_revenue_tracker is not None:
         try:
@@ -66,10 +66,10 @@ def metrics(
             }
         except Exception as e:
             typer.echo(f"Warning: Could not get revenue metrics: {e}", err=True)
-    
+
     # Export to file
     output_path = Path(output_file)
-    
+
     if format == "json":
         with open(output_path, "w") as f:
             json.dump(metrics_data, f, indent=2, default=str)
@@ -80,16 +80,20 @@ def metrics(
         for key, value in metrics_data.items():
             if isinstance(value, dict):
                 for sub_key, sub_value in value.items():
-                    csv_data.append({
-                        "metric": f"{key}.{sub_key}",
-                        "value": sub_value,
-                    })
+                    csv_data.append(
+                        {
+                            "metric": f"{key}.{sub_key}",
+                            "value": sub_value,
+                        }
+                    )
             else:
-                csv_data.append({
-                    "metric": key,
-                    "value": value,
-                })
-        
+                csv_data.append(
+                    {
+                        "metric": key,
+                        "value": value,
+                    }
+                )
+
         with open(output_path, "w", newline="") as f:
             if csv_data:
                 writer = csv.DictWriter(f, fieldnames=["metric", "value"])
@@ -108,21 +112,21 @@ def funnel(
 ):
     """
     Export conversion funnel data.
-    
+
     Example:
         agent-factory export funnel --output funnel.json --days 30
     """
     analytics = get_analytics()
-    
+
     end_date = datetime.utcnow()
     start_date = end_date - timedelta(days=days)
-    
+
     funnel_data = analytics.get_conversion_funnel(start_date, end_date)
-    
+
     output_path = Path(output_file)
     with open(output_path, "w") as f:
         json.dump(funnel_data, f, indent=2, default=str)
-    
+
     typer.echo(f"✅ Funnel data exported to {output_path}")
 
 
@@ -133,31 +137,37 @@ def channels(
 ):
     """
     Export channel attribution data.
-    
+
     Example:
         agent-factory export channels --output channels.json --days 30
     """
     get_analytics()
-    
+
     end_date = datetime.utcnow()
     end_date - timedelta(days=days)
-    
+
+
 @app.command(name="agent")
 def export_agent_command(
     agent_id: str = typer.Argument(..., help="Agent ID to export"),
-    target: str = typer.Option("langgraph", "--target", "-t", help="Target framework (langgraph, crewai, autogen, llamaindex, docker, openai)"),
+    target: str = typer.Option(
+        "langgraph",
+        "--target",
+        "-t",
+        help="Target framework (langgraph, crewai, autogen, llamaindex, docker, openai)",
+    ),
     output: str | None = typer.Option(None, "--output", "-o", help="Output file path"),
 ):
     """
     Export an agent to LangGraph, CrewAI, AutoGen, LlamaIndex, Docker, or OpenAI specs.
-    
+
     Example:
         agent-factory export agent research_assistant --target langgraph
     """
     from agent_factory.agents.agent import Agent
     from agent_factory.interop import export_agent
     from agent_factory.registry.local_registry import LocalRegistry
-    
+
     registry = LocalRegistry()
     agent_obj = registry.get_agent(agent_id)
     if not agent_obj:
@@ -168,9 +178,9 @@ def export_agent_command(
             instructions=f"Autonomous Agent Factory instance for {agent_id}.",
             model="gpt-4o",
         )
-        
+
     exported_code = export_agent(agent_obj, target_framework=target)
-    
+
     if output:
         out_p = Path(output)
         out_p.write_text(exported_code, encoding="utf-8")
@@ -178,4 +188,3 @@ def export_agent_command(
     else:
         typer.echo(f"\n--- Exported {agent_id} ({target}) ---\n")
         typer.echo(exported_code)
-

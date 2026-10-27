@@ -22,6 +22,7 @@ from typing import Any
 @dataclass
 class VeriDAGNodeProof:
     """Cryptographic attestation of a discrete step execution in the workflow."""
+
     node_id: str
     executor_id: str
     parent_hashes: list[str]
@@ -35,6 +36,7 @@ class VeriDAGNodeProof:
 @dataclass
 class VeriDAGExecutionProof:
     """Complete cryptographic proof bundle for an entire DAG workflow execution."""
+
     execution_id: str = ""
     workflow_name: str = ""
     final_merkle_root: str = ""
@@ -129,9 +131,9 @@ class VeriDAGEngine:
 
                 if all(p in executed for p in parents):
                     # Gather inputs from parents
-                    node_inputs = {
-                        p: results[p] for p in parents
-                    } if parents else dict(initial_input)
+                    node_inputs = (
+                        {p: results[p] for p in parents} if parents else dict(initial_input)
+                    )
 
                     fn: Callable = node_spec["fn"]
                     start = time.perf_counter()
@@ -141,9 +143,7 @@ class VeriDAGEngine:
                     # Compute cryptographic hashes
                     in_hash = cls.hash_payload(node_inputs)
                     out_hash = cls.hash_payload(output)
-                    parent_merkle_hashes = [
-                        node_proofs[p].state_merkle_hash for p in parents
-                    ]
+                    parent_merkle_hashes = [node_proofs[p].state_merkle_hash for p in parents]
                     node_merkle = cls.compute_node_merkle_hash(
                         node_id=node_id,
                         input_hash=in_hash,

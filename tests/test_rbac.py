@@ -45,9 +45,9 @@ def test_get_user_permissions():
     """Test getting user permissions from request."""
     request = Mock()
     request.state.user_roles = [Role.USER]
-    
+
     permissions = get_user_permissions(request)
-    
+
     assert Permission.READ_AGENTS in permissions
     assert Permission.WRITE_AGENTS in permissions
     assert Permission.ADMIN not in permissions
@@ -58,9 +58,9 @@ def test_get_user_permissions_admin():
     """Test getting admin permissions."""
     request = Mock()
     request.state.user_roles = [Role.ADMIN]
-    
+
     permissions = get_user_permissions(request)
-    
+
     assert Permission.ADMIN in permissions
     assert Permission.DELETE_AGENTS in permissions
 
@@ -70,9 +70,9 @@ def test_get_user_permissions_multiple_roles():
     """Test getting permissions for multiple roles."""
     request = Mock()
     request.state.user_roles = [Role.USER, Role.CREATOR]
-    
+
     permissions = get_user_permissions(request)
-    
+
     # Should have permissions from both roles
     assert Permission.READ_AGENTS in permissions
     assert Permission.PUBLISH_BLUEPRINTS in permissions
@@ -81,11 +81,12 @@ def test_get_user_permissions_multiple_roles():
 @pytest.mark.unit
 def test_require_permission_decorator():
     """Test require_permission decorator structure."""
+
     # Test that decorator exists and can be applied
     @require_permission(Permission.READ_AGENTS)
     async def test_func(request):
         return "success"
-    
+
     # Decorator should exist and be callable
     assert callable(test_func)
 
@@ -93,11 +94,12 @@ def test_require_permission_decorator():
 @pytest.mark.unit
 def test_require_role_decorator():
     """Test require_role decorator structure."""
+
     # Test that decorator exists and can be applied
     @require_role(Role.ADMIN)
     async def test_func(request):
         return "success"
-    
+
     # Decorator should exist and be callable
     assert callable(test_func)
 

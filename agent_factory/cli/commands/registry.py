@@ -20,9 +20,9 @@ def search(
     """Search the registry."""
     registry = LocalRegistry()
     results = registry.search(query, category=category)
-    
+
     typer.echo(f"Search results for: {query}")
-    
+
     if results.get("agents"):
         typer.echo(f"\nAgents ({len(results['agents'])}):")
         for agent_id in results["agents"]:
@@ -31,7 +31,7 @@ def search(
                 typer.echo(f"  - {agent_id}: {agent.name}")
             else:
                 typer.echo(f"  - {agent_id}")
-    
+
     if results.get("tools"):
         typer.echo(f"\nTools ({len(results['tools'])}):")
         for tool_id in results["tools"]:
@@ -40,7 +40,7 @@ def search(
                 typer.echo(f"  - {tool_id}: {tool.name}")
             else:
                 typer.echo(f"  - {tool_id}")
-    
+
     if results.get("workflows"):
         typer.echo(f"\nWorkflows ({len(results['workflows'])}):")
         for workflow_id in results["workflows"]:
@@ -49,7 +49,7 @@ def search(
                 typer.echo(f"  - {workflow_id}: {workflow.name}")
             else:
                 typer.echo(f"  - {workflow_id}")
-    
+
     if results.get("blueprints"):
         typer.echo(f"\nBlueprints ({len(results['blueprints'])}):")
         for blueprint_id in results["blueprints"]:
@@ -62,16 +62,21 @@ def search(
 
 @app.command()
 def install(
-    resource_type: str = typer.Argument(..., help="Resource type: agent, tool, workflow, blueprint"),
+    resource_type: str = typer.Argument(
+        ..., help="Resource type: agent, tool, workflow, blueprint"
+    ),
     resource_id: str = typer.Argument(..., help="Resource ID"),
-    source_path: str | None = typer.Option(None, "--source", "-s", help="Source path for installation"),
+    source_path: str | None = typer.Option(
+        None, "--source", "-s", help="Source path for installation"
+    ),
 ):
     """Install a resource from registry."""
     registry = LocalRegistry()
-    
+
     if resource_type == "agent":
         if source_path:
             import json
+
             agent_data = json.loads(Path(source_path).read_text())
             agent = Agent.from_dict(agent_data)
             registry.register_agent(agent)
@@ -82,10 +87,13 @@ def install(
     elif resource_type == "tool":
         if source_path:
             import json
+
             tool_data = json.loads(Path(source_path).read_text())
+
             # Create placeholder tool
             def placeholder(**kwargs):
                 raise NotImplementedError("Tool implementation not available")
+
             tool = Tool(
                 id=tool_data.get("id", resource_id),
                 name=tool_data.get("name", resource_id),
@@ -100,6 +108,7 @@ def install(
     elif resource_type == "workflow":
         if source_path:
             import json
+
             json.loads(Path(source_path).read_text())
             workflow = registry.get_workflow(resource_id)
             if not workflow:
@@ -124,12 +133,14 @@ def install(
 
 @app.command()
 def uninstall(
-    resource_type: str = typer.Argument(..., help="Resource type: agent, tool, workflow, blueprint"),
+    resource_type: str = typer.Argument(
+        ..., help="Resource type: agent, tool, workflow, blueprint"
+    ),
     resource_id: str = typer.Argument(..., help="Resource ID"),
 ):
     """Uninstall a resource from registry."""
     registry = LocalRegistry()
-    
+
     if resource_type == "agent":
         if registry.delete_agent(resource_id):
             typer.echo(f"✅ Uninstalled agent: {resource_id}")
@@ -156,6 +167,7 @@ def uninstall(
         blueprint_dir = registry.base_path / "blueprints" / resource_id
         if blueprint_dir.exists():
             import shutil
+
             shutil.rmtree(blueprint_dir)
             typer.echo(f"✅ Uninstalled blueprint: {resource_id}")
         else:
@@ -168,24 +180,30 @@ def uninstall(
 
 @app.command()
 def update(
-    resource_type: str = typer.Argument(..., help="Resource type: agent, tool, workflow, blueprint"),
+    resource_type: str = typer.Argument(
+        ..., help="Resource type: agent, tool, workflow, blueprint"
+    ),
     resource_id: str = typer.Argument(..., help="Resource ID"),
     source_path: str = typer.Option(..., "--source", "-s", help="Source path for update"),
 ):
     """Update a resource in registry."""
     registry = LocalRegistry()
-    
+
     if resource_type == "agent":
         import json
+
         agent_data = json.loads(Path(source_path).read_text())
         agent = Agent.from_dict(agent_data)
         registry.register_agent(agent)
         typer.echo(f"✅ Updated agent: {resource_id}")
     elif resource_type == "tool":
         import json
+
         tool_data = json.loads(Path(source_path).read_text())
+
         def placeholder(**kwargs):
             raise NotImplementedError("Tool implementation not available")
+
         tool = Tool(
             id=tool_data.get("id", resource_id),
             name=tool_data.get("name", resource_id),
@@ -196,6 +214,7 @@ def update(
         typer.echo(f"✅ Updated tool: {resource_id}")
     elif resource_type == "workflow":
         import json
+
         json.loads(Path(source_path).read_text())
         workflow = registry.get_workflow(resource_id)
         if workflow:

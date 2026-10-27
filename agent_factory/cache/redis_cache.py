@@ -12,11 +12,11 @@ from agent_factory.monitoring.metrics import MetricsCollector
 
 class RedisCache:
     """Redis cache implementation."""
-    
+
     def __init__(self, host: str | None = None, port: int = 6379, db: int = 0):
         """
         Initialize Redis cache.
-        
+
         Args:
             host: Redis host
             port: Redis port
@@ -27,7 +27,7 @@ class RedisCache:
         self.db = db
         connect_timeout = float(os.getenv("REDIS_CONNECT_TIMEOUT_SECONDS", "0.25"))
         self.client: Any = None
-        
+
         try:
             self.client = redis.Redis(
                 host=str(self.host or "localhost"),
@@ -41,20 +41,20 @@ class RedisCache:
             self.client.ping()
         except Exception:
             self.client = None
-    
+
     def get(self, key: str) -> Any | None:
         """
         Get value from cache.
-        
+
         Args:
             key: Cache key
-            
+
         Returns:
             Cached value or None
         """
         if not self.client:
             return None
-        
+
         try:
             value = self.client.get(key)
             if value:
@@ -66,11 +66,11 @@ class RedisCache:
         except Exception:
             MetricsCollector.record_cache_miss("redis")
             return None
-    
+
     def set(self, key: str, value: Any, ttl: int = 3600):
         """
         Set value in cache.
-        
+
         Args:
             key: Cache key
             value: Value to cache
@@ -78,42 +78,48 @@ class RedisCache:
         """
         if not self.client:
             return
-        
+
         try:
             self.client.setex(key, ttl, json.dumps(value))
-        except Exception:  # nosec B110 -- cache write failure is degradative only -- callers treat the cache as optional, so a Redis error must not fail the request
+        except (
+            Exception
+        ):  # nosec B110 -- cache write failure is degradative only -- callers treat the cache as optional, so a Redis error must not fail the request
             pass
-    
+
     def delete(self, key: str):
         """
         Delete key from cache.
-        
+
         Args:
             key: Cache key
         """
         if not self.client:
             return
-        
+
         try:
             self.client.delete(key)
-        except Exception:  # nosec B110 -- cache invalidation is best-effort; stale entry is corrected on next write
+        except (
+            Exception
+        ):  # nosec B110 -- cache invalidation is best-effort; stale entry is corrected on next write
             pass
-    
+
     def clear(self, pattern: str = "*"):
         """
         Clear cache by pattern.
-        
+
         Args:
             pattern: Key pattern
         """
         if not self.client:
             return
-        
+
         try:
             keys = self.client.keys(pattern)
             if keys:
                 self.client.delete(*keys)
-        except Exception:  # nosec B110 -- bulk cache invalidation is best-effort; must not fail the caller
+        except (
+            Exception
+        ):  # nosec B110 -- bulk cache invalidation is best-effort; must not fail the caller
             pass
 
 
@@ -132,30 +138,33 @@ def get_cache() -> RedisCache:
 def cached(ttl: int = 3600, key_prefix: str = ""):
     """
     Decorator to cache function results.
-    
+
     Args:
         ttl: Time to live in seconds
         key_prefix: Key prefix
     """
+
     def decorator(func):
         @wraps(func)
         async def wrapper(*args, **kwargs):
             cache = get_cache()
-            
+
             # Generate cache key
             cache_key = f"{key_prefix}:{func.__name__}:{args!s}:{kwargs!s}"
-            
+
             # Try to get from cache
             cached_value = cache.get(cache_key)
             if cached_value is not None:
                 return cached_value
-            
+
             # Execute function
             result = await func(*args, **kwargs)
-            
+
             # Cache result
             cache.set(cache_key, result, ttl=ttl)
-            
+
             return result
+
         return wrapper
+
     return decorator

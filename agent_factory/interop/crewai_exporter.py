@@ -76,11 +76,11 @@ if __name__ == "__main__":
             agent_defs.append(agent_code)
             agent_names.append(f"{clean_id}_agent")
 
-            task_code = f'''task_{clean_id} = Task(
+            task_code = f"""task_{clean_id} = Task(
     description="Perform {role} contribution for the shared crew objective.",
     expected_output="Domain analysis output.",
     agent={clean_id}_agent,
-)'''
+)"""
             task_defs.append(task_code)
             task_names.append(f"task_{clean_id}")
 

@@ -20,6 +20,7 @@ from pathlib import Path
 @dataclass
 class PackageManifest:
     """Metadata manifest for an Agent Factory package."""
+
     id: str
     name: str
     version: str
@@ -39,7 +40,9 @@ class BlueprintPackager:
     """
 
     @staticmethod
-    def pack_directory(source_dir: Path, output_file: Path, manifest: PackageManifest) -> tuple[Path, str]:
+    def pack_directory(
+        source_dir: Path, output_file: Path, manifest: PackageManifest
+    ) -> tuple[Path, str]:
         """
         Pack blueprint directory into a signed `.afpkg` archive.
         """

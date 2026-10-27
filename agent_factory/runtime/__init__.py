@@ -11,9 +11,11 @@ def __getattr__(name: str):
     """Lazy import for RuntimeEngine and Execution to avoid circular imports."""
     if name == "RuntimeEngine":
         from agent_factory.runtime.engine import RuntimeEngine
+
         return RuntimeEngine
     elif name == "Execution":
         from agent_factory.runtime.engine import Execution
+
         return Execution
     elif name in (
         "SelfHealingAgentExecutor",
@@ -23,8 +25,10 @@ def __getattr__(name: str):
         "HealingAction",
     ):
         import agent_factory.runtime.self_healing as sh
+
         return getattr(sh, name)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 __all__ = [
     "Execution",

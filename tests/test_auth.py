@@ -35,7 +35,9 @@ def test_current_user_rejects_token_for_missing_database_user(monkeypatch):
         def close(self):
             return None
 
-    monkeypatch.setattr(auth, "verify_token", lambda _token: TokenData(user_id="gone", email="gone@example.com"))
+    monkeypatch.setattr(
+        auth, "verify_token", lambda _token: TokenData(user_id="gone", email="gone@example.com")
+    )
     monkeypatch.setattr("agent_factory.database.session.get_db", lambda: iter([Session()]))
 
     credentials = type("Credentials", (), {"credentials": "token"})()
@@ -89,10 +91,10 @@ def test_create_access_token():
     """Test creating an access token."""
     data = {"sub": "user-123", "email": "test@example.com"}
     token = create_access_token(data)
-    
+
     assert token is not None
     assert isinstance(token, str)
-    
+
     # Verify token can be decoded
     payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     assert payload["sub"] == "user-123"
@@ -105,7 +107,7 @@ def test_create_access_token_with_expiry():
     data = {"sub": "user-123"}
     expires_delta = timedelta(minutes=60)
     token = create_access_token(data, expires_delta=expires_delta)
-    
+
     payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     exp_time = datetime.fromtimestamp(payload["exp"], tz=timezone.utc)
     assert exp_time > datetime.now(timezone.utc) + timedelta(minutes=59)
@@ -116,9 +118,9 @@ def test_verify_token_valid():
     """Test verifying a valid token."""
     data = {"sub": "user-123", "email": "test@example.com"}
     token = create_access_token(data)
-    
+
     token_data = verify_token(token)
-    
+
     assert isinstance(token_data, TokenData)
     assert token_data.user_id == "user-123"
     assert token_data.email == "test@example.com"
@@ -130,7 +132,7 @@ def test_verify_token_expired():
     data = {"sub": "user-123"}
     expires_delta = timedelta(seconds=-1)  # Already expired
     token = create_access_token(data, expires_delta=expires_delta)
-    
+
     with pytest.raises(Exception):  # Should raise HTTPException
         verify_token(token)
 
@@ -139,7 +141,7 @@ def test_verify_token_expired():
 def test_verify_token_invalid():
     """Test verifying an invalid token."""
     invalid_token = "invalid.token.here"
-    
+
     with pytest.raises(Exception):  # Should raise HTTPException
         verify_token(invalid_token)
 
@@ -149,6 +151,6 @@ def test_verify_token_missing_sub():
     """Test verifying token without subject."""
     data = {"email": "test@example.com"}  # Missing 'sub'
     token = jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
-    
+
     with pytest.raises(Exception):  # Should raise HTTPException
         verify_token(token)

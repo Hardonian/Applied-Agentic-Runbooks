@@ -78,15 +78,15 @@ def test_security_unsafe_code():
     # Should not allow __import__
     with pytest.raises(ValueError, match="Function '__import__' is not allowed"):
         safe_evaluate("__import__('os').system('ls')")
-    
+
     # Should not allow eval
     with pytest.raises(ValueError, match="Function 'eval' is not allowed"):
         safe_evaluate("eval('1+1')")
-    
+
     # Should not allow exec
     with pytest.raises(ValueError, match="Function 'exec' is not allowed"):
         safe_evaluate("exec('print(1)')")
-    
+
     # Should not allow open
     with pytest.raises(ValueError, match="Function 'open' is not allowed"):
         safe_evaluate("open('/etc/passwd')")
@@ -104,7 +104,7 @@ def test_invalid_syntax():
     """Test that invalid syntax raises errors."""
     with pytest.raises(ValueError, match="Invalid expression syntax"):
         safe_evaluate("2 +")
-    
+
     with pytest.raises(ValueError, match="Invalid expression syntax"):
         safe_evaluate("(")
 
@@ -114,7 +114,7 @@ def test_empty_expression():
     """Test that empty expressions raise errors."""
     with pytest.raises(ValueError, match="Expression must be a non-empty string"):
         safe_evaluate("")
-    
+
     with pytest.raises(ValueError, match="Expression must be a non-empty string"):
         safe_evaluate(None)
 

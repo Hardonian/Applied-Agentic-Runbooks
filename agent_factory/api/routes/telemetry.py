@@ -19,13 +19,13 @@ async def get_metrics(
 ):
     """
     Get growth metrics summary.
-    
+
     Args:
         request: FastAPI request
         tenant_id: Optional tenant ID filter
         start_date: Optional start date (ISO format)
         end_date: Optional end date (ISO format)
-        
+
     Returns:
         Metrics summary
     """
@@ -33,29 +33,29 @@ async def get_metrics(
     user = await get_current_user_from_request(request)
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    
+
     # If tenant_id not provided, use from request state
     if not tenant_id:
         tenant_id = getattr(request.state, "tenant_id", None)
-    
+
     # Parse dates
     start_dt = None
     end_dt = None
-    
+
     if start_date:
         try:
             start_dt = datetime.fromisoformat(start_date)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid start_date format")
-    
+
     if end_date:
         try:
             end_dt = datetime.fromisoformat(end_date)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid end_date format")
-    
+
     analytics = get_analytics()
-    
+
     if tenant_id:
         metrics = analytics.get_tenant_metrics(
             tenant_id=tenant_id,
@@ -67,7 +67,7 @@ async def get_metrics(
             start_date=start_dt,
             end_date=end_dt,
         )
-    
+
     return metrics
 
 
@@ -80,13 +80,13 @@ async def get_tenant_metrics(
 ):
     """
     Get metrics for a specific tenant.
-    
+
     Args:
         request: FastAPI request
         tenant_id: Tenant ID
         start_date: Optional start date (ISO format)
         end_date: Optional end date (ISO format)
-        
+
     Returns:
         Tenant metrics
     """
@@ -94,42 +94,44 @@ async def get_tenant_metrics(
     user = await get_current_user_from_request(request)
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    
+
     # Check permission
     from agent_factory.security.rbac import check_permission
-    
+
     # User must be tenant admin or own the tenant
     if tenant_id:
-        user_tenant_id = user.get("tenant_id") if isinstance(user, dict) else getattr(user, "tenant_id", None)
+        user_tenant_id = (
+            user.get("tenant_id") if isinstance(user, dict) else getattr(user, "tenant_id", None)
+        )
         if user_tenant_id != tenant_id:
             # Check if user is tenant admin
             has_permission = check_permission(user, "view_tenant_metrics", tenant_id)
             if not has_permission:
                 raise HTTPException(status_code=403, detail="Permission denied")
-    
+
     # Parse dates
     start_dt = None
     end_dt = None
-    
+
     if start_date:
         try:
             start_dt = datetime.fromisoformat(start_date)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid start_date format")
-    
+
     if end_date:
         try:
             end_dt = datetime.fromisoformat(end_date)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid end_date format")
-    
+
     analytics = get_analytics()
     metrics = analytics.get_tenant_metrics(
         tenant_id=tenant_id,
         start_date=start_dt,
         end_date=end_dt,
     )
-    
+
     return metrics
 
 
@@ -141,12 +143,12 @@ async def get_conversion_funnel(
 ):
     """
     Get conversion funnel metrics.
-    
+
     Args:
         request: FastAPI request
         start_date: Optional start date (ISO format)
         end_date: Optional end date (ISO format)
-        
+
     Returns:
         Conversion funnel metrics
     """
@@ -154,27 +156,27 @@ async def get_conversion_funnel(
     user = await get_current_user_from_request(request)
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    
+
     # Parse dates
     start_dt = None
     end_dt = None
-    
+
     if start_date:
         try:
             start_dt = datetime.fromisoformat(start_date)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid start_date format")
-    
+
     if end_date:
         try:
             end_dt = datetime.fromisoformat(end_date)
         except ValueError:
             raise HTTPException(status_code=400, detail="Invalid end_date format")
-    
+
     analytics = get_analytics()
     funnel = analytics.get_conversion_funnel(
         start_date=start_dt,
         end_date=end_dt,
     )
-    
+
     return funnel

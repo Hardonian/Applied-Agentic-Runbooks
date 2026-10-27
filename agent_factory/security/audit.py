@@ -8,11 +8,11 @@ from agent_factory.monitoring.logging import StructuredLogger
 
 class AuditLogger:
     """Audit logger for security events."""
-    
+
     def __init__(self):
         """Initialize audit logger."""
         self.logger = StructuredLogger("audit", level="INFO")
-    
+
     def log_event(
         self,
         event_type: str,
@@ -26,7 +26,7 @@ class AuditLogger:
     ):
         """
         Log audit event.
-        
+
         Args:
             event_type: Type of event (auth, access, modification, etc.)
             user_id: User ID
@@ -48,11 +48,8 @@ class AuditLogger:
             "ip_address": ip_address,
             **(details or {}),
         }
-        
-        self.logger.info(
-            f"Audit event: {event_type}",
-            **log_data
-        )
+
+        self.logger.info(f"Audit event: {event_type}", **log_data)
 
 
 # Global audit logger instance
@@ -71,7 +68,7 @@ def audit_log(
 ):
     """
     Log audit event (convenience function).
-    
+
     Args:
         event_type: Type of event
         user_id: User ID

@@ -15,14 +15,14 @@ from agent_factory.telemetry.model import EventType, TelemetryEvent
 class SQLiteTelemetryBackend(TelemetryBackend):
     """
     SQLite storage backend for telemetry events.
-    
+
     Suitable for local development and small deployments.
     """
-    
+
     def __init__(self, db_path: str = "./agent_factory/telemetry.db"):
         """
         Initialize SQLite telemetry backend.
-        
+
         Args:
             db_path: Path to SQLite database file
         """
@@ -44,12 +44,12 @@ class SQLiteTelemetryBackend(TelemetryBackend):
         """Close file-backed connections while retaining an in-memory store."""
         if conn is not self._memory_connection:
             conn.close()
-    
+
     def _init_db(self) -> None:
         """Initialize database tables."""
         conn = self._connect()
         cursor = conn.cursor()
-        
+
         # Main events table
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS telemetry_events (
@@ -63,57 +63,60 @@ class SQLiteTelemetryBackend(TelemetryBackend):
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        
+
         # Indexes for common queries
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_telemetry_tenant 
             ON telemetry_events(tenant_id)
         """)
-        
+
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_telemetry_type 
             ON telemetry_events(event_type)
         """)
-        
+
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_telemetry_timestamp 
             ON telemetry_events(timestamp)
         """)
-        
+
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_telemetry_user 
             ON telemetry_events(user_id)
         """)
-        
+
         conn.commit()
         self._close(conn)
-    
+
     def store_event(self, event: TelemetryEvent) -> None:
         """Store a telemetry event."""
         conn = self._connect()
         cursor = conn.cursor()
-        
+
         try:
             event_data = json.dumps(event.to_dict())
-            
-            cursor.execute("""
+
+            cursor.execute(
+                """
                 INSERT OR REPLACE INTO telemetry_events 
                 (event_id, event_type, timestamp, tenant_id, user_id, project_id, event_data)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (
-                event.event_id,
-                event.event_type.value,
-                event.timestamp.isoformat(),
-                event.tenant_id,
-                event.user_id,
-                event.project_id,
-                event_data,
-            ))
-            
+            """,
+                (
+                    event.event_id,
+                    event.event_type.value,
+                    event.timestamp.isoformat(),
+                    event.tenant_id,
+                    event.user_id,
+                    event.project_id,
+                    event_data,
+                ),
+            )
+
             conn.commit()
         finally:
             self._close(conn)
-    
+
     def query_events(
         self,
         event_type: str | None = None,
@@ -127,41 +130,41 @@ class SQLiteTelemetryBackend(TelemetryBackend):
         """Query telemetry events."""
         conn = self._connect()
         cursor = conn.cursor()
-        
+
         try:
             query = "SELECT event_data FROM telemetry_events WHERE 1=1"
             params: list[Any] = []
-            
+
             if event_type:
                 query += " AND event_type = ?"
                 params.append(event_type)
-            
+
             if tenant_id:
                 query += " AND tenant_id = ?"
                 params.append(tenant_id)
-            
+
             if user_id:
                 query += " AND user_id = ?"
                 params.append(user_id)
-            
+
             if project_id:
                 query += " AND project_id = ?"
                 params.append(project_id)
-            
+
             if start_time:
                 query += " AND timestamp >= ?"
                 params.append(start_time.isoformat())
-            
+
             if end_time:
                 query += " AND timestamp <= ?"
                 params.append(end_time.isoformat())
-            
+
             query += " ORDER BY timestamp DESC LIMIT ?"
             params.append(limit)
-            
+
             cursor.execute(query, params)
             rows = cursor.fetchall()
-            
+
             events = []
             for (event_data_json,) in rows:
                 event_dict = json.loads(event_data_json)
@@ -169,23 +172,23 @@ class SQLiteTelemetryBackend(TelemetryBackend):
                 event = self._deserialize_event(event_dict)
                 if event:
                     events.append(event)
-            
+
             return events
         finally:
             self._close(conn)
-    
+
     def _deserialize_event(self, event_dict: dict) -> TelemetryEvent | None:
         """Deserialize event from dictionary."""
         event_type_str = event_dict.get("event_type")
-        
+
         if not event_type_str:
             return None
-        
+
         try:
             event_type = EventType(event_type_str)
         except ValueError:
             return None
-        
+
         # Import event classes
         from agent_factory.telemetry.model import (
             AgentRunEvent,
@@ -201,7 +204,7 @@ class SQLiteTelemetryBackend(TelemetryBackend):
             UserSignupEvent,
             WorkflowRunEvent,
         )
-        
+
         # Map event types to classes
         event_classes = {
             EventType.AGENT_RUN: AgentRunEvent,
@@ -221,18 +224,18 @@ class SQLiteTelemetryBackend(TelemetryBackend):
             EventType.USER_SIGNUP: UserSignupEvent,
             EventType.USER_LOGIN: UserLoginEvent,
         }
-        
+
         event_class = event_classes.get(event_type)
         if not event_class:
             return None
-        
+
         # Convert timestamp string back to datetime
         if "timestamp" in event_dict and isinstance(event_dict["timestamp"], str):
             event_dict["timestamp"] = datetime.fromisoformat(event_dict["timestamp"])
-        
+
         # Keep ``event_type`` for the base dataclass constructor.  Concrete
         # events validate/set their canonical type again in ``__post_init__``.
-        
+
         try:
             return event_class(**event_dict)
         except Exception:

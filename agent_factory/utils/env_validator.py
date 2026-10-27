@@ -15,6 +15,7 @@ from agent_factory.core.exceptions import ConfigurationError
 @dataclass
 class EnvVar:
     """Environment variable definition."""
+
     name: str
     required: bool = False
     default: str | None = None
@@ -53,10 +54,10 @@ class EnvironmentValidator:
     def validate(self, raise_on_error: bool = False) -> tuple[bool, list[str]]:
         """
         Validate environment variables.
-        
+
         Args:
             raise_on_error: If True, raises ConfigurationError on missing required variables.
-            
+
         Returns:
             Tuple of (is_valid, list_of_error_messages)
         """
@@ -87,17 +88,19 @@ class EnvironmentValidator:
 def validate_agent_factory_env(raise_on_error: bool = False) -> EnvironmentValidator:
     """
     Standard environment validator for Agent Factory startup.
-    
+
     Args:
         raise_on_error: Whether to raise an exception on missing required variables.
-        
+
     Returns:
         Configured and executed EnvironmentValidator instance.
     """
     validator = EnvironmentValidator()
 
     # Optional defaults
-    validator.add_optional("ENVIRONMENT", "development", "App runtime environment (development, staging, production)")
+    validator.add_optional(
+        "ENVIRONMENT", "development", "App runtime environment (development, staging, production)"
+    )
     validator.add_optional("DATABASE_URL", "sqlite:///agent_factory.db", "Database connection URL")
     validator.add_optional("LOG_LEVEL", "INFO", "Application logging level")
     validator.add_optional(
@@ -119,13 +122,22 @@ def validate_agent_factory_env(raise_on_error: bool = False) -> EnvironmentValid
             "agent-factory-secret-key-change-in-production",
         }
         if secret in insecure_secrets or len(secret) < 32:
-            errors.append("JWT_SECRET_KEY must be a unique secret of at least 32 characters in production")
+            errors.append(
+                "JWT_SECRET_KEY must be a unique secret of at least 32 characters in production"
+            )
         if not os.getenv("DATABASE_URL"):
-            errors.append("Missing required environment variable: DATABASE_URL (production database connection)")
-        cors_origins = [origin.strip() for origin in os.getenv("CORS_ORIGINS", "").split(",") if origin.strip()]
+            errors.append(
+                "Missing required environment variable: DATABASE_URL (production database connection)"
+            )
+        cors_origins = [
+            origin.strip() for origin in os.getenv("CORS_ORIGINS", "").split(",") if origin.strip()
+        ]
         if not cors_origins or "*" in cors_origins:
             errors.append("CORS_ORIGINS must list explicit origins in production")
-        elif any(urlparse(origin).scheme not in {"http", "https"} or not urlparse(origin).netloc for origin in cors_origins):
+        elif any(
+            urlparse(origin).scheme not in {"http", "https"} or not urlparse(origin).netloc
+            for origin in cors_origins
+        ):
             errors.append("CORS_ORIGINS contains an invalid origin")
         if os.getenv("DEBUG", "false").lower() == "true":
             errors.append("DEBUG must be false in production")

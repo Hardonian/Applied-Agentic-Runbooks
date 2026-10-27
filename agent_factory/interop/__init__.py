@@ -22,11 +22,11 @@ from agent_factory.interop.openai_spec import OpenAISpecExporter
 def export_agent(agent: Agent, target_framework: str = "langgraph") -> str:
     """
     Universal agent exporter function.
-    
+
     Args:
         agent: Agent Factory Agent instance
         target_framework: 'langgraph', 'crewai', 'autogen', 'llamaindex', 'docker', 'openapi', 'openai_assistant'
-        
+
     Returns:
         Code string or serialized specification
     """
@@ -43,12 +43,16 @@ def export_agent(agent: Agent, target_framework: str = "langgraph") -> str:
         return DockerPackager.generate_server_entrypoint(agent)
     elif target in {"openai", "openai_assistant"}:
         import json
+
         return json.dumps(OpenAISpecExporter.export_assistant_json(agent), indent=2)
     elif target == "openapi":
         import json
+
         return json.dumps(OpenAISpecExporter.export_openapi_schema(agent), indent=2)
     else:
-        raise ValueError(f"Unsupported export target framework: '{target_framework}'. Supported: langgraph, crewai, autogen, llamaindex, docker, openai, openapi")
+        raise ValueError(
+            f"Unsupported export target framework: '{target_framework}'. Supported: langgraph, crewai, autogen, llamaindex, docker, openai, openapi"
+        )
 
 
 __all__ = [

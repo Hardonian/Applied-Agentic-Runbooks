@@ -42,7 +42,12 @@ def test_pcap_retry_storm_detection():
     """Verify deterministic detector catches tool retry storm pathology."""
     tracer = AgentPCAPTracer()
 
-    failing_payload = {"tool_name": "db_query", "query": "SELECT * FROM missing", "success": False, "error": "Table not found"}
+    failing_payload = {
+        "tool_name": "db_query",
+        "query": "SELECT * FROM missing",
+        "success": False,
+        "error": "Table not found",
+    }
 
     for _ in range(3):
         tracer.record_frame(

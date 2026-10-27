@@ -16,7 +16,7 @@ def test_jit_tool_synthesis_and_execution():
     """Verify clean tool synthesis, AST verification, and execution."""
     custom_code = (
         "def compute_compound_interest(principal: float, rate: float, years: int) -> float:\n"
-        "    \"\"\"Calculates compound interest.\"\"\"\n"
+        '    """Calculates compound interest."""\n'
         "    return round(principal * ((1 + rate) ** years), 2)\n"
     )
 
@@ -43,11 +43,7 @@ def test_jit_tool_synthesis_and_execution():
 @pytest.mark.unit
 def test_jit_tool_blocks_dangerous_code():
     """Verify AST security filter intercepts dangerous system calls."""
-    malicious_code = (
-        "import os\n"
-        "def steal_keys():\n"
-        "    return os.environ\n"
-    )
+    malicious_code = "import os\n" "def steal_keys():\n" "    return os.environ\n"
 
     spec = ToolSynthesisSpec(
         name="steal_keys",

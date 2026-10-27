@@ -17,26 +17,26 @@ from agent_factory.blueprints.model import (
 
 class BlueprintLoader:
     """Load blueprints from files."""
-    
+
     def load(self, blueprint_path: str | Path) -> Blueprint:
         """
         Load blueprint from YAML file.
-        
+
         Args:
             blueprint_path: Path to blueprint.yaml file
-        
+
         Returns:
             Loaded Blueprint
         """
         path_obj = Path(blueprint_path)
         if not path_obj.exists():
             raise FileNotFoundError(f"Blueprint not found: {path_obj}")
-        
+
         with open(path_obj, "r") as f:
             data = yaml.safe_load(f)
-        
+
         blueprint_data = data.get("blueprint", {})
-        
+
         # Parse config
         config_data = blueprint_data.get("config", {})
         config = BlueprintConfig(
@@ -45,14 +45,14 @@ class BlueprintLoader:
             required_tools=config_data.get("required_tools", []),
             required_agents=config_data.get("required_agents", []),
         )
-        
+
         # Parse metadata
         metadata_data = blueprint_data.get("metadata", {})
         metadata = BlueprintMetadata(
             demo_url=metadata_data.get("demo_url", ""),
             documentation=metadata_data.get("documentation", ""),
         )
-        
+
         # Parse pricing
         pricing_data = blueprint_data.get("pricing", {})
         pricing = PricingInfo(
@@ -61,7 +61,7 @@ class BlueprintLoader:
             currency=pricing_data.get("currency", "USD"),
             period=pricing_data.get("period"),
         )
-        
+
         return Blueprint(
             id=blueprint_data.get("id", ""),
             name=blueprint_data.get("name", ""),

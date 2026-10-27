@@ -26,6 +26,8 @@ def test_openai_stream_agent_yields_text_deltas():
         SimpleNamespace(choices=[SimpleNamespace(delta=SimpleNamespace(content="hello "))]),
         SimpleNamespace(choices=[SimpleNamespace(delta=SimpleNamespace(content="world"))]),
     ]
-    client = OpenAIAgentClient(api_key="test-key", client=_client_with_completions(lambda **_kwargs: chunks))
+    client = OpenAIAgentClient(
+        api_key="test-key", client=_client_with_completions(lambda **_kwargs: chunks)
+    )
 
     assert "".join(client.stream_agent("Be helpful", "Hi")) == "hello world"

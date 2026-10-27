@@ -11,7 +11,7 @@ from typing import Any
 class Run:
     """
     Single agent/workflow execution record.
-    
+
     Example:
         >>> run = Run(
         ...     run_id="run-123",
@@ -22,6 +22,7 @@ class Run:
         ...     execution_time=2.5,
         ... )
     """
+
     run_id: str
     agent_id: str | None = None
     workflow_id: str | None = None
@@ -40,7 +41,7 @@ class Run:
 class PromptLogEntry:
     """
     Detailed prompt/response log entry.
-    
+
     Example:
         >>> entry = PromptLogEntry(
         ...     run_id="run-123",
@@ -50,6 +51,7 @@ class PromptLogEntry:
         ...     tool_calls=[],
         ... )
     """
+
     run_id: str
     step: int
     prompt: str

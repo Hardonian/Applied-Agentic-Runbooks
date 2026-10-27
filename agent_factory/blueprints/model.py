@@ -13,6 +13,7 @@ import yaml
 
 class PricingModel(str, Enum):
     """Pricing models for blueprints."""
+
     FREE = "free"
     ONE_TIME = "one-time"
     SUBSCRIPTION = "subscription"
@@ -22,6 +23,7 @@ class PricingModel(str, Enum):
 @dataclass
 class PricingInfo:
     """Pricing information for a blueprint."""
+
     model: PricingModel
     price: float = 0.0
     currency: str = "USD"
@@ -32,6 +34,7 @@ class PricingInfo:
 @dataclass
 class BlueprintConfig:
     """Configuration for a blueprint."""
+
     dependencies: list[str] = field(default_factory=list)
     environment_variables: dict[str, str] = field(default_factory=dict)
     required_tools: list[str] = field(default_factory=list)
@@ -41,6 +44,7 @@ class BlueprintConfig:
 @dataclass
 class BlueprintMetadata:
     """Metadata for a blueprint."""
+
     demo_url: str = ""
     documentation: str = ""
 
@@ -49,11 +53,11 @@ class BlueprintMetadata:
 class Blueprint:
     """
     Blueprint - A packaged agent configuration.
-    
+
     Example:
         >>> blueprint = BlueprintLoader().load("blueprints/research_assistant/blueprint.yaml")
     """
-    
+
     id: str
     name: str
     version: str
@@ -76,9 +80,10 @@ class Blueprint:
                 demo_url=self.metadata.get("demo_url", ""),
                 documentation=self.metadata.get("documentation", ""),
             )
-    
+
     def to_dict(self) -> dict[str, Any]:
         """Serialize blueprint to dictionary."""
+
         def serialize_component(component: Any) -> Any:
             return component.to_dict() if hasattr(component, "to_dict") else component
 
@@ -112,7 +117,7 @@ class Blueprint:
                 "usage_unit": self.pricing.usage_unit,
             },
         }
-    
+
     def to_yaml(self) -> str:
         """Serialize blueprint to YAML."""
         data = {"blueprint": self.to_dict()}
@@ -220,7 +225,10 @@ class Blueprint:
     @staticmethod
     def _validate_component_id(component_id: str) -> None:
         """Prevent a component ID from escaping its package directory."""
-        if not component_id or any(character not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-" for character in component_id):
+        if not component_id or any(
+            character not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-"
+            for character in component_id
+        ):
             raise ValueError(f"Unsafe blueprint component ID: {component_id!r}")
 
     def _env_example(self) -> str:
@@ -235,7 +243,9 @@ class Blueprint:
 
     def _readme(self) -> str:
         """Provide basic operational instructions with every package."""
-        dependencies = "\n".join(f"- `{dependency}`" for dependency in self.config.dependencies) or "- None"
+        dependencies = (
+            "\n".join(f"- `{dependency}`" for dependency in self.config.dependencies) or "- None"
+        )
         return (
             f"# {self.name}\n\n{self.description}\n\n"
             f"Version: `{self.version}`\n\n"

@@ -178,7 +178,11 @@ async def trigger_webhook(
                 result = {
                     "webhook_id": webhook.id,
                     "status": "failed",
-                    "attempts": max_attempts if response_status is None or response_status >= 500 else attempt,
+                    "attempts": (
+                        max_attempts
+                        if response_status is None or response_status >= 500
+                        else attempt
+                    ),
                     "status_code": response_status,
                     "error": last_error or "delivery failed",
                 }

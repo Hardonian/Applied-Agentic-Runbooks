@@ -33,6 +33,7 @@ class ProviderType(str, Enum):
 @dataclass
 class StreamChunk:
     """Represents a streaming chunk from an LLM."""
+
     delta: str = ""
     reasoning_delta: str = ""
     tool_calls: list[dict[str, Any]] = field(default_factory=list)
@@ -43,6 +44,7 @@ class StreamChunk:
 @dataclass
 class LLMResponse:
     """Standardized response from any LLM provider."""
+
     content: str
     reasoning_content: str | None = None
     tool_calls: list[dict[str, Any]] = field(default_factory=list)
@@ -281,6 +283,7 @@ class UniversalLLMClient:
         """Call OpenAI API."""
         try:
             from openai import OpenAI
+
             client = OpenAI(api_key=api_key)
             kwargs: dict[str, Any] = {
                 "model": model,
@@ -301,14 +304,16 @@ class UniversalLLMClient:
             tool_calls = []
             if getattr(choice.message, "tool_calls", None):
                 for tc in choice.message.tool_calls:
-                    tool_calls.append({
-                        "id": tc.id,
-                        "type": tc.type,
-                        "function": {
-                            "name": tc.function.name,
-                            "arguments": tc.function.arguments,
+                    tool_calls.append(
+                        {
+                            "id": tc.id,
+                            "type": tc.type,
+                            "function": {
+                                "name": tc.function.name,
+                                "arguments": tc.function.arguments,
+                            },
                         }
-                    })
+                    )
 
             usage = res.usage
             return LLMResponse(
@@ -338,6 +343,7 @@ class UniversalLLMClient:
         """Call Anthropic API with support for Claude 3.7 Thinking."""
         try:
             import anthropic
+
             client = anthropic.Anthropic(api_key=api_key)
 
             # Separate system prompt
@@ -369,14 +375,16 @@ class UniversalLLMClient:
                 elif getattr(block, "type", "") == "thinking":
                     reasoning_text = getattr(block, "thinking", "")
                 elif getattr(block, "type", "") == "tool_use":
-                    tool_calls.append({
-                        "id": getattr(block, "id", ""),
-                        "type": "function",
-                        "function": {
-                            "name": getattr(block, "name", ""),
-                            "arguments": json.dumps(getattr(block, "input", {})),
+                    tool_calls.append(
+                        {
+                            "id": getattr(block, "id", ""),
+                            "type": "function",
+                            "function": {
+                                "name": getattr(block, "name", ""),
+                                "arguments": json.dumps(getattr(block, "input", {})),
+                            },
                         }
-                    })
+                    )
 
             usage = getattr(res, "usage", None)
             p_tokens = getattr(usage, "input_tokens", 0) if usage else 0
@@ -409,6 +417,7 @@ class UniversalLLMClient:
     ) -> LLMResponse:
         """Call any OpenAI-compatible API endpoint (DeepSeek, Groq, Ollama, vLLM)."""
         from openai import OpenAI
+
         client = OpenAI(base_url=base_url, api_key=api_key)
         kwargs: dict[str, Any] = {
             "model": model,
@@ -437,7 +446,9 @@ class UniversalLLMClient:
             raw_response=res,
         )
 
-    def _mock_fallback(self, messages: list[dict[str, Any]], model: str, error_msg: str) -> LLMResponse:
+    def _mock_fallback(
+        self, messages: list[dict[str, Any]], model: str, error_msg: str
+    ) -> LLMResponse:
         """Graceful mock fallback response on error."""
         return LLMResponse(
             content=f"[Agent Factory Gateway Active] Model {model} response simulated. Notice: {error_msg}",

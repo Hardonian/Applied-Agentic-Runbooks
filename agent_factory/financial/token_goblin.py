@@ -26,6 +26,7 @@ class TokenVelocityOverheatError(Exception):
 @dataclass
 class DualEntryLedgerAccount:
     """A mathematically audited credit account enforcing zero-leakage reconciliation."""
+
     account_id: str
     tenant_id: str
     credits_initial: float
@@ -68,7 +69,9 @@ class TokenGoblinGovernor:
         self.history: deque = deque()  # (timestamp, token_count)
         self.accounts: dict[str, DualEntryLedgerAccount] = {}
 
-    def open_account(self, account_id: str, tenant_id: str, initial_credits: float) -> DualEntryLedgerAccount:
+    def open_account(
+        self, account_id: str, tenant_id: str, initial_credits: float
+    ) -> DualEntryLedgerAccount:
         """Open a dual-entry ledger account."""
         acc = DualEntryLedgerAccount(
             account_id=account_id,

@@ -20,7 +20,7 @@ def authenticated_admin():
 def test_create_agent():
     """Test creating an agent via API."""
     client = TestClient(app)
-    
+
     response = client.post(
         "/api/v1/agents/",
         json={
@@ -28,9 +28,9 @@ def test_create_agent():
             "name": "Test Agent API",
             "instructions": "You are a test agent.",
             "model": "gpt-4o",
-        }
+        },
     )
-    
+
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == "test-agent-api"
@@ -48,7 +48,7 @@ def test_agent_routes_require_authentication():
 def test_list_agents():
     """Test listing agents via API."""
     client = TestClient(app)
-    
+
     # Create an agent first
     client.post(
         "/api/v1/agents/",
@@ -56,9 +56,9 @@ def test_list_agents():
             "id": "test-agent-list",
             "name": "Test Agent List",
             "instructions": "Test",
-        }
+        },
     )
-    
+
     # List agents
     response = client.get("/api/v1/agents/")
     assert response.status_code == 200
@@ -70,7 +70,7 @@ def test_list_agents():
 def test_get_agent():
     """Test getting an agent via API."""
     client = TestClient(app)
-    
+
     # Create an agent first
     client.post(
         "/api/v1/agents/",
@@ -78,9 +78,9 @@ def test_get_agent():
             "id": "test-agent-get",
             "name": "Test Agent Get",
             "instructions": "Test",
-        }
+        },
     )
-    
+
     # Get agent
     response = client.get("/api/v1/agents/test-agent-get")
     assert response.status_code == 200
@@ -92,7 +92,7 @@ def test_get_agent():
 def test_get_agent_not_found():
     """Test getting a non-existent agent."""
     client = TestClient(app)
-    
+
     response = client.get("/api/v1/agents/non-existent")
     assert response.status_code == 404
 
@@ -101,7 +101,7 @@ def test_get_agent_not_found():
 def test_delete_agent():
     """Test deleting an agent via API."""
     client = TestClient(app)
-    
+
     # Create an agent first
     client.post(
         "/api/v1/agents/",
@@ -109,9 +109,9 @@ def test_delete_agent():
             "id": "test-agent-delete",
             "name": "Test Agent Delete",
             "instructions": "Test",
-        }
+        },
     )
-    
+
     # Delete agent
     response = client.delete("/api/v1/agents/test-agent-delete")
     assert response.status_code == 200
@@ -123,7 +123,7 @@ def test_delete_agent():
 def test_run_agent():
     """Test running an agent via API."""
     client = TestClient(app)
-    
+
     # Create an agent first
     client.post(
         "/api/v1/agents/",
@@ -131,17 +131,17 @@ def test_run_agent():
             "id": "test-agent-run",
             "name": "Test Agent Run",
             "instructions": "Test",
-        }
+        },
     )
-    
+
     # Run agent (will use mocked OpenAI client)
     response = client.post(
         "/api/v1/agents/test-agent-run/run",
         json={
             "input_text": "Hello",
-        }
+        },
     )
-    
+
     assert response.status_code == 200
     data = response.json()
     assert "output" in data

@@ -36,7 +36,7 @@ def test_mcpwall_human_gate_and_replay_prevention():
     firewall = MCPWall()
 
     args = {"filename": "audit.txt", "content": "Critical log payload"}
-    
+
     # First invocation without ticket -> triggers human gate
     v1 = firewall.validate_tool_call("write_file", args)
     assert v1.allowed is False

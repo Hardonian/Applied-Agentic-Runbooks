@@ -22,9 +22,9 @@ except ImportError:
 
 
 class ModelTier(str, Enum):
-    FAST = "fast"          # gpt-4o-mini / gemini-2.5-flash (~$0.15/1M, ~200ms)
+    FAST = "fast"  # gpt-4o-mini / gemini-2.5-flash (~$0.15/1M, ~200ms)
     STANDARD = "standard"  # gpt-4o / claude-3-5-sonnet (~$2.50/1M, ~1200ms)
-    DEEP = "deep"          # o1 / claude-3-7-sonnet (~$15.00/1M, ~6000ms)
+    DEEP = "deep"  # o1 / claude-3-7-sonnet (~$15.00/1M, ~6000ms)
 
 
 # Pricing per 1,000 output tokens (USD estimates)
@@ -52,6 +52,7 @@ DEFAULT_TIER_MODELS: dict[ModelTier, str] = {
 @dataclass
 class CascadeExecutionResult:
     """Result and Pareto efficiency metrics from speculative cascade execution."""
+
     output: str
     tier_used: ModelTier
     model_used: str
@@ -128,9 +129,18 @@ class SpeculativeCascadeRouter:
 
         # Deep reasoning keywords
         complex_keywords = [
-            "proof", "theorem", "optimal", "game theory", "concurrency",
-            "deadlock", "asymptotic", "cryptographic", "distributed consensus",
-            "formal verification", "edge cases", "pareto",
+            "proof",
+            "theorem",
+            "optimal",
+            "game theory",
+            "concurrency",
+            "deadlock",
+            "asymptotic",
+            "cryptographic",
+            "distributed consensus",
+            "formal verification",
+            "edge cases",
+            "pareto",
         ]
         matches = sum(1 for kw in complex_keywords if kw in prompt_lower)
         score += min(0.35, matches * 0.12)
@@ -159,8 +169,11 @@ class SpeculativeCascadeRouter:
 
         # Deduct for failure/uncertainty indicators
         hesitation_terms = [
-            "i am not sure", "i cannot answer", "unknown error",
-            "as an ai model i cannot", "insufficient information",
+            "i am not sure",
+            "i cannot answer",
+            "unknown error",
+            "as an ai model i cannot",
+            "insufficient information",
         ]
         for term in hesitation_terms:
             if term in output_lower:
@@ -203,12 +216,13 @@ class SpeculativeCascadeRouter:
             draft_accepted = True
         else:
             # Step 2: Escalate to higher tier with the fast draft as context
-            escalation_tier = force_tier or (ModelTier.DEEP if complexity > 0.80 else ModelTier.STANDARD)
+            escalation_tier = force_tier or (
+                ModelTier.DEEP if complexity > 0.80 else ModelTier.STANDARD
+            )
             target_model = DEFAULT_TIER_MODELS[escalation_tier]
 
             escalation_prompt = (
-                f"{prompt}\n\n"
-                f"[Initial Draft for Verification & Refinement]:\n{fast_reply}"
+                f"{prompt}\n\n" f"[Initial Draft for Verification & Refinement]:\n{fast_reply}"
             )
             final_output = self._call_model(target_model, escalation_prompt)
             resolved_tier = escalation_tier
@@ -257,7 +271,9 @@ class SpeculativeCascadeRouter:
                 if hasattr(res, "content"):
                     return res.content
                 return str(res)
-            except Exception:  # noqa: BLE001, S110  # nosec B110 -- response-content extraction fallback to str(res); already noqa'd for ruff BLE001/S110
+            except (
+                Exception
+            ):  # noqa: BLE001, S110  # nosec B110 -- response-content extraction fallback to str(res); already noqa'd for ruff BLE001/S110
                 pass
 
         # High-fidelity simulated execution

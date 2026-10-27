@@ -16,6 +16,7 @@ from dataclasses import dataclass, field
 @dataclass
 class FirewallVerdict:
     """Verdict from the LLM Security Firewall inspection."""
+
     allowed: bool
     risk_score: float  # 0.0 to 1.0
     violations: list[str] = field(default_factory=list)
@@ -77,7 +78,9 @@ class LLMSecurityFirewall:
                 break
 
         # Check for system prompt extraction attempts
-        if "system prompt" in text.lower() and ("show" in text.lower() or "print" in text.lower() or "what is" in text.lower()):
+        if "system prompt" in text.lower() and (
+            "show" in text.lower() or "print" in text.lower() or "what is" in text.lower()
+        ):
             violations.append("System prompt extraction probe")
             risk_score += 0.4
 
@@ -96,7 +99,9 @@ class LLMSecurityFirewall:
             canary_intact=True,
         )
 
-    def inspect_output(self, output: str, system_prompt: str = "", canary: str | None = None) -> FirewallVerdict:
+    def inspect_output(
+        self, output: str, system_prompt: str = "", canary: str | None = None
+    ) -> FirewallVerdict:
         """
         Inspect LLM output for system prompt leakage, canary integrity, and secrets.
         """
@@ -120,7 +125,9 @@ class LLMSecurityFirewall:
         # Redact secrets from output
         sanitized, redacted_items = self.redact_secrets(output)
         if redacted_items:
-            violations.extend([f"Redacted sensitive output data: {item}" for item in redacted_items])
+            violations.extend(
+                [f"Redacted sensitive output data: {item}" for item in redacted_items]
+            )
 
         allowed = risk_score < 0.8
 

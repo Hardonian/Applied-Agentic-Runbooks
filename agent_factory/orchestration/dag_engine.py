@@ -28,6 +28,7 @@ class StepStatus(str, Enum):
 @dataclass
 class DAGNode:
     """A single executable node in the workflow DAG."""
+
     id: str
     name: str
     agent: Agent | None = None
@@ -44,6 +45,7 @@ class DAGNode:
 @dataclass
 class DAGExecutionResult:
     """Full outcome of a DAG workflow execution."""
+
     workflow_id: str
     status: AgentStatus
     outputs: dict[str, Any] = field(default_factory=dict)
@@ -84,7 +86,9 @@ class DAGWorkflowEngine:
         )
         return self
 
-    def execute(self, initial_input: str, initial_context: dict[str, Any] | None = None) -> DAGExecutionResult:
+    def execute(
+        self, initial_input: str, initial_context: dict[str, Any] | None = None
+    ) -> DAGExecutionResult:
         """
         Execute DAG nodes in topological dependency order.
         """
@@ -99,14 +103,18 @@ class DAGWorkflowEngine:
         while len(completed) + len(failed) < len(self.nodes):
             # Find nodes whose dependencies are all completed
             ready_nodes = [
-                node for node_id, node in self.nodes.items()
-                if node_id not in completed and node_id not in failed
+                node
+                for node_id, node in self.nodes.items()
+                if node_id not in completed
+                and node_id not in failed
                 and all(dep in completed for dep in node.dependencies)
             ]
 
             if not ready_nodes:
                 # Deadlock or cyclic dependency
-                unresolved = [nid for nid in self.nodes if nid not in completed and nid not in failed]
+                unresolved = [
+                    nid for nid in self.nodes if nid not in completed and nid not in failed
+                ]
                 return DAGExecutionResult(
                     workflow_id=self.workflow_id,
                     status=AgentStatus.ERROR,

@@ -20,13 +20,13 @@ def replay_run(
 ) -> Run:
     """
     Replay a run with optional configuration overrides.
-    
+
     Args:
         run_id: ID of run to replay
         storage: Storage backend
         agent_config_override: Optional config overrides
         runtime: Optional runtime engine (will create default if not provided)
-    
+
     Returns:
         New Run with replayed execution
     """
@@ -34,7 +34,7 @@ def replay_run(
     original_run = storage.get_run(run_id)
     if not original_run:
         raise ValueError(f"Run not found: {run_id}")
-    
+
     from agent_factory.agents.agent import AgentConfig
     from agent_factory.registry.local_registry import LocalRegistry
     from agent_factory.runtime.engine import RuntimeEngine
@@ -42,12 +42,12 @@ def replay_run(
     # Create runtime engine if not provided
     if runtime is None:
         runtime = RuntimeEngine(prompt_log_storage=storage)
-    
+
     # Get agent ID
     agent_id = original_run.agent_id
     if not agent_id:
         raise ValueError("Original run has no agent_id")
-    
+
     # Load agent from registry or runtime
     agent = runtime.agents_registry.get(agent_id)
     if not agent:
@@ -58,7 +58,7 @@ def replay_run(
             runtime.register_agent(agent)
         else:
             raise ValueError(f"Agent not found: {agent_id}")
-    
+
     # Apply config overrides if provided
     if agent_config_override:
         if agent.config:
@@ -69,7 +69,7 @@ def replay_run(
         else:
             # Create new config
             agent.config = AgentConfig(**agent_config_override)
-    
+
     # Extract input text from original run
     input_text = original_run.inputs.get("input", "")
     if not input_text and isinstance(original_run.inputs, dict):
@@ -81,10 +81,10 @@ def replay_run(
                 if isinstance(value, str):
                     input_text = value
                     break
-    
+
     if not input_text:
         raise ValueError("Could not extract input text from original run")
-    
+
     # Replay the run via runtime engine
     try:
         execution_id = runtime.run_agent(
@@ -93,12 +93,12 @@ def replay_run(
             session_id=f"{run_id}-replay",
             context=original_run.inputs,
         )
-        
+
         # Get execution result
         execution = runtime.get_execution(execution_id)
         if not execution:
             raise ValueError("Execution not found after replay")
-        
+
         # Extract result
         result = execution.result
         if result:
@@ -109,7 +109,7 @@ def replay_run(
             output = ""
             execution_time = 0.0
             tokens_used = 0
-        
+
         # Create new run record
         new_run_id = f"{run_id}-replay-{uuid.uuid4().hex[:8]}"
         new_run = Run(
@@ -128,11 +128,11 @@ def replay_run(
                 "execution_id": execution_id,
             },
         )
-        
+
         # Save new run
         storage.save_run(new_run)
         return new_run
-        
+
     except Exception as e:
         # Create error run
         new_run_id = f"{run_id}-replay-{uuid.uuid4().hex[:8]}"

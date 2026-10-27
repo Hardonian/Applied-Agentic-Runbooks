@@ -277,7 +277,9 @@ class OTelExporter:
         try:
             # nosec B310 -- scheme already restricted to http/https above;
             # bandit cannot see the guard that precedes this call.
-            with urllib.request.urlopen(request, timeout=self.timeout_seconds) as response:  # nosec B310
+            with urllib.request.urlopen(
+                request, timeout=self.timeout_seconds
+            ) as response:  # nosec B310
                 exported = 200 <= response.status < 300
                 return OTelExportResult(exported, signal, count, f"HTTP {response.status}")
         except (urllib.error.URLError, TimeoutError, OSError) as exc:

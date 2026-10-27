@@ -17,6 +17,7 @@ registry = LocalRegistry()
 
 class WorkflowCreate(BaseModel):
     """Workflow creation model."""
+
     id: str
     name: str
     steps: list[dict[str, Any]]
@@ -26,6 +27,7 @@ class WorkflowCreate(BaseModel):
 
 class WorkflowUpdate(BaseModel):
     """Workflow update model."""
+
     name: str | None = None
     steps: list[dict[str, Any]] | None = None
     triggers: list[dict[str, Any]] | None = None
@@ -34,29 +36,28 @@ class WorkflowUpdate(BaseModel):
 
 class WorkflowRun(BaseModel):
     """Workflow run model."""
+
     context: dict[str, Any]
     start_step: str | None = None
 
 
 class WorkflowTrigger(BaseModel):
     """Workflow trigger model."""
+
     trigger_type: str
     config: dict[str, Any]
 
 
 @router.post("/", response_model=dict[str, Any])
-async def create_workflow(
-    workflow_data: WorkflowCreate,
-    user=Depends(get_current_user)
-):
+async def create_workflow(workflow_data: WorkflowCreate, user=Depends(get_current_user)):
     """Create a new workflow."""
     require_user_permission(user, Permission.WRITE_WORKFLOWS)
-    
+
     # Check if workflow already exists
     existing = registry.get_workflow(workflow_data.id)
     if existing:
         raise HTTPException(status_code=400, detail=f"Workflow {workflow_data.id} already exists")
-    
+
     # Convert steps
     steps = []
     for step_data in workflow_data.steps:
@@ -67,7 +68,7 @@ async def create_workflow(
                 expression=cond_data.get("expression", ""),
                 description=cond_data.get("description"),
             )
-        
+
         step = WorkflowStep(
             id=step_data["id"],
             agent_id=step_data["agent_id"],
@@ -78,7 +79,7 @@ async def create_workflow(
             retry_attempts=step_data.get("retry_attempts", 3),
         )
         steps.append(step)
-    
+
     # Convert triggers
     triggers = []
     if workflow_data.triggers:
@@ -89,7 +90,7 @@ async def create_workflow(
                 enabled=trigger_data.get("enabled", True),
             )
             triggers.append(trigger)
-    
+
     # Convert branching
     branching = {}
     if workflow_data.branching:
@@ -98,7 +99,7 @@ async def create_workflow(
                 expression=cond_data.get("expression", ""),
                 description=cond_data.get("description"),
             )
-    
+
     workflow = Workflow(
         id=workflow_data.id,
         name=workflow_data.name,
@@ -106,10 +107,10 @@ async def create_workflow(
         triggers=triggers if triggers else None,
         branching=branching if branching else None,
     )
-    
+
     registry.register_workflow(workflow)
     runtime.register_workflow(workflow)
-    
+
     return {"id": workflow.id, "status": "created"}
 
 
@@ -125,30 +126,28 @@ def get_workflow(workflow_id: str, user=Depends(get_current_user)):
     """Get workflow by ID."""
     require_user_permission(user, Permission.READ_WORKFLOWS)
     workflow = registry.get_workflow(workflow_id)
-    
+
     if not workflow:
         raise HTTPException(status_code=404, detail="Workflow not found")
-    
+
     return workflow.to_dict()
 
 
 @router.put("/{workflow_id}", response_model=dict[str, Any])
 async def update_workflow(
-    workflow_id: str,
-    workflow_data: WorkflowUpdate,
-    user=Depends(get_current_user)
+    workflow_id: str, workflow_data: WorkflowUpdate, user=Depends(get_current_user)
 ):
     """Update a workflow."""
     require_user_permission(user, Permission.WRITE_WORKFLOWS)
-    
+
     workflow = registry.get_workflow(workflow_id)
     if not workflow:
         raise HTTPException(status_code=404, detail="Workflow not found")
-    
+
     # Update fields
     if workflow_data.name:
         workflow.name = workflow_data.name
-    
+
     if workflow_data.steps:
         steps = []
         for step_data in workflow_data.steps:
@@ -159,7 +158,7 @@ async def update_workflow(
                     expression=cond_data.get("expression", ""),
                     description=cond_data.get("description"),
                 )
-            
+
             step = WorkflowStep(
                 id=step_data["id"],
                 agent_id=step_data["agent_id"],
@@ -171,7 +170,7 @@ async def update_workflow(
             )
             steps.append(step)
         workflow.steps = steps
-    
+
     if workflow_data.triggers is not None:
         triggers = []
         for trigger_data in workflow_data.triggers:
@@ -182,7 +181,7 @@ async def update_workflow(
             )
             triggers.append(trigger)
         workflow.triggers = triggers
-    
+
     if workflow_data.branching is not None:
         branching = {}
         for step_id, cond_data in workflow_data.branching.items():
@@ -191,10 +190,10 @@ async def update_workflow(
                 description=cond_data.get("description"),
             )
         workflow.branching = branching
-    
+
     registry.register_workflow(workflow)
     runtime.register_workflow(workflow)
-    
+
     return {"id": workflow.id, "status": "updated"}
 
 
@@ -207,10 +206,10 @@ def run_workflow(
     """Run a workflow."""
     require_user_permission(user, Permission.EXECUTE_WORKFLOWS)
     workflow = registry.get_workflow(workflow_id)
-    
+
     if not workflow:
         raise HTTPException(status_code=404, detail="Workflow not found")
-    
+
     runtime.register_workflow(workflow)
     try:
         execution_id = runtime.run_workflow(
@@ -220,29 +219,27 @@ def run_workflow(
         )
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-    
+
     return {"execution_id": execution_id, "status": "running"}
 
 
 @router.post("/{workflow_id}/trigger", response_model=dict[str, Any])
 async def trigger_workflow(
-    workflow_id: str,
-    trigger_data: WorkflowTrigger,
-    user=Depends(get_current_user)
+    workflow_id: str, trigger_data: WorkflowTrigger, user=Depends(get_current_user)
 ):
     """Trigger a workflow manually."""
     require_user_permission(user, Permission.EXECUTE_WORKFLOWS)
-    
+
     workflow = registry.get_workflow(workflow_id)
     if not workflow:
         raise HTTPException(status_code=404, detail="Workflow not found")
-    
+
     # Create context from trigger config
     context = trigger_data.config.copy()
-    
+
     runtime.register_workflow(workflow)
     execution_id = runtime.run_workflow(workflow_id, context)
-    
+
     return {"execution_id": execution_id, "status": "triggered"}
 
 
@@ -253,10 +250,10 @@ def get_workflow_status(workflow_id: str, user=Depends(get_current_user)):
     workflow = registry.get_workflow(workflow_id)
     if not workflow:
         raise HTTPException(status_code=404, detail="Workflow not found")
-    
+
     # Get recent executions for this workflow
     executions = runtime.list_executions(entity_id=workflow_id, limit=10)
-    
+
     return {
         "workflow_id": workflow_id,
         "recent_executions": [
@@ -272,21 +269,18 @@ def get_workflow_status(workflow_id: str, user=Depends(get_current_user)):
 
 
 @router.delete("/{workflow_id}")
-async def delete_workflow(
-    workflow_id: str,
-    user=Depends(get_current_user)
-):
+async def delete_workflow(workflow_id: str, user=Depends(get_current_user)):
     """Delete a workflow."""
     require_user_permission(user, Permission.DELETE_WORKFLOWS)
-    
+
     workflow_file = registry.base_path / "workflows" / f"{workflow_id}.json"
     if not workflow_file.exists():
         raise HTTPException(status_code=404, detail="Workflow not found")
-    
+
     workflow_file.unlink()
-    
+
     # Remove from runtime if registered
     if workflow_id in runtime.workflows_registry:
         del runtime.workflows_registry[workflow_id]
-    
+
     return {"status": "deleted"}

@@ -1,6 +1,5 @@
 """Marketplace CLI commands."""
 
-
 import typer
 
 from agent_factory.marketplace import get_blueprint_details, publish_blueprint, search_blueprints
@@ -19,18 +18,18 @@ def publish(
 ):
     """Publish blueprint to marketplace."""
     blueprint = registry.get_blueprint(blueprint_id)
-    
+
     if not blueprint:
         typer.echo(f"Blueprint {blueprint_id} not found", err=True)
         raise typer.Exit(1)
-    
+
     try:
         result = publish_blueprint(
             blueprint=blueprint,
             publisher_id="cli-user",  # In production, get from auth
             is_public=public,
             pricing_model=pricing,
-            price=price
+            price=price,
         )
         typer.echo(f"Blueprint published: {result['id']}")
     except Exception as e:
@@ -45,12 +44,8 @@ def search(
     limit: int = typer.Option(20, "--limit", "-l", help="Results limit"),
 ):
     """Search blueprints in marketplace."""
-    results = search_blueprints(
-        query=query,
-        category=category,
-        limit=limit
-    )
-    
+    results = search_blueprints(query=query, category=category, limit=limit)
+
     typer.echo(f"Found {results['total']} blueprints:")
     for bp in results["blueprints"]:
         typer.echo(f"  - {bp['name']} ({bp['id']}) - Rating: {bp['rating']:.1f}")
@@ -60,11 +55,11 @@ def search(
 def details(blueprint_id: str):
     """Get blueprint details from marketplace."""
     details = get_blueprint_details(blueprint_id)
-    
+
     if not details:
         typer.echo(f"Blueprint {blueprint_id} not found", err=True)
         raise typer.Exit(1)
-    
+
     typer.echo(f"Name: {details['name']}")
     typer.echo(f"Description: {details['description']}")
     typer.echo(f"Version: {details['version']}")
@@ -80,9 +75,9 @@ def install(
 ):
     """Install a blueprint from marketplace."""
     from agent_factory.registry.remote_registry import RemoteRegistry
-    
+
     registry = RemoteRegistry()
-    
+
     try:
         success = registry.install_blueprint(blueprint_id, target_path)
         if success:
@@ -101,11 +96,10 @@ def unpublish(
 ):
     """Unpublish a blueprint from marketplace."""
     from agent_factory.marketplace.publishing import unpublish_blueprint
-    
+
     try:
         result = unpublish_blueprint(
-            blueprint_id=blueprint_id,
-            publisher_id="cli-user"  # In production, get from auth
+            blueprint_id=blueprint_id, publisher_id="cli-user"  # In production, get from auth
         )
         typer.echo(f"✅ Unpublished blueprint: {result['id']}")
     except Exception as e:

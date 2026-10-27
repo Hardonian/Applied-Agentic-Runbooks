@@ -33,7 +33,7 @@ if is_supabase:
         # Use pooler if SUPABASE_USE_POOLER is set, otherwise direct
         if os.getenv("SUPABASE_USE_POOLER", "true").lower() == "true":
             database_url = pooler_url
-    
+
     engine = create_engine(
         database_url,
         pool_pre_ping=True,
@@ -42,7 +42,7 @@ if is_supabase:
         pool_recycle=3600,  # Recycle connections after 1 hour
         connect_args={
             "sslmode": "require",  # Supabase requires SSL
-        }
+        },
     )
 else:
     # Standard PostgreSQL connection settings
@@ -61,7 +61,7 @@ Base.__allow_unmapped__ = True
 def get_db() -> Generator[Session, None, None]:
     """
     Get database session.
-    
+
     Yields:
         Database session
     """

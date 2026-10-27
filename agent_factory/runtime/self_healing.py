@@ -29,6 +29,7 @@ logger = logging.getLogger(__name__)
 
 class FailureCategory(str, Enum):
     """Categorized root causes of agent execution failures."""
+
     TOOL_ERROR = "tool_error"
     RATE_LIMIT = "rate_limit"
     VALIDATION_ERROR = "validation_error"
@@ -40,6 +41,7 @@ class FailureCategory(str, Enum):
 
 class RecoveryStrategy(str, Enum):
     """Applied resilience strategy for self-healing."""
+
     RETRY_WITH_REFLECTION = "retry_with_reflection"
     FALLBACK_TOOL = "fallback_tool"
     EXPONENTIAL_BACKOFF = "exponential_backoff"
@@ -50,20 +52,20 @@ class RecoveryStrategy(str, Enum):
 @dataclass
 class HealingAction:
     """Record of a self-healing intervention."""
+
     attempt: int
     category: FailureCategory
     strategy: RecoveryStrategy
     diagnosis: str
     action_taken: str
     success: bool
-    timestamp: str = field(
-        default_factory=lambda: datetime.now(timezone.utc).isoformat()
-    )
+    timestamp: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
 @dataclass
 class SelfHealingResult:
     """Enriched agent execution result including self-healing telemetry."""
+
     output: str
     status: Any
     healed: bool = False
@@ -100,7 +102,9 @@ class SelfHealingAgentExecutor:
         )
         self.fallback_tools = fallback_tools or {}
 
-    def classify_failure(self, error_message: str, error_obj: Exception | None = None) -> FailureCategory:
+    def classify_failure(
+        self, error_message: str, error_obj: Exception | None = None
+    ) -> FailureCategory:
         """Categorize failure mode from error messages or exceptions."""
         err_lower = (error_message or "").lower()
         if "circuit breaker" in err_lower or "circuit open" in err_lower:
@@ -111,7 +115,12 @@ class SelfHealingAgentExecutor:
             return FailureCategory.TIMEOUT
         if "tool" in err_lower or "function" in err_lower or "argument" in err_lower:
             return FailureCategory.TOOL_ERROR
-        if "json" in err_lower or "schema" in err_lower or "validation" in err_lower or "pydantic" in err_lower:
+        if (
+            "json" in err_lower
+            or "schema" in err_lower
+            or "validation" in err_lower
+            or "pydantic" in err_lower
+        ):
             return FailureCategory.VALIDATION_ERROR
         if "hallucinat" in err_lower or "invalid format" in err_lower:
             return FailureCategory.HALLUCINATION

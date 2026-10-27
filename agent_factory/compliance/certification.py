@@ -19,15 +19,17 @@ from agent_factory.security.owasp_scanner import OWASPAuditReport, OWASPSecurity
 
 class CertificationGrade(str, Enum):
     """Overall certification rating for production release."""
+
     GRADE_A_PLUS = "A+"  # 95 - 100
-    GRADE_A = "A"        # 90 - 94
-    GRADE_B = "B"        # 80 - 89
+    GRADE_A = "A"  # 90 - 94
+    GRADE_B = "B"  # 80 - 89
     PROVISIONAL = "Provisional"  # 70 - 79
     REJECTED = "Rejected"  # < 70
 
 
 class RiskTier(str, Enum):
     """EU AI Act & Enterprise Risk Classification."""
+
     MINIMAL_RISK = "Minimal Risk"
     LIMITED_RISK = "Limited Risk"
     HIGH_RISK = "High Risk"
@@ -37,6 +39,7 @@ class RiskTier(str, Enum):
 @dataclass
 class ComplianceEvidence:
     """Evidence artifact attached to a compliance certificate."""
+
     framework: str
     control_id: str
     control_name: str
@@ -47,6 +50,7 @@ class ComplianceEvidence:
 @dataclass
 class AgentCertificationRecord:
     """Production readiness & security certification record."""
+
     certificate_id: str
     agent_id: str
     agent_name: str
@@ -124,11 +128,13 @@ class AgentCertificationRecord:
                 f"| {e.framework} | `{e.control_id}` | {e.control_name} | {badge} {e.status} | {e.rationale} |"
             )
 
-        lines.extend([
-            "",
-            "---",
-            "*Certified by Agent Factory Governance Engine. Tamper-evident verification valid for 365 days.*",
-        ])
+        lines.extend(
+            [
+                "",
+                "---",
+                "*Certified by Agent Factory Governance Engine. Tamper-evident verification valid for 365 days.*",
+            ]
+        )
         return "\n".join(lines)
 
 
@@ -201,7 +207,11 @@ class AgentCertificationGenerator:
                 control_id="PRIV-01",
                 control_name="PII & Sensitive Data Leak Mitigation",
                 status="SATISFIED" if has_guardrails else "PARTIAL",
-                rationale="Input and output guardrails inspect and sanitize prompts for sensitive data." if has_guardrails else "No explicit guardrails attached; rely on upstream filters.",
+                rationale=(
+                    "Input and output guardrails inspect and sanitize prompts for sensitive data."
+                    if has_guardrails
+                    else "No explicit guardrails attached; rely on upstream filters."
+                ),
             )
         )
 

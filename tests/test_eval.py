@@ -2,7 +2,6 @@
 Tests for evaluation framework.
 """
 
-
 from agent_factory.agents.agent import Agent
 from agent_factory.eval.model import BenchmarkSuite, EvaluationResult, Scenario
 from agent_factory.eval.runner import BenchmarkRunner
@@ -17,7 +16,7 @@ def test_scenario():
         inputs={"input": "test"},
         expected_outputs={"output": "expected"},
     )
-    
+
     assert scenario.id == "test-1"
     assert scenario.inputs == {"input": "test"}
     assert scenario.expected_outputs == {"output": "expected"}
@@ -33,7 +32,7 @@ def test_evaluation_result():
         latency=1.5,
         tokens_used=100,
     )
-    
+
     assert result.success is True
     assert result.accuracy == 0.95
     assert result.latency == 1.5
@@ -45,13 +44,13 @@ def test_benchmark_suite():
         Scenario(id="s1", name="S1", inputs={"input": "test1"}),
         Scenario(id="s2", name="S2", inputs={"input": "test2"}),
     ]
-    
+
     suite = BenchmarkSuite(
         id="test-suite",
         name="Test Suite",
         scenarios=scenarios,
     )
-    
+
     assert len(suite.scenarios) == 2
     assert suite.id == "test-suite"
 
@@ -64,14 +63,14 @@ def test_benchmark_runner():
         name="Test Agent",
         instructions="You are a test agent.",
     )
-    
+
     # Create runtime and register agent
     runtime = RuntimeEngine()
     runtime.register_agent(agent)
-    
+
     # Create benchmark runner
     runner = BenchmarkRunner(runtime=runtime)
-    
+
     # Create suite
     suite = BenchmarkSuite(
         id="test-suite",
@@ -84,7 +83,7 @@ def test_benchmark_runner():
             ),
         ],
     )
-    
+
     # Run benchmark (may fail if agent execution fails, but should not crash)
     try:
         results = runner.run_benchmark("test-agent", suite)

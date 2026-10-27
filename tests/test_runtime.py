@@ -27,7 +27,7 @@ def test_register_agent():
         name="Test Agent",
         instructions="Test",
     )
-    
+
     engine.register_agent(agent)
     assert "test-agent" in engine.agents_registry
     assert engine.agents_registry["test-agent"] == agent
@@ -42,7 +42,7 @@ def test_register_workflow():
         name="Test Workflow",
         steps=[],
     )
-    
+
     engine.register_workflow(workflow)
     assert "test-workflow" in engine.workflows_registry
     assert engine.workflows_registry["test-workflow"] == workflow
@@ -65,9 +65,7 @@ def test_run_workflow_preserves_hydrated_agents_and_start_step():
     )
 
     engine.register_workflow(workflow)
-    execution_id = engine.run_workflow(
-        "test-workflow", {"input": "test"}, start_step="second"
-    )
+    execution_id = engine.run_workflow("test-workflow", {"input": "test"}, start_step="second")
 
     assert "persisted-agent" in engine.agents_registry
     workflow.execute.assert_called_once_with({"input": "test"}, start_step="second")
@@ -88,7 +86,7 @@ def test_run_workflow_rejects_unknown_start_step():
 
 
 @pytest.mark.unit
-@patch('agent_factory.integrations.openai_client.OpenAIAgentClient')
+@patch("agent_factory.integrations.openai_client.OpenAIAgentClient")
 def test_run_agent(mock_client_class):
     """Test running an agent via runtime engine."""
     mock_client = Mock()
@@ -98,17 +96,17 @@ def test_run_agent(mock_client_class):
         "tokens_used": 50,
     }
     mock_client_class.return_value = mock_client
-    
+
     engine = RuntimeEngine()
     agent = Agent(
         id="test-agent",
         name="Test Agent",
         instructions="Test",
     )
-    
+
     engine.register_agent(agent)
     execution_id = engine.run_agent("test-agent", "Test input")
-    
+
     assert execution_id is not None
     execution = engine.get_execution(execution_id)
     assert execution is not None
@@ -119,7 +117,7 @@ def test_run_agent(mock_client_class):
 def test_run_agent_not_found():
     """Test running non-existent agent."""
     engine = RuntimeEngine()
-    
+
     with pytest.raises(ValueError, match="Agent not found"):
         engine.run_agent("non-existent", "Test")
 
@@ -133,10 +131,10 @@ def test_get_execution():
         name="Test Agent",
         instructions="Test",
     )
-    
+
     engine.register_agent(agent)
-    
-    with patch('agent_factory.integrations.openai_client.OpenAIAgentClient'):
+
+    with patch("agent_factory.integrations.openai_client.OpenAIAgentClient"):
         execution_id = engine.run_agent("test-agent", "Test")
         execution = engine.get_execution(execution_id)
         assert execution is not None
@@ -152,10 +150,10 @@ def test_list_executions():
         name="Test Agent",
         instructions="Test",
     )
-    
+
     engine.register_agent(agent)
-    
-    with patch('agent_factory.integrations.openai_client.OpenAIAgentClient'):
+
+    with patch("agent_factory.integrations.openai_client.OpenAIAgentClient"):
         execution_id = engine.run_agent("test-agent", "Test")
         executions = engine.list_executions()
         assert len(executions) == 1

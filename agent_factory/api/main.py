@@ -47,6 +47,7 @@ sentry_client = setup_sentry()
 if sentry_client:
     logger.info("Sentry error tracking enabled")
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initialize services on application startup."""
@@ -114,9 +115,6 @@ app.add_middleware(RequestIDMiddleware)
 
 # Add timing middleware
 app.add_middleware(TimingMiddleware)
-
-
-
 
 
 # Include routers

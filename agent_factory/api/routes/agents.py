@@ -1,6 +1,5 @@
 """Agent API routes."""
 
-
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
@@ -37,10 +36,10 @@ def create_agent(agent_data: AgentCreate, user=Depends(get_current_user)):
         instructions=agent_data.instructions,
         model=agent_data.model,
     )
-    
+
     registry.register_agent(agent)
     runtime.register_agent(agent)
-    
+
     return {"id": agent.id, "status": "created"}
 
 
@@ -50,12 +49,12 @@ def list_agents(user=Depends(get_current_user)):
     require_user_permission(user, Permission.READ_AGENTS)
     agent_ids = registry.list_agents()
     agents = []
-    
+
     for agent_id in agent_ids:
         agent = registry.get_agent(agent_id)
         if agent:
             agents.append(agent.to_dict())
-    
+
     return agents
 
 
@@ -64,10 +63,10 @@ def get_agent(agent_id: str, user=Depends(get_current_user)):
     """Get agent by ID."""
     require_user_permission(user, Permission.READ_AGENTS)
     agent = registry.get_agent(agent_id)
-    
+
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
-    
+
     return agent.to_dict()
 
 
@@ -76,10 +75,10 @@ def run_agent(agent_id: str, run_data: AgentRun, user=Depends(get_current_user))
     """Run an agent."""
     require_user_permission(user, Permission.EXECUTE_AGENTS)
     agent = registry.get_agent(agent_id)
-    
+
     if not agent:
         raise HTTPException(status_code=404, detail="Agent not found")
-    
+
     runtime.register_agent(agent)
     execution_id = runtime.run_agent(
         agent_id,
@@ -91,10 +90,12 @@ def run_agent(agent_id: str, run_data: AgentRun, user=Depends(get_current_user))
     if not execution or not execution.result:
         raise HTTPException(status_code=500, detail="Execution result not found")
     result = execution.result
-    
+
     return {
         "output": getattr(result, "output", ""),
-        "status": getattr(getattr(result, "status", None), "value", str(getattr(result, "status", ""))),
+        "status": getattr(
+            getattr(result, "status", None), "value", str(getattr(result, "status", ""))
+        ),
         "execution_time": getattr(result, "execution_time", 0.0),
         "error": getattr(result, "error", None),
         "execution_id": execution_id,
@@ -107,5 +108,5 @@ def delete_agent(agent_id: str, user=Depends(get_current_user)):
     require_user_permission(user, Permission.DELETE_AGENTS)
     if not registry.delete_agent(agent_id):
         raise HTTPException(status_code=404, detail="Agent not found")
-    
+
     return {"status": "deleted"}

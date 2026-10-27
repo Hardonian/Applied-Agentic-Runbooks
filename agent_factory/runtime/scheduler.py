@@ -14,13 +14,13 @@ import schedule
 class Scheduler:
     """
     Scheduler for running agents and workflows on a schedule.
-    
+
     Example:
         >>> scheduler = Scheduler()
         >>> scheduler.schedule_agent("agent-id", "input", schedule="daily")
         >>> scheduler.start()
     """
-    
+
     def __init__(self):
         """Initialize scheduler."""
         self.jobs: dict[str, Callable] = {}
@@ -30,7 +30,7 @@ class Scheduler:
         self._scheduler = schedule.Scheduler()
         self.running = False
         self.thread: threading.Thread | None = None
-    
+
     def schedule_agent(
         self,
         agent_id: str,
@@ -40,24 +40,24 @@ class Scheduler:
     ) -> str:
         """
         Schedule an agent to run on a schedule.
-        
+
         Args:
             agent_id: Agent ID to run
             input_text: Input text for agent
             schedule_str: Schedule string ("daily", "hourly", "weekly", cron expression)
             run_func: Function to call (should run the agent)
-            
+
         Returns:
             Job ID
         """
         job_id = f"agent:{agent_id}:{schedule_str}"
-        
+
         def job():
             if run_func:
                 run_func(agent_id, input_text)
-        
+
         return self._register_job(job_id, schedule_str, job)
-    
+
     def schedule_workflow(
         self,
         workflow_id: str,
@@ -67,22 +67,22 @@ class Scheduler:
     ) -> str:
         """
         Schedule a workflow to run on a schedule.
-        
+
         Args:
             workflow_id: Workflow ID to run
             context: Initial context
             schedule_str: Schedule string
             run_func: Function to call
-            
+
         Returns:
             Job ID
         """
         job_id = f"workflow:{workflow_id}:{schedule_str}"
-        
+
         def job():
             if run_func:
                 run_func(workflow_id, context)
-        
+
         return self._register_job(job_id, schedule_str, job)
 
     def _register_job(self, job_id: str, schedule_str: str, job: Callable) -> str:
@@ -117,22 +117,22 @@ class Scheduler:
             return False
         self._scheduler.cancel_job(scheduled_job)
         return True
-    
+
     def start(self) -> None:
         """Start the scheduler in a background thread."""
         if self.running:
             return
-        
+
         self.running = True
-        
+
         def run():
             while self.running:
                 self._scheduler.run_pending()
                 time.sleep(1)
-        
+
         self.thread = threading.Thread(target=run, daemon=True)
         self.thread.start()
-    
+
     def stop(self) -> None:
         """Stop the scheduler."""
         self.running = False

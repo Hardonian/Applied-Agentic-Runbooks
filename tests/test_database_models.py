@@ -1,6 +1,5 @@
 """Tests for database models."""
 
-
 import pytest
 
 from agent_factory.database.models import (
@@ -32,7 +31,7 @@ def test_user_model():
         email="test@example.com",
         hashed_password="hashed",
     )
-    
+
     assert user.id == "user-1"
     assert user.email == "test@example.com"
     assert user.is_active is True
@@ -47,7 +46,7 @@ def test_tenant_model():
         name="Test Tenant",
         slug="test-tenant",
     )
-    
+
     assert tenant.id == "tenant-1"
     assert tenant.name == "Test Tenant"
     assert tenant.slug == "test-tenant"
@@ -63,7 +62,7 @@ def test_agent_model():
         name="Test Agent",
         instructions="Test instructions",
     )
-    
+
     assert agent.id == "agent-1"
     assert agent.name == "Test Agent"
     assert agent.instructions == "Test instructions"
@@ -78,7 +77,7 @@ def test_workflow_model():
         name="Test Workflow",
         definition={"steps": []},
     )
-    
+
     assert workflow.id == "workflow-1"
     assert workflow.name == "Test Workflow"
     assert isinstance(workflow.definition, dict)
@@ -94,7 +93,7 @@ def test_blueprint_model():
         description="Test description",
         definition={"agents": []},
     )
-    
+
     assert blueprint.id == "blueprint-1"
     assert blueprint.name == "Test Blueprint"
     assert blueprint.version == "1.0.0"
@@ -111,7 +110,7 @@ def test_execution_model():
         resource_id="agent-1",
         status="pending",
     )
-    
+
     assert execution.id == "exec-1"
     assert execution.execution_type == "agent"
     assert execution.resource_id == "agent-1"
@@ -126,7 +125,7 @@ def test_audit_log_model():
         action="create",
         success=True,
     )
-    
+
     assert audit_log.event_type == "test_event"
     assert audit_log.action == "create"
     assert audit_log.success is True

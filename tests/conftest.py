@@ -26,7 +26,7 @@ def mock_openai_client():
     mock_response.choices[0].message.tool_calls = None
     mock_response.usage = Mock()
     mock_response.usage.total_tokens = 100
-    
+
     mock_client.chat.completions.create.return_value = mock_response
     return mock_client
 
@@ -44,9 +44,10 @@ def sample_agent():
 @pytest.fixture
 def sample_tool():
     """Create a sample tool for testing."""
+
     def dummy_function(x: str) -> str:
         return f"Processed: {x}"
-    
+
     return Tool(
         id="test-tool",
         name="Test Tool",

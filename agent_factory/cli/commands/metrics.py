@@ -15,20 +15,20 @@ def summary(
 ):
     """
     Show growth metrics summary.
-    
+
     Example:
         agent-factory metrics summary --days 30
     """
     analytics = get_analytics()
-    
+
     end_date = datetime.utcnow()
     start_date = end_date - timedelta(days=days)
-    
+
     metrics = analytics.get_growth_summary(
         start_date=start_date,
         end_date=end_date,
     )
-    
+
     typer.echo("\n📊 Growth Metrics Summary")
     typer.echo("=" * 50)
     typer.echo(f"Period: {start_date.date()} to {end_date.date()}")
@@ -57,21 +57,21 @@ def tenant(
 ):
     """
     Show metrics for a specific tenant.
-    
+
     Example:
         agent-factory metrics tenant tenant-123 --days 7
     """
     analytics = get_analytics()
-    
+
     end_date = datetime.utcnow()
     start_date = end_date - timedelta(days=days)
-    
+
     metrics = analytics.get_tenant_metrics(
         tenant_id=tenant_id,
         start_date=start_date,
         end_date=end_date,
     )
-    
+
     typer.echo(f"\n📊 Metrics for Tenant: {tenant_id}")
     typer.echo("=" * 50)
     typer.echo(f"Period: {start_date.date()} to {end_date.date()}")
@@ -88,7 +88,7 @@ def tenant(
     typer.echo("\n📈 Resources:")
     typer.echo(f"  Active Agents: {metrics.get('active_agents', 0)}")
     typer.echo(f"  Active Workflows: {metrics.get('active_workflows', 0)}")
-    
+
     # Show top agents
     agent_runs = metrics.get("agent_runs_by_agent", {})
     if agent_runs:
@@ -104,20 +104,20 @@ def funnel(
 ):
     """
     Show conversion funnel metrics.
-    
+
     Example:
         agent-factory metrics funnel --days 30
     """
     analytics = get_analytics()
-    
+
     end_date = datetime.utcnow()
     start_date = end_date - timedelta(days=days)
-    
+
     funnel = analytics.get_conversion_funnel(
         start_date=start_date,
         end_date=end_date,
     )
-    
+
     typer.echo("\n🔄 Conversion Funnel")
     typer.echo("=" * 50)
     typer.echo(f"Period: {start_date.date()} to {end_date.date()}")
@@ -125,7 +125,7 @@ def funnel(
     typer.echo(f"🤖 Agents Created: {funnel.get('agents_created', 0)}")
     typer.echo(f"📦 Blueprints Installed: {funnel.get('blueprints_installed', 0)}")
     typer.echo(f"🚀 Projects Created: {funnel.get('projects_created', 0)}")
-    
+
     conversion_rates = funnel.get("conversion_rates", {})
     typer.echo("\n📊 Conversion Rates:")
     typer.echo(f"  Notebook → Agent: {conversion_rates.get('notebook_to_agent', 0.0):.2%}")

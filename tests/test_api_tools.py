@@ -24,7 +24,7 @@ def authenticated_user():
 @pytest.mark.unit
 def test_list_tools_empty():
     """Test listing tools when none exist."""
-    with patch('agent_factory.api.routes.tools.registry') as mock_registry:
+    with patch("agent_factory.api.routes.tools.registry") as mock_registry:
         mock_registry.list_tools.return_value = []
         response = client.get("/api/v1/tools/")
         assert response.status_code == 200
@@ -34,7 +34,7 @@ def test_list_tools_empty():
 @pytest.mark.unit
 def test_list_tools():
     """Test listing tools."""
-    with patch('agent_factory.api.routes.tools.registry') as mock_registry:
+    with patch("agent_factory.api.routes.tools.registry") as mock_registry:
         mock_registry.list_tools.return_value = ["tool1", "tool2"]
         response = client.get("/api/v1/tools/")
         assert response.status_code == 200
@@ -44,7 +44,7 @@ def test_list_tools():
 @pytest.mark.unit
 def test_get_tool_not_found():
     """Test getting non-existent tool."""
-    with patch('agent_factory.api.routes.tools.registry') as mock_registry:
+    with patch("agent_factory.api.routes.tools.registry") as mock_registry:
         mock_registry.get_tool.return_value = None
         response = client.get("/api/v1/tools/nonexistent")
         assert response.status_code == 404
@@ -57,10 +57,10 @@ def test_get_tool():
     mock_tool.to_dict.return_value = {
         "id": "test-tool",
         "name": "Test Tool",
-        "description": "A test tool"
+        "description": "A test tool",
     }
-    
-    with patch('agent_factory.api.routes.tools.registry') as mock_registry:
+
+    with patch("agent_factory.api.routes.tools.registry") as mock_registry:
         mock_registry.get_tool.return_value = mock_tool
         response = client.get("/api/v1/tools/test-tool")
         assert response.status_code == 200
@@ -73,15 +73,10 @@ def test_get_tool_schema():
     mock_tool = Mock(spec=Tool)
     mock_tool.get_schema.return_value = {
         "type": "function",
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "x": {"type": "string"}
-            }
-        }
+        "parameters": {"type": "object", "properties": {"x": {"type": "string"}}},
     }
-    
-    with patch('agent_factory.api.routes.tools.registry') as mock_registry:
+
+    with patch("agent_factory.api.routes.tools.registry") as mock_registry:
         mock_registry.get_tool.return_value = mock_tool
         response = client.get("/api/v1/tools/test-tool/schema")
         assert response.status_code == 200
@@ -93,17 +88,14 @@ def test_test_tool():
     """Test testing a tool."""
     mock_tool = Mock(spec=Tool)
     mock_tool.execute.return_value = "result"
-    
+
     app.dependency_overrides[get_current_user] = lambda: User(
         id="user-1", email="test@example.com", roles=["user"]
     )
     try:
-        with patch('agent_factory.api.routes.tools.registry') as mock_registry:
+        with patch("agent_factory.api.routes.tools.registry") as mock_registry:
             mock_registry.get_tool.return_value = mock_tool
-            response = client.post(
-                "/api/v1/tools/test-tool/test",
-                json={"params": {"x": "test"}}
-            )
+            response = client.post("/api/v1/tools/test-tool/test", json={"params": {"x": "test"}})
             assert response.status_code == 200
             assert response.json()["success"] is True
             assert response.json()["result"] == "result"

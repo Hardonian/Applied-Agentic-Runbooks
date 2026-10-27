@@ -32,6 +32,7 @@ def __getattr__(name: str):
     """Lazy import for Agent, Tool, Workflow classes to avoid circular imports."""
     if name in ("Agent", "AgentConfig", "AgentResult", "AgentStatus", "Handoff"):
         from agent_factory.agents.agent import Agent, AgentConfig, AgentResult, AgentStatus, Handoff
+
         if name == "Agent":
             return Agent
         elif name == "AgentConfig":
@@ -44,17 +45,27 @@ def __getattr__(name: str):
             return Handoff
     elif name == "Tool":
         from agent_factory.core.tool import Tool
+
         return Tool
     elif name == "function_tool":
         from agent_factory.tools.decorator import function_tool
+
         return function_tool
     elif name in ("MemoryStore", "SQLiteMemoryStore"):
         from agent_factory.runtime.memory import MemoryStore, SQLiteMemoryStore
+
         if name == "MemoryStore":
             return MemoryStore
         elif name == "SQLiteMemoryStore":
             return SQLiteMemoryStore
-    elif name in ("Workflow", "WorkflowStep", "WorkflowResult", "Trigger", "TriggerType", "Condition"):
+    elif name in (
+        "Workflow",
+        "WorkflowStep",
+        "WorkflowResult",
+        "Trigger",
+        "TriggerType",
+        "Condition",
+    ):
         from agent_factory.core.workflow import (
             Condition,
             Trigger,
@@ -63,6 +74,7 @@ def __getattr__(name: str):
             WorkflowResult,
             WorkflowStep,
         )
+
         if name == "Workflow":
             return Workflow
         elif name == "WorkflowStep":
@@ -76,6 +88,7 @@ def __getattr__(name: str):
         elif name == "Condition":
             return Condition
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 __all__ = [
     # Agents

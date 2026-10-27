@@ -33,7 +33,7 @@ def test_knowledge_pack_model():
             vector_store="chroma",
         ),
     )
-    
+
     assert pack.id == "test-pack"
     assert pack.domain == "test"
     assert len(pack.data_sources) == 1
@@ -66,15 +66,15 @@ def test_knowledge_pack_loader(tmp_path):
             },
         },
     }
-    
+
     pack_path = tmp_path / "pack.yaml"
     with open(pack_path, "w") as f:
         yaml.dump(pack_data, f)
-    
+
     # Load
     loader = KnowledgePackLoader()
     pack = loader.load(str(pack_path))
-    
+
     assert pack.id == "test-pack"
     assert pack.name == "Test Pack"
     assert len(pack.data_sources) == 1

@@ -30,6 +30,7 @@ class BillingProvider(str, Enum):
 @dataclass
 class SubscriptionPlan:
     """Definition of a SaaS pricing plan."""
+
     tier: PlanTier
     name: str
     price_usd_monthly: float
@@ -65,7 +66,12 @@ PLAN_CATALOG: dict[PlanTier, SubscriptionPlan] = {
         monthly_token_allowance=15_000_000,
         included_agents=100,
         overage_per_100k_tokens_usd=0.15,
-        features=["Autonomous Swarms", "MCP Server/Client", "Universal Exporters", "Priority 24/7 SLA"],
+        features=[
+            "Autonomous Swarms",
+            "MCP Server/Client",
+            "Universal Exporters",
+            "Priority 24/7 SLA",
+        ],
     ),
     PlanTier.ENTERPRISE: SubscriptionPlan(
         tier=PlanTier.ENTERPRISE,
@@ -74,7 +80,12 @@ PLAN_CATALOG: dict[PlanTier, SubscriptionPlan] = {
         monthly_token_allowance=100_000_000,
         included_agents=1000,
         overage_per_100k_tokens_usd=0.10,
-        features=["Dedicated LLM Gateways", "Zero-Trust RBAC", "SOC2 Compliance", "Custom Fine-Tuning"],
+        features=[
+            "Dedicated LLM Gateways",
+            "Zero-Trust RBAC",
+            "SOC2 Compliance",
+            "Custom Fine-Tuning",
+        ],
     ),
 }
 
@@ -82,6 +93,7 @@ PLAN_CATALOG: dict[PlanTier, SubscriptionPlan] = {
 @dataclass
 class CustomerAccount:
     """Customer billing record with wallet and metering."""
+
     customer_id: str
     tenant_id: str
     plan: PlanTier = PlanTier.FREE
@@ -101,7 +113,9 @@ class MonetizationBillingGateway:
         self.default_provider = default_provider
         self.accounts: dict[str, CustomerAccount] = {}
 
-    def get_or_create_account(self, customer_id: str, tenant_id: str = "default") -> CustomerAccount:
+    def get_or_create_account(
+        self, customer_id: str, tenant_id: str = "default"
+    ) -> CustomerAccount:
         """Fetch or initialize customer account."""
         if customer_id not in self.accounts:
             self.accounts[customer_id] = CustomerAccount(
@@ -113,7 +127,9 @@ class MonetizationBillingGateway:
             )
         return self.accounts[customer_id]
 
-    def upgrade_plan(self, customer_id: str, tier: PlanTier, provider: BillingProvider | None = None) -> CustomerAccount:
+    def upgrade_plan(
+        self, customer_id: str, tier: PlanTier, provider: BillingProvider | None = None
+    ) -> CustomerAccount:
         """Upgrade customer subscription tier."""
         account = self.get_or_create_account(customer_id)
         account.plan = tier
@@ -137,7 +153,9 @@ class MonetizationBillingGateway:
         plan = PLAN_CATALOG[account.plan]
 
         is_overage = account.tokens_used_this_billing_cycle > plan.monthly_token_allowance
-        overage_tokens = max(0, account.tokens_used_this_billing_cycle - plan.monthly_token_allowance)
+        overage_tokens = max(
+            0, account.tokens_used_this_billing_cycle - plan.monthly_token_allowance
+        )
         overage_cost = round((overage_tokens / 100_000) * plan.overage_per_100k_tokens_usd, 4)
 
         if cost_usd > 0:

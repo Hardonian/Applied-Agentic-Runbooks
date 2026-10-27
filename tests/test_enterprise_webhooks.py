@@ -64,7 +64,9 @@ def test_trigger_webhook_signs_and_retries_server_errors():
         )
     )
 
-    assert results == [{"webhook_id": registered["id"], "status": "delivered", "attempts": 2, "status_code": 204}]
+    assert results == [
+        {"webhook_id": registered["id"], "status": "delivered", "attempts": 2, "status_code": 204}
+    ]
     body = client.calls[-1][1]
     signature = hmac.new(b"signing-secret", body, hashlib.sha256).hexdigest()
     assert client.calls[-1][2]["X-Agent-Factory-Signature"] == f"sha256={signature}"

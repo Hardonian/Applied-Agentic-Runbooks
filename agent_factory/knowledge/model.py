@@ -10,6 +10,7 @@ from typing import Any
 @dataclass
 class DataSource:
     """Data source for knowledge pack."""
+
     type: str  # "directory", "url", "database", "api"
     path: str | None = None
     url: str | None = None
@@ -19,6 +20,7 @@ class DataSource:
 @dataclass
 class EmbeddingConfig:
     """Embedding model configuration."""
+
     model: str = "text-embedding-3-small"
     provider: str = "openai"  # "openai", "anthropic", "local"
     chunk_size: int = 1000
@@ -29,6 +31,7 @@ class EmbeddingConfig:
 @dataclass
 class RetrieverConfig:
     """Retriever configuration."""
+
     type: str = "vector_store"  # "vector_store", "bm25", "hybrid"
     vector_store: str = "chroma"  # "chroma", "pinecone", "weaviate"
     top_k: int = 5
@@ -40,7 +43,7 @@ class RetrieverConfig:
 class KnowledgePack:
     """
     Knowledge Pack - Pluggable RAG module for agents.
-    
+
     Example:
         >>> pack = KnowledgePack(
         ...     id="academic-research",
@@ -49,6 +52,7 @@ class KnowledgePack:
         ...     data_sources=[DataSource(type="directory", path="./data/papers")],
         ... )
     """
+
     id: str
     name: str
     version: str = "1.0.0"
@@ -64,31 +68,31 @@ class KnowledgePack:
 class KnowledgeRetriever(ABC):
     """
     Abstract base class for knowledge retrievers.
-    
+
     Implementations:
     - VectorStoreRetriever: Vector similarity search
     - BM25Retriever: Keyword-based retrieval
     - HybridRetriever: Combines vector + keyword
     """
-    
+
     @abstractmethod
     def retrieve(self, query: str, top_k: int = 5) -> list[dict[str, Any]]:
         """
         Retrieve relevant documents for a query.
-        
+
         Args:
             query: Search query
             top_k: Number of results to return
-        
+
         Returns:
             List of retrieved documents with content and metadata
         """
-    
+
     @abstractmethod
     def load(self, knowledge_pack: KnowledgePack) -> None:
         """
         Load knowledge pack data.
-        
+
         Args:
             knowledge_pack: Knowledge pack to load
         """

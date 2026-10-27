@@ -21,17 +21,23 @@ class OpenAISpecExporter:
         """Generate OpenAI Assistants API v2 creation payload."""
         tools_spec = []
         for t in agent.tools:
-            tools_spec.append({
-                "type": "function",
-                "function": {
-                    "name": t.name,
-                    "description": t.description,
-                    "parameters": getattr(t, "parameters", {
-                        "type": "object",
-                        "properties": {},
-                    })
+            tools_spec.append(
+                {
+                    "type": "function",
+                    "function": {
+                        "name": t.name,
+                        "description": t.description,
+                        "parameters": getattr(
+                            t,
+                            "parameters",
+                            {
+                                "type": "object",
+                                "properties": {},
+                            },
+                        ),
+                    },
                 }
-            })
+            )
 
         return {
             "name": agent.name,
@@ -41,7 +47,7 @@ class OpenAISpecExporter:
             "metadata": {
                 "agent_factory_id": agent.id,
                 "exported_by": "AgentFactory-v1.0",
-            }
+            },
         }
 
     @staticmethod
@@ -66,14 +72,23 @@ class OpenAISpecExporter:
                                     "schema": {
                                         "type": "object",
                                         "properties": {
-                                            "input": {"type": "string", "description": "Prompt or task"},
-                                            "session_id": {"type": "string", "description": "Memory session key"},
-                                            "context": {"type": "object", "description": "Runtime context payload"}
+                                            "input": {
+                                                "type": "string",
+                                                "description": "Prompt or task",
+                                            },
+                                            "session_id": {
+                                                "type": "string",
+                                                "description": "Memory session key",
+                                            },
+                                            "context": {
+                                                "type": "object",
+                                                "description": "Runtime context payload",
+                                            },
                                         },
-                                        "required": ["input"]
+                                        "required": ["input"],
                                     }
                                 }
-                            }
+                            },
                         },
                         "responses": {
                             "200": {
@@ -86,14 +101,14 @@ class OpenAISpecExporter:
                                                 "output": {"type": "string"},
                                                 "status": {"type": "string"},
                                                 "execution_time": {"type": "number"},
-                                                "tokens_used": {"type": "integer"}
-                                            }
+                                                "tokens_used": {"type": "integer"},
+                                            },
                                         }
                                     }
-                                }
+                                },
                             }
-                        }
+                        },
                     }
                 }
-            }
+            },
         }

@@ -103,7 +103,12 @@ if __name__ == "__main__":
 
         nodes_str = "\n".join(nodes_code)
         edges_str = "\n".join(edges_code)
-        add_nodes_str = "\n".join([f'builder.add_node("{s.get("id", f"step_{i}")}", {s.get("id", f"step_{i}").replace("-", "_")}_node)' for i, s in enumerate(steps)])
+        add_nodes_str = "\n".join(
+            [
+                f'builder.add_node("{s.get("id", f"step_{i}")}", {s.get("id", f"step_{i}").replace("-", "_")}_node)'
+                for i, s in enumerate(steps)
+            ]
+        )
 
         return f'''"""
 LangGraph Multi-Step Workflow generated from Agent Factory: {name}

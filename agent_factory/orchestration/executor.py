@@ -15,17 +15,17 @@ from agent_factory.promptlog.model import Run as RunModel
 
 class OrchestrationExecutor:
     """Execute multi-agent orchestration flows."""
-    
+
     def __init__(self, storage: SQLiteStorage | None = None):
         """
         Initialize executor.
-        
+
         Args:
             storage: Optional prompt log storage
         """
         self.router = AgentRouter()
         self.storage = storage
-    
+
     def execute(
         self,
         graph: AgentGraph,
@@ -34,12 +34,12 @@ class OrchestrationExecutor:
     ) -> dict[str, Any]:
         """
         Execute multi-agent flow.
-        
+
         Args:
             graph: Agent graph
             inputs: Initial inputs
             max_steps: Maximum number of routing steps
-        
+
         Returns:
             Final outputs
         """
@@ -50,7 +50,7 @@ class OrchestrationExecutor:
         current_message = dict(inputs)
         step_count = 0
         steps: list[dict[str, Any]] = []
-        
+
         while current_agent_id and step_count < max_steps:
             # Get current agent
             node = graph.get_node(current_agent_id)
@@ -61,7 +61,7 @@ class OrchestrationExecutor:
                     "error": f"Orchestration node not found: {current_agent_id}",
                     "steps": steps,
                 }
-            
+
             # Agent.run accepts text while routing carries structured context.
             # Preserve a caller-provided input_text when available and encode
             # all other context deterministically for the executing agent.
@@ -79,7 +79,7 @@ class OrchestrationExecutor:
                 "agent_id": current_agent_id,
             }
             steps.append(result)
-            
+
             # Log execution
             if self.storage:
                 run = RunModel(
@@ -95,17 +95,17 @@ class OrchestrationExecutor:
 
             if result["status"] == "error":
                 return {**result, "steps": steps}
-            
+
             # Route to next agent
             next_agent_id = self.router.route(result, current_agent_id, graph)
-            
+
             if not next_agent_id:
                 return {**result, "steps": steps}
-            
+
             current_agent_id = next_agent_id
             current_message = result
             step_count += 1
-        
+
         return {
             "output": current_message.get("output"),
             "status": "error",

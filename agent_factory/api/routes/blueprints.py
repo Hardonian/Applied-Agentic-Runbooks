@@ -18,6 +18,7 @@ registry = LocalRegistry()
 
 class BlueprintCreate(BaseModel):
     """Blueprint creation model."""
+
     id: str
     name: str
     version: str
@@ -33,29 +34,28 @@ class BlueprintCreate(BaseModel):
 
 class BlueprintInstall(BaseModel):
     """Blueprint installation model."""
+
     target_path: str | None = None
 
 
 class BlueprintPublish(BaseModel):
     """Blueprint publish model."""
+
     is_public: bool = True
     pricing_model: str = "free"
     price: float = 0.0
 
 
 @router.post("/", response_model=dict[str, Any])
-async def create_blueprint(
-    blueprint_data: BlueprintCreate,
-    user=Depends(get_current_user)
-):
+async def create_blueprint(blueprint_data: BlueprintCreate, user=Depends(get_current_user)):
     """Create a new blueprint."""
     require_user_permission(user, Permission.WRITE_AGENTS)
-    
+
     # Check if blueprint already exists
     existing = registry.get_blueprint(blueprint_data.id)
     if existing:
         raise HTTPException(status_code=400, detail=f"Blueprint {blueprint_data.id} already exists")
-    
+
     # Create blueprint from data
     from agent_factory.blueprints.model import (
         BlueprintConfig,
@@ -63,14 +63,14 @@ async def create_blueprint(
         PricingInfo,
         PricingModel,
     )
-    
+
     config = BlueprintConfig()
     if blueprint_data.config:
         config.dependencies = blueprint_data.config.get("dependencies", [])
         config.environment_variables = blueprint_data.config.get("environment_variables", {})
         config.required_tools = blueprint_data.config.get("required_tools", [])
         config.required_agents = blueprint_data.config.get("required_agents", [])
-    
+
     pricing = PricingInfo(model=PricingModel.FREE)
     if blueprint_data.pricing:
         pricing = PricingInfo(
@@ -79,22 +79,23 @@ async def create_blueprint(
             currency=blueprint_data.pricing.get("currency", "USD"),
             period=blueprint_data.pricing.get("period"),
         )
-    
+
     # Load agents, tools, workflows from data
     agents = []
     if blueprint_data.agents:
         from agent_factory.agents.agent import Agent
+
         for agent_data in blueprint_data.agents:
             try:
                 agents.append(Agent.from_dict(agent_data))
             except Exception as e:
                 raise HTTPException(status_code=400, detail=f"Invalid agent data: {e}")
-    
+
     # Keep component definitions in the portable package manifest. Tool
     # implementations are resolved only from the trusted server-side catalog.
     tools = blueprint_data.tools or []
     workflows = blueprint_data.workflows or []
-    
+
     blueprint = Blueprint(
         id=blueprint_data.id,
         name=blueprint_data.name,
@@ -111,9 +112,9 @@ async def create_blueprint(
             documentation=(blueprint_data.metadata or {}).get("documentation", ""),
         ),
     )
-    
+
     registry.register_blueprint(blueprint)
-    
+
     return {"id": blueprint.id, "status": "created"}
 
 
@@ -129,26 +130,24 @@ def get_blueprint(blueprint_id: str, user=Depends(get_current_user)):
     """Get blueprint by ID."""
     require_user_permission(user, Permission.READ_BLUEPRINTS)
     blueprint = registry.get_blueprint(blueprint_id)
-    
+
     if not blueprint:
         raise HTTPException(status_code=404, detail="Blueprint not found")
-    
+
     return blueprint.to_dict()
 
 
 @router.post("/{blueprint_id}/install", response_model=dict[str, Any])
 async def install_blueprint(
-    blueprint_id: str,
-    install_data: BlueprintInstall,
-    user=Depends(get_current_user)
+    blueprint_id: str, install_data: BlueprintInstall, user=Depends(get_current_user)
 ):
     """Install a blueprint."""
     require_user_permission(user, Permission.READ_BLUEPRINTS)
-    
+
     blueprint = registry.get_blueprint(blueprint_id)
     if not blueprint:
         raise HTTPException(status_code=404, detail="Blueprint not found")
-    
+
     # API callers may not choose arbitrary server filesystem destinations.
     # Installations live under the registry's controlled storage root.
     if install_data.target_path:
@@ -157,36 +156,34 @@ async def install_blueprint(
             detail="target_path is server-managed; omit it to install into the registry workspace.",
         )
     target_path = str(registry.base_path / "installed_blueprints" / blueprint_id)
-    
+
     success = blueprint.install(target_path)
     if not success:
         raise HTTPException(status_code=500, detail="Installation failed")
-    
+
     return {"id": blueprint_id, "status": "installed", "target_path": target_path}
 
 
 @router.post("/{blueprint_id}/publish", response_model=dict[str, Any])
 async def publish_blueprint_endpoint(
-    blueprint_id: str,
-    publish_data: BlueprintPublish,
-    user=Depends(get_current_user)
+    blueprint_id: str, publish_data: BlueprintPublish, user=Depends(get_current_user)
 ):
     """Publish a blueprint to marketplace."""
     require_user_permission(user, Permission.PUBLISH_BLUEPRINTS)
-    
+
     blueprint = registry.get_blueprint(blueprint_id)
     if not blueprint:
         raise HTTPException(status_code=404, detail="Blueprint not found")
-    
-    publisher_id = user.id if hasattr(user, 'id') else "unknown"
-    
+
+    publisher_id = user.id if hasattr(user, "id") else "unknown"
+
     try:
         result = publish_blueprint(
             blueprint=blueprint,
             publisher_id=publisher_id,
             is_public=publish_data.is_public,
             pricing_model=publish_data.pricing_model,
-            price=publish_data.price
+            price=publish_data.price,
         )
         return result
     except Exception as e:
@@ -205,6 +202,6 @@ def get_blueprint_reviews(
     blueprint = registry.get_blueprint(blueprint_id)
     if not blueprint:
         raise HTTPException(status_code=404, detail="Blueprint not found")
-    
+
     reviews = get_reviews(blueprint_id, limit=limit, offset=offset)
     return reviews

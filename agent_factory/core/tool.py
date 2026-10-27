@@ -14,6 +14,7 @@ from agent_factory.core.exceptions import ToolExecutionError, ToolValidationErro
 @dataclass
 class ParameterSchema:
     """Schema for a tool parameter."""
+
     name: str
     type: str  # "string", "number", "boolean", "object", "array"
     description: str
@@ -25,6 +26,7 @@ class ParameterSchema:
 @dataclass
 class ToolMetadata:
     """Metadata for a tool."""
+
     id: str
     name: str
     description: str
@@ -39,10 +41,10 @@ class ToolMetadata:
 class Tool(ABC):
     """
     Abstract base class for tools that agents can use.
-    
+
     Tools are functions that agents can call to perform actions.
     """
-    
+
     def __init__(
         self,
         id: str,
@@ -53,7 +55,7 @@ class Tool(ABC):
     ):
         """
         Initialize a Tool.
-        
+
         Args:
             id: Unique identifier
             name: Human-readable name
@@ -71,33 +73,33 @@ class Tool(ABC):
             description=description,
         )
         self._schema = self._infer_schema()
-    
+
     def _infer_schema(self) -> dict[str, Any]:
         """Infer JSON schema from function signature."""
         sig = inspect.signature(self._implementation)
         parameters = {}
         required = []
-        
+
         for param_name, param in sig.parameters.items():
             param_type = self._python_type_to_json_type(param.annotation)
             param_schema = {
                 "type": param_type,
                 "description": param_name,
             }
-            
+
             if param.default != inspect.Parameter.empty:
                 param_schema["default"] = param.default
             else:
                 required.append(param_name)
-            
+
             parameters[param_name] = param_schema
-        
+
         return {
             "type": "object",
             "properties": parameters,
             "required": required,
         }
-    
+
     @staticmethod
     def _python_type_to_json_type(python_type: Any) -> str:
         """Convert Python type to JSON schema type."""
@@ -109,83 +111,86 @@ class Tool(ABC):
             list: "array",
             dict: "object",
         }
-        
+
         if python_type in type_map:
             return type_map[python_type]
-        
+
         # Handle Optional types
         origin = getattr(python_type, "__origin__", None)
-        if origin is type(None) or (hasattr(python_type, "__args__") and type(None) in python_type.__args__):
+        if origin is type(None) or (
+            hasattr(python_type, "__args__") and type(None) in python_type.__args__
+        ):
             return "string"  # Default
-        
+
         return "string"  # Default fallback
-    
+
     def execute(self, **kwargs) -> Any:
         """
         Execute the tool with given parameters.
-        
+
         Args:
             **kwargs: Tool parameters
-            
+
         Returns:
             Tool execution result
         """
         # Validate parameters
         self.validate(**kwargs)
-        
+
         # Execute implementation
         try:
             return self._implementation(**kwargs)
         except Exception as e:
             raise ToolExecutionError(f"Tool {self.id} execution failed: {e!s}")
-    
+
     def __call__(self, *args, **kwargs) -> Any:
         """
         Make tool callable directly.
-        
+
         Args:
             *args: Positional arguments (will be converted to kwargs based on signature)
             **kwargs: Keyword arguments
-            
+
         Returns:
             Tool execution result
         """
         # If args provided, try to map them to function signature
         if args:
             import inspect
+
             sig = inspect.signature(self._implementation)
             param_names = list(sig.parameters.keys())
             for i, arg in enumerate(args):
                 if i < len(param_names):
                     kwargs[param_names[i]] = arg
-        
+
         return self.execute(**kwargs)
-    
+
     def validate(self, **kwargs) -> bool:
         """
         Validate tool parameters.
-        
+
         Args:
             **kwargs: Parameters to validate
-            
+
         Returns:
             True if valid
-            
+
         Raises:
             ToolValidationError: If validation fails
         """
         required = self._schema.get("required", [])
-        
+
         for param in required:
             if param not in kwargs:
                 raise ToolValidationError(f"Missing required parameter: {param}")
-        
+
         return True
-    
+
     def get_schema(self) -> dict[str, Any]:
         """
         Get JSON schema for the tool.
-        
+
         Returns:
             JSON schema dictionary
         """
@@ -201,7 +206,7 @@ class Tool(ABC):
                 "tags": self.metadata.tags,
             },
         }
-    
+
     def to_dict(self) -> dict[str, Any]:
         """Serialize tool to dictionary."""
         return {
@@ -218,24 +223,21 @@ class Tool(ABC):
         }
 
 
-def function_tool(
-    name: str | None = None,
-    description: str | None = None,
-    **tool_kwargs
-):
+def function_tool(name: str | None = None, description: str | None = None, **tool_kwargs):
     """
     Decorator to convert a Python function into a Tool.
-    
+
     Example:
         >>> @function_tool(name="calculate", description="Calculate math expressions")
         ... def calculate(expression: str) -> float:
         ...     return eval(expression)
         >>> tool = calculate  # Now it's a Tool instance
     """
+
     def decorator(func: Callable) -> Tool:
         tool_id = name or func.__name__
         tool_description = description or func.__doc__ or f"Tool: {func.__name__}"
-        
+
         # Create Tool instance
         tool = Tool(
             id=tool_id,
@@ -243,11 +245,11 @@ def function_tool(
             description=tool_description,
             implementation=func,
         )
-        
+
         # Attach tool attributes to function
         setattr(func, "tool", tool)
         setattr(func, "id", tool_id)
-        
+
         return tool
-    
+
     return decorator

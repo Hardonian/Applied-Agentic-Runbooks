@@ -10,12 +10,16 @@ import typer
 if hasattr(sys.stdout, "reconfigure"):
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:  # noqa: BLE001, S110  # nosec B110 -- stdout reconfigure is best-effort: on terminals lacking UTF-8 the CLI must keep working (already noqa'd for ruff BLE001/S110)
+    except (
+        Exception
+    ):  # noqa: BLE001, S110  # nosec B110 -- stdout reconfigure is best-effort: on terminals lacking UTF-8 the CLI must keep working (already noqa'd for ruff BLE001/S110)
         pass
 if hasattr(sys.stderr, "reconfigure"):
     try:
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:  # noqa: BLE001, S110  # nosec B110 -- stderr reconfigure is best-effort: on terminals lacking UTF-8 the CLI must keep working (already noqa'd for ruff BLE001/S110)
+    except (
+        Exception
+    ):  # noqa: BLE001, S110  # nosec B110 -- stderr reconfigure is best-effort: on terminals lacking UTF-8 the CLI must keep working (already noqa'd for ruff BLE001/S110)
         pass
 
 from agent_factory.cli.commands import (
@@ -74,6 +78,7 @@ if export and hasattr(export, "app") and export.app is not None:
 def version():
     """Show version information."""
     from agent_factory import __version__
+
     typer.echo(f"Agent Factory Platform v{__version__}")
 
 
@@ -84,16 +89,16 @@ def init(
 ):
     """Initialize a new Agent Factory project."""
     from pathlib import Path
-    
+
     project_path = Path(path) if path else Path(project_name)
     project_path.mkdir(parents=True, exist_ok=True)
-    
+
     # Create directory structure
     (project_path / "agents").mkdir(exist_ok=True)
     (project_path / "tools").mkdir(exist_ok=True)
     (project_path / "workflows").mkdir(exist_ok=True)
     (project_path / "blueprints").mkdir(exist_ok=True)
-    
+
     # Create .env.example
     env_example = """# Agent Factory Configuration
 OPENAI_API_KEY=
@@ -103,7 +108,7 @@ ANTHROPIC_API_KEY=
 ENVIRONMENT=development
 """
     (project_path / ".env.example").write_text(env_example)
-    
+
     # Create README
     readme = f"""# {project_name}
 
@@ -116,7 +121,7 @@ Agent Factory project.
 3. Run agents: `agent-factory agent run <agent-id>`
 """
     (project_path / "README.md").write_text(readme)
-    
+
     typer.echo(f"✅ Project initialized at {project_path.absolute()}")
 
 
@@ -130,6 +135,7 @@ def serve(
     Launch Agent Factory API and Visual Studio web dashboard.
     """
     import uvicorn
+
     typer.echo(f"🚀 Starting Agent Factory Studio at http://{host}:{port}")
     typer.echo(f"🎨 Studio UI Dashboard: http://{host}:{port}/studio")
     typer.echo(f"📚 OpenAPI Documentation: http://{host}:{port}/docs")
@@ -145,12 +151,17 @@ def chat(
     Start interactive terminal chat session with an agent.
     """
     from agent_factory.agents.agent import Agent
-    
+
     typer.echo(f"💬 Agent Factory Interactive Chat Session [{agent_id}] (Model: {model})")
     typer.echo("Type 'exit' or 'quit' to terminate.\n" + "=" * 50)
-    
-    agent = Agent(id=agent_id, name=agent_id, instructions=f"You are {agent_id}, a helpful assistant.", model=model)
-    
+
+    agent = Agent(
+        id=agent_id,
+        name=agent_id,
+        instructions=f"You are {agent_id}, a helpful assistant.",
+        model=model,
+    )
+
     while True:
         try:
             user_input = input("\n👤 You: ")
@@ -159,7 +170,7 @@ def chat(
                 break
             if not user_input.strip():
                 continue
-                
+
             res = agent.run(user_input)
             if res.reasoning_content:
                 typer.echo(f"\n🧠 Thinking:\n{res.reasoning_content}")
@@ -178,10 +189,10 @@ def audit(
     """
     from agent_factory.agents.agent import Agent
     from agent_factory.security.owasp_scanner import OWASPSecurityScanner
-    
+
     agent = Agent(id=agent_id, name=agent_id, instructions="Autonomous agent instance.")
     report = OWASPSecurityScanner.audit_agent(agent)
-    
+
     typer.echo(f"\n🛡️  OWASP Top 10 Security Audit Report for Agent: [{agent_id}]")
     typer.echo(f"Score: {report.score}/100 | Status: {report.overall_status}")
     typer.echo("-" * 60)
@@ -200,12 +211,12 @@ def pack(
     from pathlib import Path
 
     from agent_factory.marketplace.packager import BlueprintPackager, PackageManifest
-    
+
     src = Path(blueprint_dir)
     if not src.exists():
         typer.echo(f"❌ Directory not found: {src}", err=True)
         raise typer.Exit(1)
-        
+
     out = Path(output) if output else src.with_suffix(".afpkg")
     manifest = PackageManifest(
         id=src.name,
@@ -214,7 +225,7 @@ def pack(
         author="Agent Factory Creator",
         description=f"Packaged blueprint from {src.name}",
     )
-    
+
     out_path, checksum = BlueprintPackager.pack_directory(src, out, manifest)
     typer.echo(f"📦 Successfully packaged [{src.name}] into {out_path}")
     typer.echo(f"🔑 SHA-256 Checksum: {checksum}")
@@ -223,7 +234,9 @@ def pack(
 @app.command()
 def certify(
     agent_id: str = typer.Argument(..., help="Agent ID to certify"),
-    output: str | None = typer.Option(None, "--output", "-o", help="Export path for certification Markdown report"),
+    output: str | None = typer.Option(
+        None, "--output", "-o", help="Export path for certification Markdown report"
+    ),
 ):
     """
     Generate an enterprise audit compliance certificate (SOC 2, HIPAA, EU AI Act, OWASP) for an agent.
@@ -234,7 +247,12 @@ def certify(
 
     guardrails = Guardrails()
     guardrails.add_input_guardrail(SQLInjectionGuardrail())
-    agent = Agent(id=agent_id, name=agent_id, instructions=f"Enterprise Agent {agent_id}", guardrails=guardrails)
+    agent = Agent(
+        id=agent_id,
+        name=agent_id,
+        instructions=f"Enterprise Agent {agent_id}",
+        guardrails=guardrails,
+    )
     cert = AgentCertificationGenerator.generate_certificate(agent)
 
     typer.echo(f"\n[CERTIFICATION] Agent Factory Compliance Record: [{agent_id}]")
@@ -250,6 +268,7 @@ def certify(
 
     if output:
         from pathlib import Path
+
         out_file = Path(output)
         out_file.write_text(cert.to_markdown(), encoding="utf-8")
         typer.echo(f"\n[SAVED] Audit certification document: {out_file.resolve()}")
@@ -258,7 +277,12 @@ def certify(
 @app.command()
 def swarm(
     task: str = typer.Argument(..., help="Task prompt for the multi-agent swarm"),
-    pattern: str = typer.Option("hierarchical", "--pattern", "-p", help="Swarm pattern (hierarchical, peer_debate, voting_consensus, dynamic_router)"),
+    pattern: str = typer.Option(
+        "hierarchical",
+        "--pattern",
+        "-p",
+        help="Swarm pattern (hierarchical, peer_debate, voting_consensus, dynamic_router)",
+    ),
 ):
     """
     Execute a collaborative multi-agent swarm on a complex task.
@@ -269,7 +293,9 @@ def swarm(
     swarm_agents = [
         Agent(id="researcher", name="Researcher", instructions="Conduct background analysis."),
         Agent(id="analyst", name="Analyst", instructions="Evaluate risks and trade-offs."),
-        Agent(id="synthesizer", name="Synthesizer", instructions="Formulate final recommendations."),
+        Agent(
+            id="synthesizer", name="Synthesizer", instructions="Formulate final recommendations."
+        ),
     ]
     supervisor = Agent(id="supervisor", name="Supervisor", instructions="Lead and coordinate team.")
 
@@ -289,7 +315,9 @@ def swarm(
 def mcts(
     problem: str = typer.Argument(..., help="Problem statement to explore via MCTS"),
     depth: int = typer.Option(3, "--depth", "-d", help="Maximum tree search depth"),
-    simulations: int = typer.Option(8, "--simulations", "-s", help="Number of Monte Carlo simulations"),
+    simulations: int = typer.Option(
+        8, "--simulations", "-s", help="Number of Monte Carlo simulations"
+    ),
 ):
     """
     Execute Speculative Monte Carlo Tree Search (MCTS) reasoning across multi-path hypotheses.
@@ -299,7 +327,9 @@ def mcts(
     engine = SpeculativeMCTSEngine(max_depth=depth, num_simulations=simulations)
     res = engine.search(problem)
     typer.echo("\n[MCTS] Speculative Tree Search Complete:")
-    typer.echo(f"Confidence: {res.confidence_score*100:.1f}% | Nodes: {res.total_nodes_explored} | Pruned: {res.branches_pruned} | Depth: {res.depth_reached}")
+    typer.echo(
+        f"Confidence: {res.confidence_score*100:.1f}% | Nodes: {res.total_nodes_explored} | Pruned: {res.branches_pruned} | Depth: {res.depth_reached}"
+    )
     typer.echo("-" * 60)
     for idx, step in enumerate(res.best_trajectory, 1):
         typer.echo(f"{idx}. {step}")
@@ -309,7 +339,9 @@ def mcts(
 @app.command()
 def cascade(
     prompt: str = typer.Argument(..., help="Prompt to execute via Speculative Model Cascade"),
-    tier: str | None = typer.Option(None, "--tier", "-t", help="Force model tier (fast, standard, deep)"),
+    tier: str | None = typer.Option(
+        None, "--tier", "-t", help="Force model tier (fast, standard, deep)"
+    ),
 ):
     """
     Execute prompt via Speculative Model Cascade optimizing for Pareto cost and latency.
@@ -320,8 +352,12 @@ def cascade(
     router = SpeculativeCascadeRouter()
     res = router.execute(prompt, force_tier=tier_enum)
     typer.echo("\n[CASCADE] Pareto Optimization Complete:")
-    typer.echo(f"Tier: {res.tier_used.value.upper()} ({res.model_used}) | Speculative Draft: {'ACCEPTED' if res.speculative_draft_accepted else 'ESCALATED'}")
-    typer.echo(f"Cost Savings: {res.cost_savings_percentage:.1f}% | Latency Speedup: {res.speedup_factor:.1f}x (${res.cost_usd:.6f} vs ${res.frontier_baseline_cost_usd:.6f})")
+    typer.echo(
+        f"Tier: {res.tier_used.value.upper()} ({res.model_used}) | Speculative Draft: {'ACCEPTED' if res.speculative_draft_accepted else 'ESCALATED'}"
+    )
+    typer.echo(
+        f"Cost Savings: {res.cost_savings_percentage:.1f}% | Latency Speedup: {res.speedup_factor:.1f}x (${res.cost_usd:.6f} vs ${res.frontier_baseline_cost_usd:.6f})"
+    )
     typer.echo("-" * 60)
     typer.echo(res.output)
 

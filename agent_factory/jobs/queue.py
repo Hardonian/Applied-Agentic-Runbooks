@@ -191,7 +191,11 @@ class RedisJobQueue(JobQueue):
                 "payload": job.payload,
                 "status": job.status.value,
                 "priority": job.priority,
-                "created_at": job.created_at.isoformat() if job.created_at else datetime.now(timezone.utc).isoformat(),
+                "created_at": (
+                    job.created_at.isoformat()
+                    if job.created_at
+                    else datetime.now(timezone.utc).isoformat()
+                ),
                 "max_retries": job.max_retries,
                 "retry_count": job.retry_count,
                 "metadata": job.metadata,
@@ -277,12 +281,14 @@ class RedisJobQueue(JobQueue):
             status=JobStatus(data["status"]),
             priority=data.get("priority", 0),
             created_at=datetime.fromisoformat(data["created_at"]),
-            started_at=datetime.fromisoformat(data.get("started_at"))
-            if data.get("started_at")
-            else None,
-            completed_at=datetime.fromisoformat(data.get("completed_at"))
-            if data.get("completed_at")
-            else None,
+            started_at=(
+                datetime.fromisoformat(data.get("started_at")) if data.get("started_at") else None
+            ),
+            completed_at=(
+                datetime.fromisoformat(data.get("completed_at"))
+                if data.get("completed_at")
+                else None
+            ),
             result=data.get("result"),
             error=data.get("error"),
             retry_count=data.get("retry_count", 0),
@@ -300,7 +306,11 @@ class RedisJobQueue(JobQueue):
             "payload": job.payload,
             "status": job.status.value,
             "priority": job.priority,
-            "created_at": job.created_at.isoformat() if job.created_at else datetime.now(timezone.utc).isoformat(),
+            "created_at": (
+                job.created_at.isoformat()
+                if job.created_at
+                else datetime.now(timezone.utc).isoformat()
+            ),
             "started_at": job.started_at.isoformat() if job.started_at else None,
             "completed_at": job.completed_at.isoformat() if job.completed_at else None,
             "result": job.result,

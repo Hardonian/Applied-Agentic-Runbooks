@@ -15,10 +15,10 @@ def test_runtime_with_prompt_logging():
     with tempfile.TemporaryDirectory() as tmpdir:
         db_path = Path(tmpdir) / "promptlog.db"
         storage = SQLiteStorage(str(db_path))
-        
+
         # Create runtime with prompt logging
         runtime = RuntimeEngine(prompt_log_storage=storage)
-        
+
         # Create and register agent
         agent = Agent(
             id="test-agent",
@@ -26,15 +26,15 @@ def test_runtime_with_prompt_logging():
             instructions="You are a test agent.",
         )
         runtime.register_agent(agent)
-        
+
         # Run agent
         execution_id = runtime.run_agent("test-agent", "test input")
-        
+
         # Check execution
         execution = runtime.get_execution(execution_id)
         assert execution is not None
         assert execution.status == "completed"
-        
+
         # Check prompt log
         run = storage.get_run(execution_id)
         assert run is not None
@@ -45,15 +45,15 @@ def test_runtime_with_prompt_logging():
 def test_runtime_agent_registration():
     """Test agent registration in runtime."""
     runtime = RuntimeEngine()
-    
+
     agent = Agent(
         id="test-agent",
         name="Test Agent",
         instructions="Test",
     )
-    
+
     runtime.register_agent(agent)
-    
+
     assert "test-agent" in runtime.agents_registry
     assert runtime.agents_registry["test-agent"] == agent
     # Check prompt logging is wired
@@ -63,25 +63,25 @@ def test_runtime_agent_registration():
 def test_runtime_execution_listing():
     """Test execution listing."""
     runtime = RuntimeEngine()
-    
+
     agent = Agent(
         id="test-agent",
         name="Test Agent",
         instructions="Test",
     )
     runtime.register_agent(agent)
-    
+
     # Run multiple executions
     execution_ids = []
     for i in range(3):
         exec_id = runtime.run_agent("test-agent", f"input {i}")
         execution_ids.append(exec_id)
-    
+
     # List executions
     executions = runtime.list_executions(entity_id="test-agent", limit=10)
-    
+
     assert len(executions) == 3
-    
+
     # Filter by status
     completed = runtime.list_executions(status="completed", limit=10)
     assert len(completed) == 3

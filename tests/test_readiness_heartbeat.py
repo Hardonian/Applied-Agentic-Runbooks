@@ -15,7 +15,9 @@ heartbeat = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(heartbeat)
 
 
-def run(*, age_hours: float = 1, status: str = "completed", conclusion: str = "success") -> dict[str, str]:
+def run(
+    *, age_hours: float = 1, status: str = "completed", conclusion: str = "success"
+) -> dict[str, str]:
     created = datetime.now(timezone.utc) - timedelta(hours=age_hours)
     return {"created_at": created.isoformat(), "status": status, "conclusion": conclusion}
 

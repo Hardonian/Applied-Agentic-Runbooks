@@ -13,14 +13,14 @@ from agent_factory.telemetry.model import EventType, TelemetryEvent
 class TelemetryCollector:
     """
     Central telemetry collector for Agent Factory Platform.
-    
+
     Collects and stores telemetry events from various sources:
     - Agent runs
     - Workflow runs
     - Blueprint installations
     - Errors
     - Billing usage
-    
+
     Example:
         >>> collector = TelemetryCollector()
         >>> collector.record_agent_run(
@@ -31,33 +31,35 @@ class TelemetryCollector:
         ...     tokens_used=100
         ... )
     """
-    
+
     def __init__(self, backend: TelemetryBackend | None = None):
         """
         Initialize telemetry collector.
-        
+
         Args:
             backend: Telemetry storage backend (defaults to SQLite)
         """
         self.backend = backend or SQLiteTelemetryBackend()
-    
+
     def record_event(self, event: TelemetryEvent) -> None:
         """
         Record a telemetry event.
-        
+
         Args:
             event: Telemetry event to record
         """
         if not event.event_id:
             event.event_id = str(uuid.uuid4())
-        
+
         try:
             self.backend.store_event(event)
-        except Exception:  # nosec B110 -- telemetry write is best-effort by design (comment: never break main execution)
+        except (
+            Exception
+        ):  # nosec B110 -- telemetry write is best-effort by design (comment: never break main execution)
             # Silently fail telemetry to avoid breaking main execution
             # In production, log to error tracking system
             pass
-    
+
     def record_agent_run(
         self,
         agent_id: str,
@@ -76,7 +78,7 @@ class TelemetryCollector:
     ) -> None:
         """
         Record an agent run event.
-        
+
         Args:
             agent_id: Agent ID
             tenant_id: Tenant ID
@@ -93,7 +95,7 @@ class TelemetryCollector:
             metadata: Additional metadata
         """
         from agent_factory.telemetry.model import AgentRunEvent
-        
+
         event = AgentRunEvent(
             event_id=str(uuid.uuid4()),
             event_type=EventType.AGENT_RUN,
@@ -111,9 +113,9 @@ class TelemetryCollector:
             output_length=output_length,
             metadata=metadata or {},
         )
-        
+
         self.record_event(event)
-    
+
     def record_workflow_run(
         self,
         workflow_id: str,
@@ -131,7 +133,7 @@ class TelemetryCollector:
     ) -> None:
         """
         Record a workflow run event.
-        
+
         Args:
             workflow_id: Workflow ID
             tenant_id: Tenant ID
@@ -147,7 +149,7 @@ class TelemetryCollector:
             metadata: Additional metadata
         """
         from agent_factory.telemetry.model import WorkflowRunEvent
-        
+
         event = WorkflowRunEvent(
             event_id=str(uuid.uuid4()),
             event_type=EventType.WORKFLOW_RUN,
@@ -164,9 +166,9 @@ class TelemetryCollector:
             cost_estimate=cost_estimate,
             metadata=metadata or {},
         )
-        
+
         self.record_event(event)
-    
+
     def record_blueprint_install(
         self,
         blueprint_id: str,
@@ -180,7 +182,7 @@ class TelemetryCollector:
     ) -> None:
         """
         Record a blueprint installation event.
-        
+
         Args:
             blueprint_id: Blueprint ID
             tenant_id: Tenant ID
@@ -192,7 +194,7 @@ class TelemetryCollector:
             metadata: Additional metadata
         """
         from agent_factory.telemetry.model import BlueprintInstallEvent
-        
+
         event = BlueprintInstallEvent(
             event_id=str(uuid.uuid4()),
             event_type=(
@@ -209,9 +211,9 @@ class TelemetryCollector:
             install_type=install_type,
             metadata=metadata or {},
         )
-        
+
         self.record_event(event)
-    
+
     def record_error(
         self,
         error_type: str,
@@ -226,7 +228,7 @@ class TelemetryCollector:
     ) -> None:
         """
         Record an error event.
-        
+
         Args:
             error_type: Error type/class name
             error_message: Error message
@@ -239,7 +241,7 @@ class TelemetryCollector:
             metadata: Additional metadata
         """
         from agent_factory.telemetry.model import ErrorEvent
-        
+
         event = ErrorEvent(
             event_id=str(uuid.uuid4()),
             event_type=EventType.ERROR,
@@ -253,9 +255,9 @@ class TelemetryCollector:
             stack_trace=stack_trace,
             metadata=metadata or {},
         )
-        
+
         self.record_event(event)
-    
+
     def record_billing_usage(
         self,
         billing_unit: str,
@@ -272,7 +274,7 @@ class TelemetryCollector:
     ) -> None:
         """
         Record a billing usage event.
-        
+
         Args:
             billing_unit: Billing unit (agent_run, workflow_run, token, etc.)
             quantity: Quantity consumed
@@ -287,7 +289,7 @@ class TelemetryCollector:
             metadata: Additional metadata
         """
         from agent_factory.telemetry.model import BillingUsageEvent
-        
+
         event = BillingUsageEvent(
             event_id=str(uuid.uuid4()),
             event_type=EventType.BILLING_USAGE,
@@ -303,9 +305,9 @@ class TelemetryCollector:
             period_end=period_end,
             metadata=metadata or {},
         )
-        
+
         self.record_event(event)
-    
+
     def query_events(
         self,
         event_type: str | None = None,
@@ -318,7 +320,7 @@ class TelemetryCollector:
     ) -> list[TelemetryEvent]:
         """
         Query telemetry events.
-        
+
         Args:
             event_type: Filter by event type
             tenant_id: Filter by tenant ID
@@ -327,7 +329,7 @@ class TelemetryCollector:
             start_time: Start time filter
             end_time: End time filter
             limit: Maximum number of results
-            
+
         Returns:
             List of telemetry events
         """
@@ -349,7 +351,7 @@ _collector: TelemetryCollector | None = None
 def get_collector() -> TelemetryCollector:
     """
     Get global telemetry collector instance.
-    
+
     Returns:
         Telemetry collector
     """

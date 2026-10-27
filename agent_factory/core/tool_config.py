@@ -9,6 +9,7 @@ from typing import Any
 @dataclass
 class ToolConfig:
     """Configuration for a Tool."""
+
     timeout: int = 30  # seconds
     retry_attempts: int = 3
     rate_limit: int | None = None  # requests per minute

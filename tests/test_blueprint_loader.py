@@ -13,7 +13,7 @@ from agent_factory.blueprints.loader import BlueprintLoader
 def test_load_blueprint():
     """Test loading a blueprint from YAML."""
     loader = BlueprintLoader()
-    
+
     # Create temporary blueprint file
     blueprint_data = {
         "blueprint": {
@@ -45,13 +45,13 @@ def test_load_blueprint():
             },
         }
     }
-    
+
     with tempfile.TemporaryDirectory() as tmpdir:
         blueprint_path = Path(tmpdir) / "blueprint.yaml"
         blueprint_path.write_text(yaml.dump(blueprint_data))
-        
+
         blueprint = loader.load(str(blueprint_path))
-        
+
         assert blueprint.id == "test-blueprint"
         assert blueprint.name == "Test Blueprint"
         assert blueprint.version == "1.0.0"
@@ -62,6 +62,6 @@ def test_load_blueprint():
 def test_load_blueprint_not_found():
     """Test loading non-existent blueprint."""
     loader = BlueprintLoader()
-    
+
     with pytest.raises(FileNotFoundError):
         loader.load("non-existent.yaml")

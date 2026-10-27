@@ -33,28 +33,29 @@ def check_dependencies() -> list[tuple[str, bool, str]]:
         ("sqlalchemy", "SQLAlchemy"),
         ("redis", "Redis"),
     ]
-    
+
     for module, name in required:
         try:
             __import__(module)
             results.append((name, True, "Installed"))
         except ImportError:
             results.append((name, False, "Not installed"))
-    
+
     return results
 
 
 def check_env_vars() -> list[tuple[str, bool, str]]:
     """Check environment variables."""
     import os
+
     results = []
-    
+
     vars_to_check = [
         ("OPENAI_API_KEY", False),  # Optional but recommended
         ("ANTHROPIC_API_KEY", False),  # Optional
         ("AGENT_FACTORY_REGISTRY_PATH", False),  # Optional
     ]
-    
+
     for var, required in vars_to_check:
         value = os.getenv(var)
         if value:
@@ -64,7 +65,7 @@ def check_env_vars() -> list[tuple[str, bool, str]]:
             results.append((var, False, "Required but not set"))
         else:
             results.append((var, False, "Not set (optional)"))
-    
+
     return results
 
 
@@ -72,9 +73,10 @@ def check_registry() -> tuple[bool, str]:
     """Check registry directory."""
     try:
         from agent_factory.utils.config import Config
+
         config = Config()
         registry_path = Path(config.registry_path).expanduser()
-        
+
         if registry_path.exists():
             return True, f"Registry exists: {registry_path}"
         else:
@@ -88,6 +90,7 @@ def check_blueprints() -> tuple[bool, str, int]:
     """Check installed blueprints."""
     try:
         from agent_factory.registry.local_registry import LocalRegistry
+
         registry = LocalRegistry()
         blueprints = registry.list_blueprints()
         count = len(blueprints)
@@ -105,17 +108,17 @@ def run(
 ):
     """Run system diagnostics."""
     typer.echo("🔍 Agent Factory System Diagnostics\n")
-    
+
     issues = []
     warnings = []
-    
+
     # Python version
     ok, msg = check_python_version()
     status = "✅" if ok else "❌"
     typer.echo(f"{status} {msg}")
     if not ok:
         issues.append("Python version")
-    
+
     # Dependencies
     typer.echo("\n📦 Dependencies:")
     deps = check_dependencies()
@@ -124,7 +127,7 @@ def run(
         typer.echo(f"  {status} {name}: {msg}")
         if not ok:
             issues.append(f"Dependency: {name}")
-    
+
     # Environment variables
     typer.echo("\n🔐 Environment Variables:")
     env_vars = check_env_vars()
@@ -135,7 +138,7 @@ def run(
             issues.append(f"Environment variable: {var}")
         elif not ok:
             warnings.append(f"Environment variable: {var} not set")
-    
+
     # Registry
     typer.echo("\n📁 Registry:")
     ok, msg = check_registry()
@@ -143,7 +146,7 @@ def run(
     typer.echo(f"  {status} {msg}")
     if not ok:
         issues.append("Registry")
-    
+
     # Blueprints
     typer.echo("\n📦 Blueprints:")
     ok, msg, count = check_blueprints()
@@ -153,9 +156,9 @@ def run(
         issues.append("Blueprints")
     elif count == 0:
         warnings.append("No blueprints installed")
-    
+
     # Summary
-    typer.echo("\n" + "="*50)
+    typer.echo("\n" + "=" * 50)
     if issues:
         typer.echo(f"❌ Found {len(issues)} issue(s):")
         for issue in issues:
@@ -169,14 +172,18 @@ def run(
         typer.echo("\n✅ System is functional but some optional features may be unavailable")
     else:
         typer.echo("✅ All checks passed! System is ready.")
-    
+
     if verbose:
         typer.echo("\n📊 System Information:")
         import platform
+
         typer.echo(f"  Platform: {platform.system()} {platform.release()}")
         typer.echo(f"  Architecture: {platform.machine()}")
         try:
             from agent_factory import __version__
+
             typer.echo(f"  Agent Factory: {__version__}")
-        except Exception:  # nosec B110 -- cosmetic version display in a doctor command; missing metadata must not abort diagnostics
+        except (
+            Exception
+        ):  # nosec B110 -- cosmetic version display in a doctor command; missing metadata must not abort diagnostics
             pass

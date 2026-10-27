@@ -234,7 +234,11 @@ async def upgrade_to_pro(request: Request, user=Depends(get_current_user)):
         import stripe
 
         checkout_session = stripe.checkout.Session.create(
-            payment_method_types=["card"],
+            # Card-only checkout. Stripe removed payment_method_types from
+            # Checkout Session create (API version 2026-09-30.endive); per the
+            # stripe SDK docstring, allowed_payment_method_types filters the
+            # dynamically-eligible methods, so ["card"] offers card only.
+            allowed_payment_method_types=["card"],
             line_items=[
                 {
                     "price_data": {

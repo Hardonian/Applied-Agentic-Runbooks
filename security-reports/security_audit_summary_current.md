@@ -16,7 +16,7 @@
 - **JSON:** `security-reports/safety_latest.json`
 
 ### Manual Checks
-- **Potential Secrets:** 496 (review manually)
+- **Potential Secrets:** 502 (review manually)
 - **SQL Execution Points:** 351 (verify parameterized queries)
 
 ## Next Steps

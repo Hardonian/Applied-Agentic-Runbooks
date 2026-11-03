@@ -1,7 +1,7 @@
 # Data Room Placeholder Fill Guide
 
 **Founder, CEO & Operator:** Scott Hardie  
-**Generated:** 2026-10-26
+**Generated:** 2026-11-02
 
 ---
 
@@ -12,6 +12,21 @@
 - **Placeholders:** 11
 - **Examples:** [TO BE FILLED - e.g., agentfactory.io], [TO BE FILLED - production URL or demo video], [TO BE FILLED]
 
+### 07_CAP_TABLE_PLACEHOLDER.md
+- **File:** `dataroom/07_CAP_TABLE_PLACEHOLDER.md`
+- **Placeholders:** 8
+- **Examples:** [TO BE FILLED BY FOUNDERS], [TO BE FILLED], [TO BE FILLED]
+
+### 01_EXEC_SUMMARY.md
+- **File:** `dataroom/01_EXEC_SUMMARY.md`
+- **Placeholders:** 10
+- **Examples:** [TO BE FILLED - See `yc/METRICS_SNAPSHOT.md`], [TBD], [TBD]
+
+### 03_METRICS_OVERVIEW.md
+- **File:** `dataroom/03_METRICS_OVERVIEW.md`
+- **Placeholders:** 23
+- **Examples:** [TO BE FILLED], [TBD], [TBD]
+
 ### 04_CUSTOMER_PROOF.md
 - **File:** `dataroom/04_CUSTOMER_PROOF.md`
 - **Placeholders:** 5
@@ -21,21 +36,6 @@
 - **File:** `dataroom/02_PRODUCT_DECK_OUTLINE.md`
 - **Placeholders:** 10
 - **Examples:** [Date], [TO BE FILLED], [TBD]
-
-### 03_METRICS_OVERVIEW.md
-- **File:** `dataroom/03_METRICS_OVERVIEW.md`
-- **Placeholders:** 23
-- **Examples:** [TO BE FILLED], [TBD], [TBD]
-
-### 01_EXEC_SUMMARY.md
-- **File:** `dataroom/01_EXEC_SUMMARY.md`
-- **Placeholders:** 10
-- **Examples:** [TO BE FILLED - See `yc/METRICS_SNAPSHOT.md`], [TBD], [TBD]
-
-### 07_CAP_TABLE_PLACEHOLDER.md
-- **File:** `dataroom/07_CAP_TABLE_PLACEHOLDER.md`
-- **Placeholders:** 8
-- **Examples:** [TO BE FILLED BY FOUNDERS], [TO BE FILLED], [TO BE FILLED]
 
 
 **Total Placeholders:** 67
@@ -98,7 +98,7 @@ make unit-economics
 **Files:** All data room files
 
 **Fill With:**
-- Current date: 2026-10-26
+- Current date: 2026-11-02
 - Or specific dates (e.g., submission date)
 
 ---
@@ -138,4 +138,4 @@ grep -r "TO BE FILLED\|TBD\|\[DATE\]\|\[NUMBER\]\|\[AMOUNT\]" dataroom/
 
 ---
 
-**Last Updated:** 2026-10-26
+**Last Updated:** 2026-11-02

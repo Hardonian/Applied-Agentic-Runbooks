@@ -1,5 +1,5 @@
 openai-agents>=1.0.0
 anthropic>=0.20.0
-crewai>=1.15.33
+crewai>=1.15.35
 python-dotenv>=1.0.0
 pydantic>=2.5.0

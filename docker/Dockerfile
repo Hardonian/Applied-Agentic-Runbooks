@@ -33,7 +33,7 @@
 # If the base ever moves back to Debian, this gate will go red again on the same
 # unpatched Debian advisories. That is Debian 13's patch queue, not this file.
 
-FROM python:3.12-alpine3.22 AS builder
+FROM python:3.14-alpine3.22 AS builder
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 PIP_NO_CACHE_DIR=1
 WORKDIR /build
 RUN apk upgrade --no-cache
@@ -42,7 +42,7 @@ COPY pyproject.toml README.md ./
 COPY agent_factory ./agent_factory
 RUN python -m build --wheel --outdir /wheels
 
-FROM python:3.12-alpine3.22 AS runtime
+FROM python:3.14-alpine3.22 AS runtime
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PATH=/home/agent/.local/bin:$PATH
 # Upgrade every installed package to its SecDB-fixed version, then add the
 # shared libraries the app's binary wheels link against (psycopg2 -> libpq,

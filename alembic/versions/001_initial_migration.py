@@ -17,6 +17,23 @@ depends_on = None
 
 
 def upgrade() -> None:
+    # Create tenants table first: users and other tables reference tenants.id,
+    # so the FK target must exist before any referencing table is created.
+    op.create_table(
+        'tenants',
+        sa.Column('id', sa.String(), nullable=False),
+        sa.Column('name', sa.String(), nullable=False),
+        sa.Column('slug', sa.String(), nullable=False),
+        sa.Column('is_active', sa.Boolean(), nullable=True),
+        sa.Column('plan', sa.String(), nullable=True),
+        sa.Column('resource_quota', sa.JSON(), nullable=True),
+        sa.Column('usage', sa.JSON(), nullable=True),
+        sa.Column('created_at', sa.DateTime(), nullable=True),
+        sa.Column('updated_at', sa.DateTime(), nullable=True),
+        sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index(op.f('ix_tenants_slug'), 'tenants', ['slug'], unique=True)
+
     # Create users table
     op.create_table(
         'users',
@@ -34,22 +51,6 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
-
-    # Create tenants table
-    op.create_table(
-        'tenants',
-        sa.Column('id', sa.String(), nullable=False),
-        sa.Column('name', sa.String(), nullable=False),
-        sa.Column('slug', sa.String(), nullable=False),
-        sa.Column('is_active', sa.Boolean(), nullable=True),
-        sa.Column('plan', sa.String(), nullable=True),
-        sa.Column('resource_quota', sa.JSON(), nullable=True),
-        sa.Column('usage', sa.JSON(), nullable=True),
-        sa.Column('created_at', sa.DateTime(), nullable=True),
-        sa.Column('updated_at', sa.DateTime(), nullable=True),
-        sa.PrimaryKeyConstraint('id')
-    )
-    op.create_index(op.f('ix_tenants_slug'), 'tenants', ['slug'], unique=True)
 
     # Create agents table
     op.create_table(
@@ -165,7 +166,7 @@ def downgrade() -> None:
     op.drop_table('blueprints')
     op.drop_table('workflows')
     op.drop_table('agents')
-    op.drop_index(op.f('ix_tenants_slug'), table_name='tenants')
-    op.drop_table('tenants')
     op.drop_index(op.f('ix_users_email'), table_name='users')
     op.drop_table('users')
+    op.drop_index(op.f('ix_tenants_slug'), table_name='tenants')
+    op.drop_table('tenants')

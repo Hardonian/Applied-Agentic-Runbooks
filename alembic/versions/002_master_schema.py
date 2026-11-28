@@ -39,6 +39,12 @@ def upgrade() -> None:
         if 'user_id' in columns and 'created_by' not in columns:
             op.alter_column('agents', 'user_id', new_column_name='created_by', existing_type=sa.String())
     
+    if 'workflows' in existing_tables:
+        # Match the model and the indexes added in 003: workflows.created_by
+        columns = [col['name'] for col in inspector.get_columns('workflows')]
+        if 'user_id' in columns and 'created_by' not in columns:
+            op.alter_column('workflows', 'user_id', new_column_name='created_by', existing_type=sa.String())
+
     if 'blueprints' in existing_tables:
         # Fix blueprints table: add missing marketplace fields
         columns = [col['name'] for col in inspector.get_columns('blueprints')]
@@ -241,5 +247,8 @@ def downgrade() -> None:
     op.drop_column('blueprints', 'price')
     op.drop_column('blueprints', 'pricing_model')
     
+    # Revert workflows changes
+    op.alter_column('workflows', 'created_by', new_column_name='user_id', existing_type=sa.String())
+
     # Revert agents changes
     op.alter_column('agents', 'created_by', new_column_name='user_id', existing_type=sa.String())
